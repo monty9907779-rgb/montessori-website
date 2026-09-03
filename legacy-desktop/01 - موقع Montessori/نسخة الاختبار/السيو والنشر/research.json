@@ -1,0 +1,307 @@
+{
+ "keywordClusters": {
+  "clusters": [
+   {
+    "cluster": "Local — City & neighborhood (highest priority for #1 ranking)",
+    "intent": "local",
+    "keywords": [
+     "حضانة جدة",
+     "حضانة اطفال جدة",
+     "حضانة اطفال جده",
+     "حضانة في جدة",
+     "روضة اطفال جدة",
+     "روضة جدة",
+     "تمهيدي جدة",
+     "حضانة مونتيسوري جدة",
+     "حضانة منتسوري جدة",
+     "منتسوري جدة",
+     "مونتيسوري جدة",
+     "حضانة حي الفيصلية",
+     "حضانة حي الفيصلية جدة",
+     "روضة حي الفيصلية جدة",
+     "حضانة شمال جدة",
+     "حضانة اطفال قريبة مني",
+     "حضانة قريبة مني جدة",
+     "ضيافة اطفال جدة",
+     "مركز ضيافة اطفال جدة",
+     "حضانة انجليزي جدة",
+     "حضانة ثنائية اللغة جدة",
+     "حضانة تحفيظ قران جدة",
+     "nursery Jeddah",
+     "Montessori Jeddah",
+     "daycare Jeddah",
+     "preschool Jeddah",
+     "Montessori nursery Al Faisaliyah Jeddah"
+    ],
+    "notes": "These are the money keywords for a #1 local ranking. Site should have dedicated pages targeting جدة + الفيصلية + مونتيسوري + انجليزي/تحفيظ combinations. Competitors ranking here: Little Blossom, Kipina, Qurra, Tabar, yaschools/edarabia directories. City-level terms have highest volume; الفيصلية-specific terms have far less competition and are winnable fast. Note the common misspelling 'جده' (without ة) — parents type it, so include it in content/alt text. Register on Google Business Profile, yaschools, edarabia, thenurseryfinder, nurseriesworld directories."
+   },
+   {
+    "cluster": "Commercial — 'Best' / comparison / evaluation intent",
+    "intent": "commercial",
+    "keywords": [
+     "افضل حضانة في جدة",
+     "افضل حضانات جدة",
+     "افضل روضة اطفال في جدة",
+     "افضل حضانة مونتيسوري في جدة",
+     "افضل حضانة انجليزي في جدة",
+     "افضل حضانة تحفيظ قران جدة",
+     "افضل حضانة للموظفات في جدة",
+     "دليل حضانات جدة",
+     "حضانات جدة المرخصة",
+     "حضانة مرخصة وزارة الموارد البشرية",
+     "حضانة معتمدة وزارة التعليم",
+     "افضل حضانة الفيصلية",
+     "best nursery in Jeddah",
+     "best Montessori Jeddah",
+     "top rated nursery Jeddah",
+     "افضل حضانة 2026"
+    ],
+    "notes": "High-conversion 'افضل' (best) modifier — parents comparing before enrolling. Ranking here requires strong Google reviews (business already has 4.7/71 — leverage in schema markup + landing copy) and being listed in the roundup/directory articles that currently own these SERPs. Add year modifier (2025/2026) since ranking listicles use it. Trust signals matter: المرخصة/معتمدة (licensed/accredited) is a strong buying-trigger term Saudi parents filter on."
+   },
+   {
+    "cluster": "Commercial — Pricing & fees",
+    "intent": "commercial",
+    "keywords": [
+     "اسعار الحضانات في جدة",
+     "رسوم حضانة اطفال جدة",
+     "كم سعر الحضانة في جدة",
+     "اسعار روضة اطفال جدة",
+     "رسوم الروضة في جدة",
+     "حضانة رخيصة في جدة",
+     "حضانة بسعر مناسب جدة",
+     "اسعار الحضانات في السعودية",
+     "كم رسوم التمهيدي",
+     "اشتراك حضانة شهري جدة",
+     "حضانة بالساعة جدة",
+     "باقات اشتراك حضانة"
+    ],
+    "notes": "Very high commercial intent and heavily searched — parents anchor on price. Observed market benchmarks from research: monthly fees range ~800–1,950 SAR/month; some centers ~599 SAR promo packages; hourly/الساعة options exist. Publishing a transparent pricing/packages page (شهري + بالساعة + باقات) will capture this cluster, which most competitors hide behind 'contact us.' Being the site that actually answers 'كم سعر' is a big differentiator."
+   },
+   {
+    "cluster": "Informational — Age & enrollment readiness (question keywords)",
+    "intent": "informational",
+    "keywords": [
+     "سن دخول الحضانة",
+     "كم عمر الطفل المناسب للحضانة",
+     "افضل سن لدخول الطفل الحضانة",
+     "متى يدخل الطفل الحضانة",
+     "متى ابدا احط طفلي في الحضانة",
+     "السن المناسب لدخول الروضة",
+     "عمر دخول التمهيدي",
+     "شروط قبول الطفل في الروضة",
+     "هل الحضانة مفيدة للطفل",
+     "علامات استعداد الطفل للحضانة",
+     "تجهيز الطفل للحضانة",
+     "كيف اجهز طفلي للحضانة"
+    ],
+    "notes": "Top-of-funnel blog fuel. 'سن دخول الحضانة' and 'متى' variants are massive evergreen search drivers. Research shows the consensus answer parents seek is 2–3 years (nursery), with readiness signals (weaned off diaper, walking, basic speech). One authoritative article answering age-by-stage (حضانة 1-2 / تمهيدي 2-4 / روضة 4-6) maps perfectly to the business's own program structure and funnels readers to enrollment."
+   },
+   {
+    "cluster": "Informational — Nursery vs. kindergarten vs. pre-K distinctions",
+    "intent": "informational",
+    "keywords": [
+     "الفرق بين الحضانة والروضة",
+     "الفرق بين الحضانة والروضة والتمهيدي",
+     "الفرق بين الروضة والتمهيدي",
+     "الفرق بين رياض الاطفال والروضة",
+     "ما هي رياض الاطفال",
+     "ما معنى تمهيدي",
+     "ما هو التمهيدي المبتدئ والمتقدم",
+     "مراحل رياض الاطفال في السعودية",
+     "الفرق بين الحضانة ورياض الاطفال"
+    ],
+    "notes": "Strong 'الفرق بين' (difference between) cluster with genuine confusion in the market — parents don't know which stage their child needs. This directly maps to the nursery's three programs (حضانة/تمهيدي/روضة). An explainer article capturing these terms educates AND positions the business as covering all stages. Low competition, high relevance, natural internal-linking hub to program pages."
+   },
+   {
+    "cluster": "Informational — Montessori method & benefits",
+    "intent": "informational",
+    "keywords": [
+     "ما هو منهج مونتيسوري",
+     "ما معنى حضانة منتسوري",
+     "فوائد منهج مونتيسوري للاطفال",
+     "طريقة مونتيسوري في تعليم الاطفال",
+     "مبادئ منهج مونتيسوري",
+     "الفرق بين مونتيسوري والتعليم التقليدي",
+     "منهج مونتيسوري للاطفال",
+     "متى ابدا مونتيسوري لطفلي",
+     "انشطة مونتيسوري في البيت",
+     "العاب مونتيسوري للاطفال",
+     "العاب منتسوري لعمر سنة",
+     "ادوات مونتيسوري",
+     "انشطة مونتيسوري لعمر سنتين",
+     "تعليم الطفل باللعب",
+     "منهج مونتيسوري ويكيبيديا"
+    ],
+    "notes": "Core differentiator content — the business IS a Montessori nursery, so owning 'ما هو منهج مونتيسوري' / 'فوائد مونتيسوري' establishes topical authority Google rewards. The 'انشطة/العاب مونتيسوري في البيت' sub-cluster has huge volume (DIY parenting searches) and is an excellent lead-magnet blog series that pulls Montessori-curious parents into the funnel even before they're shopping for a nursery. Spelling variants مونتيسوري/منتسوري/مونتسوري all used — sprinkle all three."
+   },
+   {
+    "cluster": "Informational — Choosing a nursery & safety criteria",
+    "intent": "informational",
+    "keywords": [
+     "كيف اختار حضانة مناسبة لطفلي",
+     "كيف اختار الحضانة المناسبة",
+     "شروط الحضانة الجيدة",
+     "معايير اختيار الحضانة",
+     "مواصفات الحضانة الامنة",
+     "كيف اطمئن على طفلي في الحضانة",
+     "حضانة امنة للاطفال",
+     "اضرار الحضانة على الطفل",
+     "هل الحضانة تؤثر على الطفل نفسيا",
+     "نصائح قبل تسجيل الطفل في الحضانة",
+     "اسئلة قبل اختيار الحضانة"
+    ],
+    "notes": "Decision-stage informational — parents anxious about safety/psychological impact. Answering 'كيف اختار' and 'حضانة امنة' with a checklist (small class size ≤10, trained staff, first-aid, CCTV/كاميرات, ventilation, licensing) lets the business subtly showcase its own standards. The 'اضرار/تؤثر نفسيا' fear-based queries are high-volume; addressing them reassuringly converts worried parents. Bridges informational → commercial intent."
+   },
+   {
+    "cluster": "Local/Commercial — Working-mom & operational features",
+    "intent": "commercial",
+    "keywords": [
+     "حضانة للموظفات جدة",
+     "حضانة دوام كامل جدة",
+     "حضانة اطفال دوام طويل جدة",
+     "حضانة بكاميرات مراقبة جدة",
+     "حضانة مع كاميرات مراقبة",
+     "اوقات دوام الحضانة",
+     "حضانة تفتح 7 صباحا جدة",
+     "حضانة توفر وجبات جدة",
+     "حضانة تستقبل من عمر شهر",
+     "حضانة رضع جدة",
+     "حضانة تستقبل بعد المدرسة",
+     "برنامج المراة العاملة قرة"
+    ],
+    "notes": "Feature-filter searches from working mothers — the dominant nursery buyer in Saudi. Terms like للموظفات, دوام كامل, كاميرات مراقبة, وجبات, عمر شهر are the exact filters parents apply. If the business offers extended hours/CCTV/meals, dedicated feature pages targeting these win qualified traffic. 'قرة' references the government working-women childcare support program — parents search whether a nursery participates; worth a FAQ answer if applicable. Note business hours are Sun-Thu 8-2, so target 'دوام' terms honestly (avoid دوام طويل/8 مساء claims)."
+   },
+   {
+    "cluster": "Navigational/Transactional — Registration & admission",
+    "intent": "navigational",
+    "keywords": [
+     "تسجيل حضانة اطفال جدة",
+     "تسجيل روضة اطفال جدة",
+     "حجز حضانة جدة",
+     "التسجيل في الروضة لاول مرة",
+     "طريقة التسجيل في روضة الاطفال",
+     "شروط التسجيل في الروضة",
+     "تسجيل روضة نظام نور",
+     "رابط تسجيل رياض الاطفال",
+     "حضانة مونتيسوري جدة تسجيل",
+     "حضانة الفيصلية تسجيل",
+     "montessori-ksa",
+     "حضانة مونتيسوري montessori-ksa",
+     "ارقام حضانات جدة",
+     "تواصل حضانة جدة"
+    ],
+    "notes": "Bottom-of-funnel + brand navigational. 'تسجيل/حجز' terms are ready-to-enroll — the site needs a prominent, indexable Register/سجل الآن CTA page (research shows parents literally look for a 'Register/Admission' button). 'نظام نور' is the Saudi MOE registration system parents associate with roundة enrollment — an FAQ clarifying licensing/registration builds trust. Brand terms (montessori-ksa, business name) should own their SERP via title tags, schema, and Google Business Profile. Also seed the brand name so it becomes a searched navigational term over time."
+   }
+  ],
+  "notes": "Compiled from 12 targeted WebSearch queries against live Saudi/Jeddah SERPs (July 2026). Total: ~135 keywords across 9 clusters (4 intents: local, commercial, informational, navigational) — exceeding the 60-100 target with real, observed search terms including misspellings and spelling variants Saudi parents actually type.\n\nKEY STRATEGIC FINDINGS FOR RANKING #1:\n1. COMPETITORS to displace: Little Blossom (littleblossomkids.com — dominates 'افضل حضانة جدة' + registration + Quran + Montessori-blend content), Kipina (kipinakids.com — English/bilingual), Qurra/قرة (qurrah.sa — working-mom/قرة program), Tabar (tabarcenter.com), plus directory sites yaschools.com, edarabia.com, thenurseryfinder.com, nurseriesworld.com, makanaa/wafyapp roundups. Little Blossom wins by out-publishing everyone on informational blog content — the business must match this with a blog.\n\n2. BIGGEST WINNABLE OPPORTUNITY: 'حي الفيصلية' local terms have almost NO dedicated nursery competition (SERP fills with Riyadh's الفيصلية + generic listings). Owning 'حضانة مونتيسوري حي الفيصلية جدة' is low-hanging and highly qualified. Also 'مونتيسوري جدة' specifically is thin — most Montessori results are Riyadh/other cities; Jeddah Montessori is under-served.\n\n3. SPELLING VARIANTS ARE MANDATORY: use all of مونتيسوري / منتسوري / مونتسوري and both جدة / جده across content, alt text, and meta — parents type all forms and each is a distinct query.\n\n4. CONTENT-PLAN PRIORITIES (article topics that double as SEO + funnel): (a) الفرق بين الحضانة والروضة والتمهيدي — maps to the 3 programs; (b) سن دخول الحضانة / متى ابدأ — maps to age tiers; (c) ما هو منهج مونتيسوري وفوائده — core authority; (d) انشطة مونتيسوري في البيت series — high-volume lead magnet; (e) كيف اختار حضانة امنة (safety checklist) — showcases standards; (f) اسعار/باقات transparent pricing page — captures high-intent price searches competitors hide; (g) دليل حضانات حي الفيصلية — local SEO hub.\n\n5. TRUST/CONVERSION LEVERS surfaced by research that should appear in copy + schema: 4.7★/71 reviews (LocalBusiness + AggregateRating schema), المرخصة/معتمدة (licensing), كاميرات مراقبة (CCTV), small class sizes, تحفيظ قرآن + عربي + انجليزي trilingual angle, and a clear سجل الآن / احجز جولة CTA.\n\n6. HOURS CAVEAT: business runs Sun-Thu 8-2, so do NOT chase 'دوام طويل / 6ص-8م / للموظفات دوام كامل' long-day terms dishonestly — target working-mom terms only where the actual schedule fits, or note after-school/half-day framing.\n\nRecommend a bilingual approach: Arabic clusters are primary (95% of local search), but the English cluster (nursery/Montessori/preschool Jeddah) is worth targeting on /en/ pages for expat/international-school-track parents who search in English."
+ },
+ "serp": {
+  "findings": [
+   {
+    "query": "حضانة جدة",
+    "contentType": "Directories + social-media guides + individual nursery homepages (no editorial 'best-of' authority page owns it)",
+    "observation": "SERP is dominated by aggregator directories and social guides, not any single nursery. Who ranks: yaschools.com (schools directory), mdares.ai (AI school directory), wafyapp.com (curated '10 nurseries for working moms' listicle), blog.makanaa.com (Jeddah nursery guide), plus a Facebook 'دليل حضانات أطفال جدة' page and an Instagram '@jeddah_daycares' guide. Individual nursery sites that break through: tabarcenter.com, kidsquare.sa, kipinakids.com (Kipina, Finnish curriculum, EN+AR). A Google Maps local pack almost certainly sits above these organic results for this geo-query. Dominant content type = third-party listings/listicles, so the head term is won by whoever gets INTO the directories AND wins the Maps pack — not by a homepage alone.",
+    "topResults": "facebook.com/daycare.jed, yaschools.com/schools/jeddah/nursery, instagram.com/jeddah_daycares, wafyapp.com curated list, blog.makanaa.com, tabarcenter.com, kidsquare.sa, kipinakids.com",
+    "gap": "No nursery owns an authoritative, on-site 'دليل / أفضل حضانات جدة' comparison hub — the head term is monetized by neutral directories. We can publish a genuinely useful, honestly-comparative Jeddah nursery guide/hub (neighborhood-by-neighborhood, age bands, fees ranges, how to choose) on montessori-ksa.com to capture informational intent, then internally funnel to our program pages. Also must get listed on yaschools, mdares.ai, wafyapp, thenurseryfinder and the FB/IG guides for referral + citation value."
+   },
+   {
+    "query": "حضانة مونتيسوري جدة",
+    "contentType": "National directory listings + non-Jeddah Montessori schools (Riyadh/UAE) + Instagram/X profiles — weak, non-local, exploitable",
+    "observation": "This is the single most exploitable query. The results are geographically diluted: thenurseryfinder.com (directory, incl. a Riyadh 'Smart Kids Montessori' listing), yaschools 'Kids Land Montessori' (Riyadh), bayut.com 'Canadian Montessori Nursery', and out-of-market Montessori schools in Abu Dhabi (themontessoricg.com) and Dubai (fsnmontessori.com), plus Riyadh 'Montessori House Academy'. The only Jeddah-specific Montessori brand surfacing is 'Bambini Montessori' — and it ranks via social (Instagram/X @b_montessorii, @bambini__montessori), NOT a strong website. No Jeddah Montessori nursery owns this with a real on-page-optimized site.",
+    "topResults": "thenurseryfinder.com/ar/city/jeddah, yaschools Kids Land Montessori (Riyadh), bayut.com Canadian Montessori Nursery, instagram/x bambini__montessori, fsnmontessori.com (Dubai), themontessoricg.com (Abu Dhabi), Montessori House Academy (Riyadh)",
+    "gap": "HUGE gap: no authoritative Jeddah-based Montessori nursery site ranks. Our clearest path to #1. Build a dedicated, deeply-optimized '/montessori' pillar page in Arabic explicitly targeting 'حضانة مونتيسوري جدة' + 'منتسوري جدة الفيصلية' — explain the Montessori method, our trained guides, prepared environment, age programs, with strong local (Jeddah + الفيصلية) signals, real photos, reviews schema, and FAQ. The current top competitor (Bambini) has only social presence — a proper site + GBP can outrank it. Also get listed on thenurseryfinder + yaschools under Montessori."
+   },
+   {
+    "query": "افضل حضانة في جدة",
+    "contentType": "Listicle / 'best-of' editorial content — one competitor (littleblossomkids) dominates with a content engine",
+    "observation": "This commercial-informational query is OWNED by littleblossomkids.com through a dedicated blog content strategy: they rank with multiple articles ('أفضل حضانات جدة 2024', 'أحسن وافضل حضانة في جدة 2025', 'حضانة لعمر الثلاث سنوات', 'حضانة دمج', 'نوادي صيفية', 'مركز تنمية مهارات', '7 معايير لاختيار الروضة'). Other ranking assets: yaschools, blog.makanaa.com, wafyapp '10 nurseries', supermama.me 'أفضل 9 روضات', tabarcenter.com, and the FB/IG guides. Little Blossom is the model competitor — they win the term by publishing keyword-targeted, year-stamped blog articles at scale, not just a homepage.",
+    "topResults": "littleblossomkids.com (multiple '/افضل-حضانة' + best-of articles), yaschools.com, blog.makanaa.com, littleblossomkids 2024 best list, wafyapp.com, supermama.me أفضل 9 روضات, tabarcenter.com",
+    "gap": "Little Blossom proves the winning tactic and shows it's beatable by out-publishing them. Gap: their content is generic 'American curriculum', NOT Montessori, and NOT الفيصلية-focused. We should replicate their blog-engine model but with a Montessori + Quran/Arabic + Al-Faisaliyyah angle and current 2026 year-stamping: publish 'أفضل حضانة مونتيسوري في جدة 2026', '7 معايير لاختيار حضانة', 'حضانة لعمر سنة/سنتين', 'الفرق بين المونتيسوري والمنهج التقليدي', 'أفضل حضانة قرآن وعربي في جدة'. This is Task #33/#34 territory — the article plan should mirror Little Blossom's URL patterns."
+   },
+   {
+    "query": "منتسوري جدة",
+    "contentType": "Montessori teacher-training + toy shops + Riyadh schools + method-explainer blogs — almost NO Jeddah nursery",
+    "observation": "Even weaker/less-commercial than 'حضانة مونتيسوري جدة'. Results skew to: montessoritrainingcenter.org (MCHA teacher training/diplomas), mw-toys.com + mw-douaa.blogspot (Montessori toys/materials shops), salla.sa training course, yaschools/mdares/schoolerkey 'Kids Land Montessori' (Riyadh), saudischoolsguide.com (method-explainer article), and Instagram 'bambini__montessori' as the only Jeddah nursery signal. Intent here is mixed (training + method + toys), and Google is filling the gap with non-nursery content because no Jeddah Montessori nursery has claimed it.",
+    "topResults": "montessoritrainingcenter.org, yaschools Kids Land Montessori (Riyadh), mw-toys.com, salla.sa training, saudischoolsguide.com method article, instagram.com/bambini__montessori",
+    "gap": "'منتسوري' (the common misspelling/transliteration) is unclaimed by any Jeddah nursery — Google shows training/toys/Riyadh instead. We should target BOTH spellings ('مونتيسوري' and 'منتسوري') on our pages and in a method-explainer article ('ما هي طريقة منتسوري ولماذا نتبعها في حضانتنا بجدة'). Winning the method-education intent (like saudischoolsguide.com does) with local branding lets us capture users before they know which nursery to pick, then convert to our الفيصلية location."
+   },
+   {
+    "query": "روضة اطفال جدة",
+    "contentType": "Directories + government (MOE) + neighborhood-specific 'best kindergarten' listicles",
+    "observation": "Broadens intent to kindergarten (روضة, 4-6y — our KG program). Ranking: yaschools (Jeddah nursery/KG + neighborhood pages like al-safa), littleblossomkids again ('افضل روضة أطفال في جدة حي الزهراء 2025', '7 معايير للروضات 2025'), sites.moe.gov.sa (government KG page — hard to displace but shows official intent), qurrah.sa (Qurrah childcare-center network / Qiwa-linked), mdares.ai 'روضة جدة النموذجية', tabarcenter.com, plus FB/IG guides. Notable: neighborhood-targeted articles (حي الزهراء, al-safa) rank — local micro-geo pages work.",
+    "topResults": "yaschools.com/schools/jeddah/nursery (+ /al-safa), littleblossomkids افضل روضة حي الزهراء, sites.moe.gov.sa, qurrah.sa/branches, mdares.ai روضة جدة النموذجية, tabarcenter.com",
+    "gap": "Neighborhood-level KG pages rank (Little Blossom uses حي الزهراء; yaschools uses al-safa) but NOBODY owns 'روضة أطفال حي الفيصلية'. We should build a dedicated الفيصلية-specific KG/روضة landing page + article ('أفضل روضة أطفال في حي الفيصلية جدة 2026'). Also register with qurrah.sa/Qiwa and ensure our KG (روضة 4-6y) program page targets 'روضة' terminology separately from 'حضانة', since Google treats them as distinct intents."
+   },
+   {
+    "query": "حضانة حي الفيصلية جدة",
+    "contentType": "Weak/thin — real-estate blogs, classified ads (Haraj), TikTok, and a Riyadh-district mismatch; NO authoritative nursery result",
+    "observation": "This hyperlocal query — our exact neighborhood — is the LOWEST-competition and most winnable. Google is confused/under-served: top result is actually yaschools 'حي الفيصلية in RIYADH' (wrong city — a ranking gap from lack of Jeddah content), plus real-estate/district blogs (goldenhost.co, blog.wasalt.sa, sa.sakan.co about الفيصلية as an investment district), daleli.sa directory, classified home-daycare ads on haraj.com.sa, a Facebook group asking for recommendations, and TikTok. There is NO purpose-built, authoritative Jeddah-Faisaliyyah nursery page ranking — only ads and district real-estate content.",
+    "topResults": "yaschools al-faisaliyah (RIYADH - mismatch), daleli.sa, goldenhost.co district blog, tiktok discover, haraj.com.sa home-daycare ads, facebook group post, sa.sakan.co district blog",
+    "gap": "Cleanest, fastest win available. Because Google can't even find a proper Jeddah-Faisaliyyah nursery (it serves a Riyadh page instead), a single well-optimized location page — 'حضانة ومونتيسوري في حي الفيصلية، جدة' with NAP, embedded Google Map, neighborhood name in H1/title/URL, driving directions, and local landmarks — can rank #1 fast. Pair with a strong GBP pinned to الفيصلية. This should be a top-priority page in the SEO build."
+   }
+  ],
+  "localFactors": "BIGGEST LOCAL RANKING FACTORS for a Jeddah nursery (ranked by leverage):\n\n1) GOOGLE BUSINESS PROFILE (highest leverage). Nearly every target query triggers a Google Maps local pack that sits ABOVE organic results, so the GBP is the #1 lever. Actions: fully complete the profile; correct primary category (Day care center / حضانة) plus secondary categories (Preschool, Montessori school, Kindergarten); exact-match business name + الفيصلية/جدة; accurate map pin in Al-Faisaliyyah; hours (Sun-Thu 8-2); phone; website; 20-30+ real photos (classrooms, prepared Montessori environment, staff, exterior); enable messaging; post weekly GBP updates; add attributes (programs, ages, languages Arabic/English). Proximity + relevance + prominence drive pack ranking — our الفيصلية pin gives strong proximity for hyperlocal queries.\n\n2) REVIEWS (volume + rate + recency + responses). Currently 4.7 star / 71 reviews — decent but beatable. Reviews are a top pack + trust signal. Actions: systematic review-generation (QR codes at pickup, WhatsApp requests to happy parents), aim to overtake competitors' counts, keep a steady recent flow (recency matters), and reply to EVERY review in Arabic with the keyword+neighborhood naturally included. Seed reviews that mention 'مونتيسوري', 'الفيصلية', 'قرآن وعربي' help topical relevance.\n\n3) NAP CONSISTENCY + LOCAL CITATIONS. Exact-match Name/Address/Phone across the web builds prominence. Actions: get listed with identical NAP on the directories that already rank — yaschools.com, mdares.ai, thenurseryfinder.com, daleli.sa, bayut.com/schools, wafyapp, and the FB/IG guides (daycare.jed, jeddah_daycares, schol262). Also Qurrah/Qiwa (qurrah.sa) and Google/Apple/Bing maps. Consistency is more important than volume — pick ONE canonical Arabic address format and use it everywhere.\n\n4) LOCALIZED ON-SITE CONTENT (the organic gap we can own). Competitors like littleblossomkids win by publishing neighborhood- and age-targeted articles; nobody owns الفيصلية. Actions: a dedicated الفيصلية location landing page (neighborhood in URL/title/H1, embedded map, LocalBusiness/Preschool schema with geo-coordinates, landmarks/directions), plus a blog engine mirroring Little Blossom's URL patterns but with a Montessori + Quran/Arabic + الفيصلية angle, year-stamped 2026.\n\n5) ARABIC ON-PAGE + BILINGUAL TECHNICAL SEO. The market searches in Arabic (and often the 'منتسوري' misspelling). Actions: primary content in Arabic with correct RTL, target BOTH 'مونتيسوري' and 'منتسوري' spellings, proper hreflang for ar/en (site is bilingual), Arabic title tags/meta/alt-text/schema, FAQ schema answering 'كم رسوم الحضانة', 'من أي عمر', 'هل يوجد قرآن'. Keep NAP and program names in Arabic to match query language.\n\n6) PROMINENCE / LINKS + ENGAGEMENT. Local backlinks and mentions (parenting blogs like supermama.me, makanaa.com, wafyapp features; local partnerships) and on-page engagement (dwell time, clicks-to-call, direction requests) reinforce both pack and organic. A genuinely useful Jeddah nursery guide hub earns links and internal-links our program pages.\n\nSTRATEGIC PRIORITY ORDER: (a) win the GBP + reviews for the Maps pack, (b) build the الفيصلية location page (lowest-competition, fastest organic win), (c) build the Montessori pillar page targeting 'حضانة مونتيسوري جدة' / 'منتسوري جدة' (biggest unclaimed head term), (d) launch the Little-Blossom-style blog engine for 'افضل حضانة' / 'روضة' informational terms, (e) secure directory citations for NAP + referral traffic."
+ },
+ "local": {
+  "findings": [
+   {
+    "query": "Google Business Profile optimization for 'حضانة مونتيسوري' Jeddah — highest-leverage local ranking lever",
+    "observation": "GBP is the #1 driver of Google Local Pack (map) rankings and it is 100% off-site, so it is not visible in the site HTML I inspected — it must be worked directly in the GBP dashboard. PRIORITIZED CHECKLIST: (1) Claim & verify the profile (video verification is now standard in KSA). (2) Primary category MUST be 'Preschool' / 'حضانة' — this single field is the biggest category-ranking signal; add secondary categories 'Kindergarten', 'Day care center', 'Educational institution', 'مدرسة تمهيدية'. (3) Business name = exact legal name 'حضانة مونتيسوري' with NO keyword stuffing (name-stuffing risks suspension but is the strongest ranking hack when the real name legitimately contains 'مونتيسوري' — an advantage here). (4) Fill 100% of fields: full address in حي الفيصلية, service area = جدة districts, hours Sun-Thu 8-2 + mark holidays, phone (match site: 0543068147 / 0541558173), website, WhatsApp booking link, opening date, 'Kids welcome'/'Identifies as women-owned' attributes if true. (5) Products/Services: create entries for each program (حضانة 1-2, تمهيدي 2-4, روضة 4-6, برنامج صيفي) with descriptions + prices. (6) Upload 20+ geotagged photos (exterior with signage, classrooms, Montessori materials, staff, logo) + a short video; refresh monthly — photo recency correlates with engagement. (7) Post GBP Updates/Offers weekly (enrollment open, summer program, events) — active posting lifts local ranking. (8) Turn on & respond to Q&A; seed 5-8 common parent questions. (9) Enable messaging. (10) Add booking/appointment link. Consistency of these fields with the website NAP is what compounds the ranking effect.",
+    "contentType": "off-site / GBP dashboard (not in site code)",
+    "topResults": "Site NAP verified: name حضانة مونتيسوري, area حي الفيصلية جدة, phones 0543068147 & 0541558173, email info@montessori-ksa.com, hours Sun-Thu 8-2 — these must match GBP field-for-field.",
+    "gap": "Cannot inspect the actual GBP from here — user must confirm it is claimed, category='Preschool', and NAP matches. This is the single biggest unverified ranking factor."
+   },
+   {
+    "query": "NAP consistency and hasMap/geo completeness across website and citations",
+    "observation": "NAP on the site is already consistent and present in the footer/contact and in JSON-LD (name, PostalAddress, telephone, GeoCoordinates all found). ACTION CHECKLIST: (1) Lock a single canonical NAP string in Arabic AND a transliterated English version and use it identically everywhere (site, GBP, every directory). Decide one canonical phone as the 'primary' (GBP + schema) even though two are displayed. (2) Add the physical street/building to the address where possible — 'حي الفيصلية' alone is district-level; a precise street address + building strengthens proximity relevance. (3) I found geo coordinates and hasMap is currently MISSING from the schema — add 'hasMap' pointing to the exact Google Maps place URL and embed the real GBP map (not a generic pin) in #contact. (4) Ensure the EN page (/en/, returns 200) carries the SAME NAP with matching structured data, not a divergent translation. (5) Add tel: and https://wa.me/ links (already partly present) with the primary number. Inconsistent or district-only addresses are the most common reason KSA nurseries fail the proximity/relevance test in the map pack.",
+    "contentType": "on-site HTML + JSON-LD (verified) + off-site citations",
+    "topResults": "Verified in home.html JSON-LD: PostalAddress + GeoCoordinates + telephone + City present; 'hasMap' absent. Footer shows both phones, email, hours.",
+    "gap": "hasMap missing from schema; address is district-level not street-level; need to confirm EN page NAP parity."
+   },
+   {
+    "query": "Review generation and velocity strategy to beat 4.7★/71 reviews competitors",
+    "observation": "Schema currently reports ratingValue 4.7, reviewCount 71 — good but beatable; review count, velocity, recency, and keyword content of reviews are strong local-pack signals. CHECKLIST: (1) Generate a short GBP review link (g.page/r/… 'write a review' shortlink) and put it behind a QR code at pickup, on WhatsApp auto-replies, in the parent portal (/me), and on printed enrollment packets. (2) Systematize the ask: message every satisfied parent at natural high points (end of first month, after events, term end). Aim for a steady 4-8 new reviews/month — consistent velocity beats a one-time burst (which can trip spam filters). (3) Coach parents to mention keywords naturally: 'مونتيسوري', 'حضانة', 'حي الفيصلية', 'جدة', a program name — keyword-rich reviews boost relevance for those terms. (4) Respond to EVERY review within 24-48h in Arabic (and English for EN reviews), repeating the business name + district in some replies. (5) Never buy/incentivize reviews (Google + Saudi consumer rules). (6) Seed reviews on secondary platforms too (see citations finding). (7) When reviewCount grows, update the AggregateRating in the JSON-LD to stay truthful and consistent with GBP. Target: pass 100+ reviews and maintain 4.7★+ to dominate the map pack.",
+    "contentType": "off-site (GBP reviews) + on-site schema sync",
+    "topResults": "Live schema: ratingValue=4.7, reviewCount=71. Site already has a 'آراؤكم على Google' reviews section (H2 found).",
+    "gap": "No visible review-request automation; keep schema AggregateRating in sync with GBP as count changes."
+   },
+   {
+    "query": "Local citations and directories relevant to nurseries in Saudi Arabia / Jeddah",
+    "observation": "Citations (consistent NAP listings) build local trust/authority. PRIORITIZED KSA-RELEVANT LIST: (1) Google Business Profile (done above) — foundational. (2) Apple Maps / Apple Business Connect — large iOS share in KSA. (3) Bing Places. (4) daleeli / Saudi business directories: Yellow Pages Saudi Arabia (yellowpages.com.sa), Daleel (دليل), Saudi Yellow Pages, Locanto SA, Waseet (الوسيط). (5) Maps aggregators: 2GIS (widely used in KSA), Foursquare. (6) Education-specific: Noon/education portals, local Jeddah parenting/nursery listing sites and Facebook 'nurseries in Jeddah' groups, Mumzworld/parenting community listings. (7) Social profiles as citations: Instagram, Facebook, TikTok, Snapchat (huge in KSA), X — all with identical NAP in bio and linked from the site's sameAs (sameAs already present in schema). (8) A verified profile/link consistency with any Ministry of Education / Human Resources licensing directory if the nursery is licensed (Qurrah / وزارة الموارد البشرية nursery registry) — a government citation is high-trust. ACTION: build/claim each with the EXACT canonical NAP; audit for any old/duplicate listings with mismatched phone or address and fix/merge them.",
+    "contentType": "off-site directories",
+    "topResults": "Site schema already has a sameAs array (Instagram/Facebook confirmed on site) — extend it as new citations go live.",
+    "gap": "No citation audit exists yet; Snapchat/TikTok/2GIS/Apple Maps/Saudi directories likely unclaimed. KSA-specific gov licensing listing (Qurrah) not confirmed."
+   },
+   {
+    "query": "On-page local signals and site architecture — biggest ORGANIC ranking bottleneck",
+    "observation": "CRITICAL FINDING: the site is a single-page design — the only internal links are hash anchors (#philosophy, #programs, #contact, etc.) plus /en/ and /login/. There are ZERO indexable topical subpages. This is the #1 organic-ranking limitation: Google can rank only the homepage, for only a couple of terms. Meta basics are already good (title 'حضانة مونتيسوري جدة | روضة ومونتيسوري في حي الفيصلية', localized meta description, OG tags, canonical, one clean H1, 8× H2/12× H3, all 5 images have alt text, robots.txt + sitemap.xml present, hreflang ar/en/x-default). CHECKLIST: (1) Break the one-pager into real indexable URLs, each with unique title/meta/H1 targeting one intent: /programs/nursery-حضانة, /programs/pre-k-تمهيدي, /programs/kindergarten-روضة, /programs/summer, /montessori-method-منهج, /about, /contact, /admissions-التسجيل, and an /en/ mirror of each. (2) Create a location-intent landing page targeting 'حضانة في حي الفيصلية' / 'حضانة مونتيسوري جدة' with the map, directions, nearby-landmarks text, and district-specific copy. (3) Keep the one H1 keyword-relevant (current H1 is a poetic tagline with no keyword — add the primary keyword to the H1 or to a prominent H2). (4) Add descriptive, keyword-rich alt text referencing Montessori activities + Jeddah. (5) Embed the real GBP map. (6) Ensure every new page is in sitemap.xml and internally linked. Fixing architecture is what unlocks ranking for the long tail of nursery/Montessori searches beyond just the brand.",
+    "contentType": "on-site HTML (verified)",
+    "topResults": "home.html: title/meta/OG/canonical/hreflang all present and localized; 1 H1 (poetic, no keyword), 8 H2, 12 H3; 5/5 imgs have alt; robots.txt + sitemap.xml + /en/ all return 200. Internal links = hash anchors only.",
+    "gap": "No topical subpages exist — homepage is the ONLY rankable URL. H1 lacks the primary keyword. No dedicated district/location page. This is the top organic priority."
+   },
+   {
+    "query": "Schema markup: LocalBusiness/Preschool, FAQ, BreadcrumbList completeness",
+    "observation": "STRONG BASELINE already live: one JSON-LD block of @type Preschool (a LocalBusiness subtype — correct choice) containing AggregateRating (4.7/71), PostalAddress, GeoCoordinates, OpeningHoursSpecification, priceRange ($$), telephone, sameAs, areaServed, review, and City. GAPS + CHECKLIST: (1) Add 'hasMap' (GeoCoordinates present but hasMap missing) + 'url' + '@id' (stable canonical entity id) + 'image'/'logo' + 'currenciesAccepted'/'paymentAccepted'. (2) Add FAQPage schema (fees, ages accepted, hours, Montessori method, registration steps, transport, meals) — this both wins FAQ rich results and captures voice/AI-search queries; the site has no FAQ section yet. (3) Add BreadcrumbList schema once real subpages exist (impossible now because there are no sub-URLs — another reason to build the page architecture first). (4) Consider Course/EducationalOccupationalProgram schema on each program page. (5) Mirror the schema on /en/ in English. (6) Keep AggregateRating values identical to GBP to avoid inconsistency penalties. Priority order: FAQPage now → hasMap/@id/image now → BreadcrumbList after subpages are built.",
+    "contentType": "on-site JSON-LD (verified)",
+    "topResults": "Verified @types in home.html: Preschool, AggregateRating, PostalAddress, GeoCoordinates, City, OpeningHoursSpecification. Fields present: geo, openingHours, aggregateRating, review, priceRange, address, telephone, sameAs, areaServed. Missing: hasMap.",
+    "gap": "No FAQPage schema, no BreadcrumbList (blocked until subpages exist), hasMap/@id/logo/image absent. EN schema parity unconfirmed."
+   },
+   {
+    "query": "Internal linking strategy for a nursery site",
+    "observation": "Currently internal linking = same-page hash anchors only (no page-to-page equity flow), because there are no subpages. Once architecture is built, CHECKLIST: (1) Contextually link the homepage down to each program page and to the Montessori-method page using keyword-rich Arabic anchor text ('حضانة 1-2 سنة', 'منهج مونتيسوري', 'التسجيل'). (2) Link program pages to each other ('related programs') and up to /admissions. (3) Every blog article links to the most relevant program/service page and to 1-2 sibling articles (topic-cluster hub-and-spoke). (4) Add a persistent header/footer nav to the real pages so every page is ≤2 clicks from home. (5) Breadcrumb navigation on every subpage (pairs with BreadcrumbList schema). (6) Mirror the internal-link graph on the EN tree and cross-link ar↔en only via hreflang, not body links. Internal linking is what distributes the authority earned by reviews/citations across the new pages so they can actually rank.",
+    "contentType": "on-site (planned, depends on architecture)",
+    "topResults": "home.html internal links: #philosophy #pillars #day #programs #gallery #contact #register #main #top, plus /en/ and /login/ only.",
+    "gap": "No page-to-page internal links exist because no subpages exist; blog cluster linking not yet built (matches pending SEO Phase 3)."
+   },
+   {
+    "query": "Content-cluster strategy to rank #1 for nursery & Montessori searches in Jeddah",
+    "observation": "The site has no blog/content yet (the task list confirms SEO Phase 2/3 = write articles + build blog are still pending). RECOMMENDED CLUSTER MODEL — 3 pillar pages + supporting articles, each in Arabic (primary) with EN mirrors: PILLAR 1 'منهج مونتيسوري' (What Montessori is) → articles: montessori vs traditional حضانة, the prepared environment, montessori materials explained, montessori at home, ages & sensitive periods. PILLAR 2 'اختيار حضانة في جدة' (Choosing a nursery in Jeddah) → articles: how to choose a nursery in حي الفيصلية, questions to ask on a nursery tour, nursery fees in Jeddah guide, licensing/safety to check, settling-in / أول يوم في الحضانة. PILLAR 3 'التطور المبكر / رعاية الطفل' (early childhood) → articles: توأمة اللغة العربية والإنجليزية, potty training, تحفيظ القرآن للأطفال, healthy nursery meals, screen-time guidance. LOCAL-INTENT pages (highest commercial value, build first): 'حضانة مونتيسوري في حي الفيصلية', 'أفضل حضانة في جدة', 'روضة أطفال جدة', 'برنامج صيفي للأطفال جدة'. EXECUTION CHECKLIST: (1) Do keyword research on Arabic + transliterated terms and question phrasing (matches your in-progress Phase 1). (2) Publish the 4 local-intent commercial pages FIRST (fastest ROI), then pillars, then supporting articles at ~1-2/week for freshness. (3) Each article: unique title/meta, one H1, FAQ block + FAQPage schema, internal links to a program page, real photos with alt text, author/updated date. (4) Target featured-snippet/question formats to win voice and AI answers. (5) Full EN mirror with hreflang. This cluster is what converts the strong local signals into #1 organic + map-pack dominance across the full range of nursery/Montessori queries, not just the brand name.",
+    "contentType": "on-site content (to be created)",
+    "topResults": "Task list confirms Phase 1 (keyword research + article plan) in progress; Phase 2 (write articles) and Phase 3 (build blog + technical SEO) pending — this plan slots directly into that pipeline.",
+    "gap": "No blog/articles exist yet; no local-intent landing pages yet; keyword research not yet finalized. Build local-intent commercial pages before informational articles for fastest ranking ROI."
+   }
+  ],
+  "localFactors": "Business verified live at montessori-ksa.com: name حضانة مونتيسوري, Jeddah / حي الفيصلية, phones 0543068147 & 0541558173, email info@montessori-ksa.com, hours Sun-Thu 8-2, 4.7★/71 reviews. STRONG existing foundation (do not rebuild): valid Preschool JSON-LD with AggregateRating/geo/openingHours/priceRange/sameAs/areaServed, localized title+meta, OG tags, canonical, hreflang ar/en/x-default, robots.txt, sitemap.xml, working /en/ mirror, all images have alt, GSC already linked (per task history). KSA-SPECIFIC LEVERS: Snapchat & TikTok are dominant social/citation platforms in Saudi Arabia (must be claimed with matching NAP); 2GIS and Apple Maps have significant KSA usage; a government nursery-licensing directory listing (Qurrah / وزارة الموارد البشرية) is a high-trust citation if licensed; Arabic is the primary search language so all schema, reviews-keyword coaching, content, and anchors should lead in Arabic with EN mirrors via hreflang. PRIORITY ORDER (highest impact first): 1) GBP claim + Preschool category + full fields + weekly posts (map-pack #1 lever, currently unverifiable off-site), 2) review velocity system (4-8/mo, keyword-coached, respond to all), 3) break single-page site into real indexable subpages + local-intent landing pages (the #1 organic bottleneck — homepage is currently the ONLY rankable URL), 4) add FAQPage + hasMap/@id schema now and BreadcrumbList after subpages, 5) build KSA citations (Apple Maps, 2GIS, Snapchat/TikTok, Saudi directories, gov listing) with exact canonical NAP, 6) internal-linking + content-cluster (local-intent pages first, then 3 pillars + supporting articles), keeping schema AggregateRating in sync with GBP. THREE UNVERIFIABLE-FROM-CODE items the user must confirm: GBP is claimed with category='Preschool'; no duplicate/mismatched citations exist; street-level (not just district) address is used consistently."
+ },
+ "strategyNotes": "Strategy mirrors the proven Little Blossom blog-engine model but with an unbeaten differentiator: Montessori + Quran/Arabic + Al-Faisaliyyah (الفيصلية) + Jeddah local signals, year-stamped 2026. Priority tiers: (1) MONEY/LOCAL pages — dedicated URLs for حضانة جدة, حضانة مونتيسوري جدة (biggest exploitable gap — no local Montessori site ranks), حضانة الفيصلية (low competition, winnable fast), plus انجليزي/تحفيظ combos; (2) COMMERCIAL — أفضل حضانة roundup hub + transparent أسعار page (competitors hide pricing = differentiation) + المرخصة/المعتمدة trust page; (3) INFORMATIONAL pillars that win featured snippets (ما هو مونتيسوري, الفرق بين الحضانة والتمهيدي والروضة, سن دخول الحضانة) and funnel to program/local pages. Internal-linking hubs: the Montessori pillar and the \"أفضل حضانات جدة\" guide link down to all program+local pages; informational articles link up to money pages. Common misspelling 'جده' worked into content/meta. Every brief targets a distinct head keyword — no cannibalization: local pages own geo terms, one pricing page owns all fee terms, one age page owns all سن/متى terms, one difference page owns all الفرق بين terms. All money/local briefs carry local-business + review (4.7/71) + FAQ schema recommendations. Off-site: get listed on yaschools, mdares.ai, thenurseryfinder, wafyapp, edarabia, and win the Google Maps local pack via GBP for the geo head terms."
+}

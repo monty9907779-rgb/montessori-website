@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>الصفحة غير موجودة | روضة كوكب الطفل الحر</title>
+<meta name="robots" content="noindex, nofollow"/>
+<link rel="icon" href="/logo.png"/>
+<style>
+:root{
+  --surface-1:#0A0D12;
+  --surface-2:#0F131C;
+  --surface-3:#161D2B;
+  --accent:#38BDF8;
+  --text:#F8FAFC;
+  --text-dim:#94A3B8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:system-ui,-apple-system,sans-serif;
+  background:var(--surface-1);
+  color:var(--text);
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:clamp(1rem,5vw,3rem);
+  line-height:1.6;
+}
+main{
+  background:var(--surface-2);
+  border-radius:clamp(1rem,2vw,2rem);
+  padding:clamp(2rem,8vw,4rem);
+  max-width:42rem;
+  text-align:center;
+}
+h1{
+  font-size:clamp(3rem,12vw,6rem);
+  color:var(--accent);
+  font-weight:700;
+  letter-spacing:-0.02em;
+  margin-bottom:1rem;
+}
+h2{
+  font-size:clamp(1.5rem,4vw,2rem);
+  margin-bottom:1.5rem;
+  font-weight:600;
+}
+p{
+  color:var(--text-dim);
+  font-size:clamp(1rem,2.5vw,1.125rem);
+  margin-bottom:2rem;
+}
+.links{
+  display:flex;
+  gap:1rem;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-top:2rem;
+}
+a{
+  display:inline-block;
+  padding:1rem 2rem;
+  background:var(--surface-3);
+  color:var(--text);
+  text-decoration:none;
+  border-radius:999px;
+  font-weight:500;
+  transition:all 0.2s;
+}
+a:hover{
+  background:var(--accent);
+  color:var(--surface-1);
+  transform:translateY(-2px);
+}
+a.primary{
+  background:var(--accent);
+  color:var(--surface-1);
+}
+a.primary:hover{
+  background:#22D3EE;
+}
+</style>
+</head>
+<body>
+<main>
+<h1>404</h1>
+<h2>الصفحة غير موجودة</h2>
+<p>عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.</p>
+<div class="links">
+<a href="/" class="primary">الصفحة الرئيسية</a>
+<a href="/blog/">المدونة</a>
+<a href="https://wa.me/966541558173">تواصل معنا</a>
+</div>
+</main>
+</body>
+</html>

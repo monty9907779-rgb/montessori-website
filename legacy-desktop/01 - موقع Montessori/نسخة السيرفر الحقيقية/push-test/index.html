@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>تجربة الإشعارات — روضة كوكب الطفل الحر</title>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#184e3e"/>
+<style>
+  :root { --g:#184e3e; --bg:#faf6ee; --ink:#1e2b26; }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);
+    font-family:system-ui,"Segoe UI",Tahoma,sans-serif;padding:20px;
+    display:flex;align-items:center;justify-content:center}
+  .card{background:#fff;border-radius:20px;padding:24px;max-width:520px;width:100%;
+    box-shadow:0 8px 30px rgba(0,0,0,.08)}
+  h1{font-size:20px;margin:0 0 6px}
+  p{line-height:1.75;margin:10px 0;font-size:15px}
+  .muted{color:#5d6b64;font-size:13.5px}
+  button{width:100%;padding:15px;border:0;border-radius:14px;background:var(--g);color:#fff;
+    font-size:16px;font-weight:700;font-family:inherit;margin-top:14px}
+  button:disabled{opacity:.5}
+  .step{background:#f2f7f4;border-radius:14px;padding:14px;margin:14px 0;font-size:14px}
+  .step b{color:var(--g)}
+  #out{margin-top:16px;padding:14px;border-radius:12px;font-size:14px;display:none;line-height:1.7}
+  .ok{background:#e7f6ee;color:#0f5132;display:block!important}
+  .bad{background:#fdeaea;color:#842029;display:block!important}
+  code{background:#eef2f0;padding:2px 6px;border-radius:6px;font-size:12.5px;direction:ltr;display:inline-block}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔔 تجربة الإشعارات</h1>
+  <p class="muted">صفحة اختبار داخلية — للتأكد إن الإشعارات بتوصل الجوال من غير أي اشتراك مدفوع.</p>
+
+  <div class="step" id="ios-step">
+    <b>لو معاك آيفون — الخطوة دي إجبارية:</b><br/>
+    لازم تضيف الصفحة للشاشة الرئيسية <b>الأول</b>، وتفتحها من الأيقونة، وبعدين تضغط الزرار.
+    آبل مبتسمحش بالإشعارات وإنت في سفاري عادي.<br/><br/>
+    اضغط زر المشاركة <b>􀈂</b> بالأسفل ← <b>«إضافة إلى الشاشة الرئيسية»</b>
+  </div>
+
+  <button id="btn">تفعيل الإشعارات على الجهاز ده</button>
+  <div id="out"></div>
+</div>
+
+<script>
+const out = document.getElementById('out');
+const btn = document.getElementById('btn');
+const show = (cls, html) => { out.className = cls; out.innerHTML = html; };
+
+// على آيفون الإشعارات مش هتشتغل إلا لو الصفحة متفتحة كتطبيق مثبّت
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const standalone = window.navigator.standalone === true ||
+  window.matchMedia('(display-mode: standalone)').matches;
+if (!isIOS) document.getElementById('ios-step').style.display = 'none';
+
+function urlB64(s) {
+  const pad = '='.repeat((4 - s.length % 4) % 4);
+  const raw = atob((s + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+btn.onclick = async () => {
+  btn.disabled = true;
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      throw new Error('المتصفح ده مش بيدعم إشعارات الويب. على الآيفون لازم iOS 16.4 أو أحدث.');
+    }
+    if (isIOS && !standalone) {
+      throw new Error('لازم تضيف الصفحة للشاشة الرئيسية وتفتحها من الأيقونة الأول — دي شرط من آبل.');
+    }
+
+    show('', 'بنسجّل…');
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') throw new Error('رفضت الإذن. لازم تسمح بالإشعارات عشان تشتغل.');
+
+    const { key } = await (await fetch('/push/vapid')).json();
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64(key) });
+    }
+
+    const r = await fetch('/push/web/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ audience: 'test', subscription: sub.toJSON() }),
+    });
+    if (!r.ok) throw new Error('السيرفر رفض الاشتراك (' + r.status + ')');
+
+    show('ok', '✅ <b>تمام! الجهاز ده اتسجّل.</b><br/>' +
+      'اقفل الصفحة دلوقتي (أو اقفل الجوال) وقول لكلود يبعت لك إشعار تجربة.<br/><br/>' +
+      '<span class="muted">خدمة الإشعارات: <code>' + new URL(sub.endpoint).host + '</code></span>');
+  } catch (e) {
+    show('bad', '❌ ' + (e && e.message ? e.message : e));
+    btn.disabled = false;
+  }
+};
+</script>
+</body>
+</html>

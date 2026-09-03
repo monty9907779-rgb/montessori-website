@@ -1,0 +1,16 @@
+{
+  "name": "مونتيسوري — المعلمة",
+  "short_name": "المعلمة",
+  "lang": "ar", "dir": "rtl",
+  "start_url": "/staff/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf6ee",
+  "theme_color": "#184e3e",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

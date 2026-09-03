@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<title>توزيع الأدوار | حضانة مونتيسوري</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+/* ---- roles page-specific ---- */
+.search-wrap{position:relative;margin-bottom:var(--s5)}
+.search-wrap > svg{position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);
+  width:20px;height:20px;color:var(--muted);pointer-events:none}
+.search-wrap .input{padding-inline-start:46px}
+.search-wrap .clear{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--muted)}
+.search-wrap .clear:hover{background:var(--sand);color:var(--forest)}
+.search-wrap .clear svg{width:18px;height:18px}
+.search-wrap.has-val .clear{display:flex}
+
+.u-card{margin-bottom:12px}
+.u-card.needs::before{content:"";position:absolute;inset-inline-start:0;top:16px;bottom:16px;width:4px;
+  border-radius:4px;background:var(--danger)}
+.u-card{position:relative}
+.u-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.u-top .who{flex:1;min-width:0}
+.u-top .who .nm{font-size:1.05rem;font-weight:800;color:var(--forest);line-height:1.3;word-break:break-word}
+.u-top .who .lg{color:var(--muted);font-size:.85rem;word-break:break-word;margin-top:1px}
+.u-top .who .linked{display:inline-flex;align-items:center;gap:6px;margin-top:7px;font-size:.82rem;
+  color:var(--ink-2);background:var(--sand);padding:4px 11px;border-radius:var(--pill);font-weight:600}
+.u-top .who .linked svg{width:14px;height:14px;color:var(--sage);flex:none}
+
+.owner-note{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:var(--r-sm);
+  background:var(--sand);color:var(--ink-2);font-size:.9rem;font-weight:600}
+.owner-note svg{width:18px;height:18px;color:var(--amber);flex:none}
+
+.u-form{display:flex;flex-direction:column;gap:10px}
+.u-form .rowfields{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:560px){.u-form .rowfields{grid-template-columns:1fr 1fr}}
+.u-form .fld > label{display:block;font-weight:700;font-size:.82rem;color:var(--ink-2);margin-bottom:5px}
+.u-form .stud-fld.hide{display:none}
+.u-form .btn{align-self:flex-start}
+@media(max-width:559px){.u-form .btn{align-self:stretch}}
+
+.note-strip{display:flex;align-items:flex-start;gap:10px;background:var(--info-bg);color:#2b5c72;
+  border-radius:var(--r-sm);padding:12px 15px;font-size:.9rem;line-height:1.6;margin-bottom:var(--s5)}
+.note-strip svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--info)}
+.no-results{padding:34px 20px}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main app-narrow" id="boot"></div></div>
+
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null, q='';
+var app=document.getElementById('app');
+
+/* role value -> arabic label / tag variant (new design system) */
+var ROLE_LABEL={ owner:'مالكة', manager:'مديرة', mgr:'مديرة', teacher:'مدرّسة', teach:'مدرّسة', worker:'عاملة', work:'عاملة', parent:'ولي أمر', none:'بدون دور' };
+/* map backend cls (t-*) to design-system tag--* variant */
+var CLS_MAP={ 't-owner':'owner','t-mgr':'mgr','t-teach':'teach','t-work':'work','t-parent':'parent','t-none':'none' };
+function tagVariant(u){
+  if(u.cls && CLS_MAP[u.cls]) return CLS_MAP[u.cls];
+  if(u.is_owner) return 'owner';
+  return 'none';
+}
+function initial(name){ return (String(name||'؟').trim().charAt(0)||'؟'); }
+
+/* ---------- entry ---------- */
+if(!TOKEN){ gate(); }
+else { boot(); }
+
+/* ---------- gate (logged-out / expired) — points to /login/ only ---------- */
+function gate(){
+  app.innerHTML='';
+  var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'توزيع الأدوار',body:'هذه الصفحة للإدارة فقط. سجّلي دخولك كمالكة أو مديرة للمتابعة.'});
+}
+
+/* ---------- net error (retry) ---------- */
+function netError(){
+  app.innerHTML='';
+  var m=document.createElement('div'); app.appendChild(m); m.className='gate';
+  m.innerHTML='<div class="gate__card"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+    '<h2>تعذّر الاتصال</h2><p>تحقّقي من اتصالك بالإنترنت ثم أعيدي المحاولة.</p>'+
+    '<button class="btn btn--primary btn--block btn--lg" id="retry">'+I('refresh')+' إعادة المحاولة</button>'+
+    '<div style="margin-top:12px"><a class="btn btn--ghost btn--block" href="/">'+I('home')+' رجوع للموقع</a></div></div>';
+  m.querySelector('#retry').addEventListener('click', boot);
+}
+
+/* ---------- boot (skeleton -> data) ---------- */
+function boot(){
+  app.innerHTML=
+    NS.appbar({sub:'الأدوار', nav:NS.adminNav('roles')})+
+    '<main class="app-main app-narrow" id="main">'+
+      '<div class="page-head"><h1>توزيع الأدوار</h1><div class="sub">حدّدي دور كل مستخدم واربطي أولياء الأمور بأطفالهم.</div></div>'+
+      '<div class="skel skel-line" style="height:52px;border-radius:12px;margin-bottom:24px"></div>'+
+      NS.skelCard()+NS.skelCard()+NS.skelCard()+
+    '</main>';
+  NS.wireLogout('mt');
+  NS.api('/api/roles/users',{mt:TOKEN}).then(function(d){
+    if(!d || d.ok===false){ NS.clearToken('mt'); gate(); return; }
+    DATA=d; render();
+  }).catch(function(err){
+    if(err.type==='auth'){ NS.clearToken('mt'); gate(); }
+    else { netError(); }
+  });
+}
+
+/* ---------- render shell ---------- */
+function render(){
+  app.innerHTML=
+    NS.appbar({sub:'الأدوار', nav:NS.adminNav('roles')})+
+    '<main class="app-main app-narrow" id="main">'+
+      '<div class="page-head between" style="flex-wrap:wrap">'+
+        '<div><h1>توزيع الأدوار</h1>'+
+          '<div class="sub">'+(DATA.manager?('مسجّلة الدخول: '+NS.esc(DATA.manager)):'حدّدي دور كل مستخدم واربطي أولياء الأمور بأطفالهم.')+'</div></div>'+
+        '<button class="btn btn--ghost btn--sm" id="refresh">'+I('refresh')+' تحديث</button>'+
+      '</div>'+
+      '<div class="note-strip">'+I('info')+
+        '<span>أي شخص يسجّل الدخول عبر Google لأول مرة يظهر هنا بحالة «بدون دور» — اختاري دوره واضغطي «تعيين». حساب المالكة محمي ولا يمكن تعديله.</span></div>'+
+      '<div id="attention"></div>'+
+      '<div class="search-wrap" id="searchWrap">'+I('search')+
+        '<input class="input" id="q" type="search" inputmode="search" placeholder="ابحثي بالاسم أو البريد..." autocomplete="off"/>'+
+        '<button class="clear" id="clearQ" type="button" aria-label="مسح البحث">'+I('x')+'</button>'+
+      '</div>'+
+      '<div id="list"></div>'+
+    '</main>';
+  NS.wireLogout('mt');
+  document.getElementById('refresh').addEventListener('click', function(){ this.classList.add('is-loading'); boot(); });
+  var qi=document.getElementById('q'), sw=document.getElementById('searchWrap');
+  qi.addEventListener('input', function(){
+    q=qi.value.trim().toLowerCase();
+    sw.classList.toggle('has-val', !!qi.value);
+    list();
+  });
+  document.getElementById('clearQ').addEventListener('click', function(){
+    qi.value=''; q=''; sw.classList.remove('has-val'); list(); qi.focus();
+  });
+  attention();
+  list();
+}
+
+/* ---------- attention: count of role-less users ---------- */
+function attention(){
+  var box=document.getElementById('attention'); if(!box) return;
+  var none=(DATA.users||[]).filter(function(u){ return !u.is_owner && tagVariant(u)==='none'; });
+  if(!none.length){ box.innerHTML=''; return; }
+  box.innerHTML=
+    '<button type="button" class="banner banner--warn" style="cursor:pointer;width:100%;text-align:inherit;font:inherit;color:inherit" id="focusNone">'+I('alert')+
+      '<span><b>'+none.length+'</b> '+(none.length===1?'مستخدم بحاجة لتعيين دور':'مستخدمين بحاجة لتعيين دور')+'</span></button>';
+  var focusNone=document.getElementById('focusNone');
+  function scrollToNeeds(){
+    var first=document.querySelector('.u-card.needs');
+    if(first){ first.scrollIntoView({behavior:'smooth',block:'center'}); }
+  }
+  focusNone.addEventListener('click', scrollToNeeds);
+  focusNone.addEventListener('keydown', function(e){
+    if(e.key==='Enter'||e.key===' '||e.key==='Spacebar'){ e.preventDefault(); scrollToNeeds(); }
+  });
+}
+
+/* ---------- list (filtered) ---------- */
+function list(){
+  var C=document.getElementById('list');
+  var users=DATA.users||[];
+  if(!users.length){
+    C.innerHTML='<div class="card card--pad">'+NS.empty('users','لا يوجد مستخدمون بعد','سيظهر هنا كل من يسجّل الدخول عبر Google.')+'</div>';
+    return;
+  }
+  var shown=users.filter(function(u){
+    if(!q) return true;
+    return (String(u.name||'').toLowerCase().indexOf(q)>=0) || (String(u.login||'').toLowerCase().indexOf(q)>=0);
+  });
+  if(!shown.length){
+    C.innerHTML='<div class="card card--pad no-results">'+NS.empty('search','لا نتائج مطابقة','جرّبي بحثاً آخر بالاسم أو البريد.')+'</div>';
+    return;
+  }
+  var hasStudents=(DATA.students||[]).length>0;
+  var studOpts='<option value="">— اختاري الطفل —</option>'+
+    (DATA.students||[]).map(function(s){ return '<option value="'+NS.attr(s.id)+'">'+NS.esc(s.name)+'</option>'; }).join('');
+
+  C.innerHTML=shown.map(function(u){ return card(u, studOpts, hasStudents); }).join('');
+
+  // wire each non-owner card
+  shown.forEach(function(u){
+    if(u.is_owner) return;
+    var root=document.getElementById('u-'+u.id); if(!root) return;
+    var roleSel=root.querySelector('.role-sel');
+    var studFld=root.querySelector('.stud-fld');
+    var btn=root.querySelector('.assign-btn');
+    function syncStud(){ studFld.classList.toggle('hide', roleSel.value!=='parent'); }
+    roleSel.addEventListener('change', syncStud);
+    syncStud();
+    btn.addEventListener('click', function(){ assign(u, root); });
+  });
+}
+
+/* ---------- one user card ---------- */
+function card(u, studOpts, hasStudents){
+  var v=tagVariant(u);
+  var needs = !u.is_owner && v==='none';
+  var h='<div class="card card--pad u-card'+(needs?' needs':'')+'" id="u-'+NS.attr(u.id)+'">'+
+    '<div class="u-top">'+
+      '<span class="avatar avatar--sm">'+NS.esc(initial(u.name))+'</span>'+
+      '<div class="who">'+
+        '<div class="nm">'+NS.esc(u.name)+'</div>'+
+        '<div class="lg">'+NS.esc(u.login)+'</div>'+
+        (u.linked?'<span class="linked">'+I('user')+' مرتبط بـ: '+NS.esc(u.linked)+'</span>':'')+
+      '</div>'+
+      '<span class="tag tag--'+v+'">'+NS.esc(u.role||ROLE_LABEL[v]||'')+'</span>'+
+    '</div>';
+
+  if(u.is_owner){
+    h+='<div class="owner-note">'+I('shield')+' حساب المالكة محمي — لا يمكن تعديل دوره.</div>';
+  } else {
+    h+='<div class="u-form">'+
+      '<div class="rowfields">'+
+        '<div class="fld"><label>الدور</label>'+
+          '<select class="select role-sel">'+
+            '<option value="teacher">مدرّسة</option>'+
+            '<option value="worker">عاملة</option>'+
+            '<option value="parent"'+(hasStudents?'':' disabled')+'>ولي أمر</option>'+
+          '</select>'+
+          (hasStudents?'':'<div class="lg" style="color:var(--muted);font-size:.8rem;margin-top:5px">سجّلي طفلاً أولاً لتتمكني من تعيين ولي أمر.</div>')+
+          '</div>'+
+        '<div class="fld stud-fld hide"><label>الطفل المرتبط</label>'+
+          (hasStudents
+            ? '<select class="select stud-sel">'+studOpts+'</select>'
+            : '<div class="input" style="display:flex;align-items:center;color:var(--muted)">لا يوجد أطفال مسجّلون</div>')+
+        '</div>'+
+      '</div>'+
+      '<button class="btn btn--primary btn--sm assign-btn">'+I('check')+' تعيين</button>'+
+    '</div>';
+  }
+  return h+'</div>';
+}
+
+/* ---------- assign (confirm -> api -> refetch) ---------- */
+function assign(u, root){
+  var roleSel=root.querySelector('.role-sel');
+  var studSel=root.querySelector('.stud-sel');
+  var btn=root.querySelector('.assign-btn');
+  if(btn.classList.contains('is-loading')) return;
+  btn.classList.add('is-loading');
+
+  var role=roleSel.value;
+  var sid=studSel ? studSel.value : '';
+  var newLabel=ROLE_LABEL[role]||role;
+
+  if(role==='parent' && !sid){
+    btn.classList.remove('is-loading');
+    NS.toast('اختاري الطفل المرتبط بولي الأمر أولاً','err');
+    if(studSel) studSel.focus();
+    return;
+  }
+
+  var current=u.role||ROLE_LABEL[tagVariant(u)]||'بدون دور';
+  var studName='';
+  if(role==='parent' && sid && studSel){
+    var opt=studSel.options[studSel.selectedIndex]; studName=opt?opt.text:'';
+  }
+  var body='تغيير دور «'+u.name+'» من ('+current+') إلى ('+newLabel+')'+
+    (role==='parent'&&studName?(' — مرتبط بـ: '+studName):'')+'.';
+
+  NS.confirm({title:'تأكيد تعيين الدور', body:body, okText:'تعيين', cancelText:'إلغاء', icon:'users'})
+  .then(function(ok){
+    if(!ok){ btn.classList.remove('is-loading'); return; }
+    NS.api('/api/roles/assign',{ mt:TOKEN, user_id:u.id, role:role, student_id: sid?parseInt(sid,10):null })
+    .then(function(r){
+      if(r && r.ok){
+        NS.toast(r.msg||'تم تعيين الدور بنجاح');
+        boot();
+      } else {
+        btn.classList.remove('is-loading');
+        NS.toast((r&&r.error)||'تعذّر تعيين الدور','err');
+      }
+    }).catch(function(err){
+      btn.classList.remove('is-loading');
+      if(err.type==='auth'){ NS.clearToken('mt'); gate(); return; }
+      NS.toast(err.message||'تعذّر تعيين الدور','err');
+    });
+  });
+}
+})();
+</script>
+</body>
+</html>

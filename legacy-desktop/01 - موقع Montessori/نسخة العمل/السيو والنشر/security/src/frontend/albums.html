@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<title>الألبومات | حضانة مونتيسوري</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+.al-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.al-card{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-1)}
+.al-card.off{opacity:.75}
+.al-cover{position:relative;aspect-ratio:16/9;background:var(--sand)}
+.al-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.al-cover .noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.al-cover .noimg svg{width:40px;height:40px}
+.al-cover .cnt{position:absolute;inset-block-end:8px;inset-inline-start:8px;background:rgba(24,78,62,.85);color:#fff;
+  font-size:.78rem;font-weight:700;padding:3px 11px;border-radius:999px}
+.al-body{padding:14px 16px 16px}
+.al-name{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.al-name b{color:var(--forest);font-size:1.02rem;line-height:1.4;word-break:break-word}
+.al-name button{flex:none}
+.tog-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2)}
+.tog-row:last-child{border-bottom:0}
+.tog-row .tl{display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:600;color:var(--ink-2)}
+.tog-row .tl svg{width:17px;height:17px;color:var(--muted)}
+/* switch */
+.sw{position:relative;width:46px;height:26px;flex:none;cursor:pointer}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw i{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:background .18s}
+.sw i::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .18s}
+.sw input:checked + i{background:var(--ok)}
+.sw input:checked + i::after{transform:translateX(-20px)}
+html[dir="ltr"] .sw input:checked + i::after{transform:translateX(20px)}
+.sw input:disabled + i{opacity:.5}
+.al-note{background:var(--sand);border-radius:var(--r-sm);padding:10px 14px;font-size:.86rem;color:var(--ink-2);margin-bottom:16px}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null;
+var app=document.getElementById('app');
+
+if(!TOKEN){ gate(); } else { boot(); }
+function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'الألبومات',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة للتحكم في ألبومات الصور.'}); }
+function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
+  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+  '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+
+function boot(){
+  document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
+  NS.api('/api/manager/albums',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    DATA=d; render();
+  }).catch(function(err){ if(err.type==='auth'){ NS.clearToken('mt'); gate(); } else netError(); });
+}
+
+function render(){
+  var list=DATA.albums||[];
+  var h=NS.appbar({sub:'الألبومات', nav:NS.adminNav('albums')})+
+    '<main class="app-main">'+
+      '<div class="page-head"><h1>ألبومات الصور</h1>'+
+      '<div class="sub">تحكّمي في الألبومات التي يراها الأهالي والتي تظهر في الصفحة الرئيسية.</div></div>'+
+      '<div class="al-note">'+I('info')+' الصور نفسها مخزّنة على جوجل درايف — أي ألبوم توقفينه يختفي فوراً من صفحات الأهالي أو من معرض الموقع، ويرجع بضغطة.</div>'+
+      '<div id="list"></div>'+
+    '</main>';
+  app.innerHTML=h; NS.wireLogout('mt'); renderList();
+}
+
+function renderList(){
+  var L=document.getElementById('list');
+  var list=DATA.albums||[];
+  if(!list.length){ L.innerHTML=NS.empty('camera','لا توجد ألبومات بعد','الألبومات تُنشأ من صور جوجل درايف — كلمي الأونر لإضافة ألبوم جديد.'); return; }
+  var h='<div class="al-grid">';
+  list.forEach(function(a){
+    var cover=a.cover
+      ? '<img loading="lazy" src="'+NS.driveThumb(a.cover,700)+'" alt="'+NS.attr(a.name)+'"/>'
+      : '<span class="noimg">'+I('camera')+'</span>';
+    h+='<div class="al-card'+(a.active?'':' off')+'" data-id="'+NS.attr(a.id)+'">'+
+      '<div class="al-cover">'+cover+'<span class="cnt">'+a.count+' صورة</span></div>'+
+      '<div class="al-body">'+
+        '<div class="al-name"><b>'+NS.esc(a.name)+'</b>'+
+          '<button class="btn btn--soft btn--sm" data-rn="'+NS.attr(a.id)+'" title="إعادة تسمية">'+I('user')+'</button></div>'+
+        togRow(a.id,'parent_visible','يظهر للأهالي','users',a.parent_visible)+
+        togRow(a.id,'site_visible','يظهر في الصفحة الرئيسية','home',a.site_visible)+
+        togRow(a.id,'active','الألبوم مفعّل','check',a.active)+
+      '</div></div>';
+  });
+  h+='</div>'; L.innerHTML=h;
+  [].forEach.call(L.querySelectorAll('.sw input'),function(sw){
+    sw.addEventListener('change',function(){ toggle(sw); });
+  });
+  [].forEach.call(L.querySelectorAll('[data-rn]'),function(b){
+    b.addEventListener('click',function(){ rename(+b.getAttribute('data-rn')); });
+  });
+}
+function togRow(id,field,label,icon,val){
+  return '<div class="tog-row"><span class="tl">'+I(icon)+' '+label+'</span>'+
+    '<label class="sw"><input type="checkbox" data-id="'+NS.attr(id)+'" data-f="'+NS.attr(field)+'"'+(val?' checked':'')+'/><i></i></label></div>';
+}
+function albumOf(id){ return (DATA.albums||[]).filter(function(a){return a.id===id;})[0]; }
+
+function toggle(sw){
+  var id=+sw.getAttribute('data-id'), field=sw.getAttribute('data-f'), val=sw.checked;
+  sw.disabled=true;
+  NS.api('/api/manager/album/toggle',{mt:TOKEN,id:id,field:field,value:val?1:0}).then(function(r){
+    sw.disabled=false;
+    if(r&&r.ok){
+      var a=albumOf(id); if(a) a[field]=val;
+      if(field==='active'){ var card=sw.closest('.al-card'); if(card) card.classList.toggle('off',!val); }
+      var LBL={parent_visible:'عرض الأهالي',site_visible:'الصفحة الرئيسية',active:'التفعيل'};
+      NS.toast((val?'تم تشغيل ':'تم إيقاف ')+LBL[field]+' ✔');
+    } else {
+      sw.checked=!val; NS.toast((r&&r.error)||'خطأ','err');
+    }
+  }).catch(function(err){
+    sw.disabled=false; sw.checked=!val;
+    if(err.type==='auth'){ NS.clearToken('mt'); gate(); return; }
+    NS.toast('تعذّر الحفظ','err');
+  });
+}
+
+function rename(id){
+  var a=albumOf(id); if(!a) return;
+  var m=NS.modal('<div class="modal__icon">'+I('camera')+'</div><h3>إعادة تسمية الألبوم</h3>'+
+    '<div class="field"><label>اسم الألبوم</label><input class="input" id="al-nm" value="'+NS.attr(a.name)+'"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return;
+    var name=m.el.querySelector('#al-nm').value.trim();
+    if(!name){ NS.toast('اكتبي اسم الألبوم','err'); return; }
+    btn.classList.add('is-loading');
+    NS.api('/api/manager/album/rename',{mt:TOKEN,id:id,name:name}).then(function(r){
+      if(r&&r.ok){ a.name=name; m.close(); NS.toast('تم الحفظ'); renderList(); }
+      else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); }
+    }).catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الحفظ','err'); });
+  });
+}
+})();
+</script>
+</body>
+</html>

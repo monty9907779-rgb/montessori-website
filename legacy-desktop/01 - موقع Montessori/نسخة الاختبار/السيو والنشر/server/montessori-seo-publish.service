@@ -1,0 +1,11 @@
+[Unit]
+Description=Montessori daily SEO publisher (server-independent)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+ExecStart=/usr/bin/python3 /opt/seo/publish.py
+Nice=10

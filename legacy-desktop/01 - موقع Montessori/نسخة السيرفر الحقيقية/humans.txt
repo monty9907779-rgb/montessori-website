@@ -1,0 +1,14 @@
+/* TEAM */
+Website: montessori-ksa.com
+Location: Jeddah, Saudi Arabia
+
+/* SITE */
+Last update: 2026/08/19
+Language: Arabic / English
+Standards: HTML5, CSS3, Schema.org
+Components: PWA, Service Worker
+Software: Nginx, Ubuntu
+
+/* THANKS */
+Montessori Method by Dr. Maria Montessori
+Built with modern web technologies

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<title>الدخول | حضانة مونتيسوري</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px;
+  background:radial-gradient(1100px 560px at 85% -10%,#e7f1e9,transparent 60%),
+            radial-gradient(900px 480px at -5% 110%,#f7ecd9,transparent 60%),var(--cream)}
+.login{max-width:920px;width:100%;display:grid;grid-template-columns:.82fr 1fr;
+  background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-xl);
+  box-shadow:var(--sh-3);overflow:hidden}
+/* brand panel */
+.lb{background:linear-gradient(160deg,var(--forest),#0f3226);color:#fff;padding:44px 34px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.lb::after{content:"";position:absolute;inset-block-start:-60px;inset-inline-start:-40px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(224,164,88,.22),transparent 70%)}
+.lb__logo{width:64px;height:64px;border-radius:18px;background:#fff;padding:6px;box-shadow:var(--sh-1)}
+.lb h2{color:#fff;font-size:1.5rem;margin:20px 0 8px;line-height:1.3}
+.lb p{color:#bcd6c8;font-size:.96rem;line-height:1.8}
+.lb .pts{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:24px}
+.lb .pt{display:flex;align-items:center;gap:11px;font-size:.92rem;color:#e7f1ea}
+.lb .pt svg{width:20px;height:20px;color:var(--amber);flex:none}
+/* form panel */
+.lf{padding:clamp(28px,4vw,44px)}
+.lf h1{font-size:1.5rem;margin-bottom:4px}
+.lf .sub{color:var(--muted);margin-bottom:22px;font-size:.95rem}
+.divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.82rem;margin:18px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+#login-msg{color:var(--danger);font-weight:600;font-size:.88rem;min-height:18px;margin-top:4px}
+.lf .foot{margin-top:18px;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.lf .foot a.mini{color:var(--clay-600);font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:6px}
+.lf .foot a.mini svg{width:16px;height:16px}
+.assure{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:.8rem;margin-top:16px}
+.assure svg{width:15px;height:15px;color:var(--ok)}
+@media(max-width:720px){
+  .login{grid-template-columns:1fr;max-width:440px}
+  .lb{padding:22px 24px;flex-direction:row;align-items:center;gap:14px}
+  .lb__logo{width:46px;height:46px}
+  .lb h2{font-size:1.15rem;margin:0}
+  .lb p,.lb .pts{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <main class="login rev in">
+    <aside class="lb">
+      <img class="lb__logo" src="/logo.png" alt="حضانة مونتيسوري"/>
+      <div>
+        <h2 id="t-brand">حضانة مونتيسوري</h2>
+        <p id="t-brandp">بوابةٌ واحدة للأهالي والفريق — ندخلك تلقائياً لصفحتك المناسبة.</p>
+      </div>
+      <div class="pts">
+        <div class="pt" id="p1">للأهالي: حضور طفلك ورسومه وصوره</div>
+        <div class="pt" id="p2">للمعلّمات: الحضور والراتب والفصول</div>
+        <div class="pt" id="p3">للإدارة: لوحة تحكم كاملة</div>
+      </div>
+    </aside>
+    <section class="lf">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <h1 id="t-title">تسجيل الدخول</h1>
+        <button type="button" class="btn btn--ghost btn--sm" id="lang-btn" style="flex:none">English</button>
+      </div>
+      <div class="sub" id="t-sub">اختر طريقة الدخول المناسبة لك.</div>
+
+      <a class="btn btn--primary btn--block btn--lg" id="google-btn" href="#"><span id="gb"></span></a>
+
+      <div class="divider" id="t-div">أو بالبريد وكلمة المرور</div>
+
+      <form id="login-form" novalidate>
+        <div class="field"><label for="l-email" id="t-lem">البريد الإلكتروني</label>
+          <input class="input" id="l-email" name="email" type="email" inputmode="email" autocomplete="username" placeholder="name@montessori-ksa.com"/></div>
+        <div class="field"><label for="l-pass" id="t-lpw">كلمة المرور</label>
+          <input class="input" id="l-pass" name="password" type="password" autocomplete="current-password" placeholder="••••••••"/></div>
+        <button class="btn btn--accent btn--block btn--lg" type="submit" id="login-btn"></button>
+        <div id="login-msg" role="alert" aria-live="assertive"></div>
+      </form>
+
+      <div class="foot">
+        <a class="mini" id="reg" href="/#register"></a>
+        <a class="mini" id="switch" href="#" style="color:var(--muted)"></a>
+      </div>
+      <div class="assure" id="assure"></div>
+    </section>
+  </main>
+</div>
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+  var I=NS.icon;
+  /* ---------- ثنائي اللغة ---------- */
+  var LG={
+    ar:{title:'تسجيل الدخول',sub:'اختر طريقة الدخول المناسبة لك.',brand:'حضانة مونتيسوري',
+        brandp:'بوابةٌ واحدة للأهالي والفريق — ندخلك تلقائياً لصفحتك المناسبة.',
+        p1:'للأهالي: حضور طفلك ورسومه وصوره',p2:'للمعلّمات: الحضور والراتب والفصول',p3:'للإدارة: لوحة تحكم كاملة',
+        google:'الدخول عبر Google',div:'أو بالبريد وكلمة المرور',lem:'البريد الإلكتروني',lpw:'كلمة المرور',
+        btn:'دخول',reg:'جديد؟ سجّل طفلك الآن',sw:'تغيير حساب Google / دخول بإيميل آخر',
+        assure:'دخولٌ آمن — بياناتك محمية',toggle:'English',
+        eEmpty:'اكتب البريد وكلمة المرور',eBad:'بيانات الدخول غير صحيحة',eNet:'تعذّر الاتصال، حاول مجدداً',
+        dir:'rtl',lang:'ar',regHref:'/#register'},
+    en:{title:'Sign in',sub:'Choose how you want to sign in.',brand:'Montessori Nursery',
+        brandp:'One gateway for parents and staff — we route you to your page automatically.',
+        p1:'Parents: attendance, fees & photos',p2:'Teachers: attendance, salary & classes',p3:'Management: full dashboard',
+        google:'Sign in with Google',div:'or with email & password',lem:'Email',lpw:'Password',
+        btn:'Sign in',reg:'New? Register your child',sw:'Switch Google account / another email',
+        assure:'Secure sign-in — your data is protected',toggle:'عربي',
+        eEmpty:'Enter your email and password',eBad:'Incorrect email or password',eNet:'Connection failed, try again',
+        dir:'ltr',lang:'en',regHref:'/en/#register'}
+  };
+  var cur='ar';
+  try{ var sv=localStorage.getItem('ns.lang'); if(sv==='en') cur='en'; }catch(e){}
+  function T(){ return LG[cur]; }
+  function setTxt(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  function applyLang(){
+    var t=T();
+    document.documentElement.lang=t.lang; document.documentElement.dir=t.dir;
+    document.title = cur==='en' ? 'Login | Montessori Nursery' : 'الدخول | حضانة مونتيسوري';
+    setTxt('t-title',t.title); setTxt('t-sub',t.sub); setTxt('t-brand',t.brand); setTxt('t-brandp',t.brandp);
+    setTxt('t-div',t.div); setTxt('t-lem',t.lem); setTxt('t-lpw',t.lpw); setTxt('lang-btn',t.toggle);
+    document.getElementById('gb').innerHTML=I('google')+' <span>'+t.google+'</span>';
+    document.getElementById('p1').innerHTML=I('user')+' '+t.p1;
+    document.getElementById('p2').innerHTML=I('users')+' '+t.p2;
+    document.getElementById('p3').innerHTML=I('chart')+' '+t.p3;
+    document.getElementById('login-btn').innerHTML=I('logout')+' '+t.btn;
+    var rg=document.getElementById('reg'); rg.innerHTML=I('plus')+' '+t.reg; rg.href=t.regHref;
+    document.getElementById('switch').innerHTML=I('refresh')+' '+t.sw;
+    document.getElementById('assure').innerHTML=I('shield')+' <span>'+t.assure+'</span>';
+  }
+  applyLang();
+  document.getElementById('lang-btn').addEventListener('click',function(){
+    cur = cur==='ar' ? 'en' : 'ar';
+    try{ localStorage.setItem('ns.lang',cur); }catch(e){}
+    applyLang();
+  });
+
+  var g=document.getElementById('google-btn');
+  g.addEventListener('click',function(e){ e.preventDefault(); g.classList.add('is-loading'); location.href=NS.LOGIN; });
+  document.getElementById('switch').addEventListener('click',function(e){ e.preventDefault(); location.href=NS.SWITCH; });
+
+  var form=document.getElementById('login-form'), btn=document.getElementById('login-btn'), msg=document.getElementById('login-msg');
+  form.addEventListener('submit',function(ev){
+    if(btn.classList.contains('is-loading')) return;
+    ev.preventDefault();
+    var email=form.email.value.trim(), pass=form.password.value;
+    if(!email||!pass){ msg.textContent=T().eEmpty; return; }
+    msg.textContent=''; btn.classList.add('is-loading');
+    NS.api('/api/login',{email:email,password:pass}).then(function(d){
+      if(d&&d.ok&&d.redirect){ location.href=d.redirect; }
+      else { btn.classList.remove('is-loading'); msg.textContent=(d&&d.error)||T().eBad; }
+    }).catch(function(err){
+      btn.classList.remove('is-loading');
+      msg.textContent = err&&err.type==='net' ? T().eNet : T().eBad;
+    });
+  });
+})();
+</script>
+<script src="/assets/bot.js?v=2" defer></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2d5016" />
+    <meta name="description" content="Bada'a Early Childhood Center - Montessori nursery management platform in Jeddah, KSA. Smart nursery finance, student & class management system." />
+    <meta name="keywords" content="montessori, nursery, Jeddah, KSA, preschool, early childhood, kindergarten, Bada'a, nursery management" />
+    <meta name="author" content="Bada'a Early Childhood Center" />
+    <meta name="geo.region" content="SA-02" />
+    <meta name="geo.placename" content="Jeddah" />
+    <meta name="geo.position" content="21.4858;39.1925" />
+    <meta name="ICBM" content="21.4858, 39.1925" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="revisit-after" content="7 days" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Bada'a Early Childhood Center - Montessori Nursery Jeddah" />
+    <meta property="og:description" content="Smart nursery management platform for Bada'a Early Childhood Center, Jeddah KSA. Montessori education management made simple." />
+    <meta property="og:url" content="https://montessori-ksa.com" />
+    <meta property="og:site_name" content="Bada'a Early Childhood Center" />
+    <meta property="og:locale" content="ar_SA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:image" content="https://montessori-ksa.com/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bada'a Early Childhood Center - Montessori Nursery Jeddah" />
+    <meta name="twitter:description" content="Smart nursery management platform for Bada'a Early Childhood Center, Jeddah KSA." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Bada'a Montessori" />
+    <link rel="canonical" href="https://montessori-ksa.com" />
+    <link rel="alternate" href="https://montessori-ksa.com" hreflang="ar-SA" />
+    <link rel="alternate" href="https://montessori-ksa.com/en" hreflang="en-US" />
+    <link rel="alternate" href="https://montessori-ksa.com" hreflang="x-default" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/logo.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Preschool",
+        "name": "Bada'a Early Childhood Center",
+        "description": "Montessori nursery and early childhood education center in Jeddah, Saudi Arabia.",
+        "url": "https://montessori-ksa.com",
+        "telephone": "+966-XXX-XXXXXXX",
+        "email": "info@montessori-ksa.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Jeddah",
+          "addressRegion": "Makkah",
+          "addressCountry": "SA"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "21.4858",
+          "longitude": "39.1925"
+        },
+        "parentOrganization": {
+          "@type": "Organization",
+          "name": "Bada'a Early Childhood Center"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "bestRating": "5",
+          "ratingCount": "45"
+        }
+      }
+    </script>
+    <title>Bada'a Early Childhood Center | Montessori Nursery Jeddah</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

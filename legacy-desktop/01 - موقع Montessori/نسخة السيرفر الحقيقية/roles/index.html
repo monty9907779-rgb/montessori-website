@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+
+<title>توزيع الأدوار | روضة كوكب الطفل الحر</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=1"/>
+<style>
+.rg-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.rg-summary .stat{appearance:none;text-align:inherit;width:100%;cursor:pointer}
+.rg-summary .stat:hover{transform:translateY(-1px)}
+.rg-summary .stat.is-on{border-color:var(--forest);box-shadow:0 16px 36px rgba(24,78,62,.18)}
+.rg-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.rg-toolbar .search{flex:1;min-width:180px;position:relative}
+.rg-toolbar .search input{width:100%}
+.st-filter{display:flex;gap:6px;flex-wrap:wrap}
+.st-filter button{border:1px solid var(--line-2);background:var(--paper);color:var(--muted);border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.st-filter button .count{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 10px;border-radius:999px;background:var(--sand);color:var(--forest);font-variant-numeric:tabular-nums}
+.st-filter button.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+.st-filter button.on .count{background:rgba(255,255,255,.16);color:#fff}
+.rg-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-2px 0 12px;color:var(--muted);font-weight:800;flex-wrap:wrap}
+.rg-head b{color:var(--forest);font-size:1.05rem}
+.rg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.rg-card{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--sh-1);position:relative;overflow:hidden}
+.rg-card .top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.rg-card .who{flex:1;min-width:0}
+.rg-card .who b{color:var(--forest);font-size:1.05rem;display:block;line-height:1.3;overflow-wrap:anywhere}
+.rg-card .who span{color:var(--muted);font-size:.85rem;line-height:1.55;overflow-wrap:anywhere}
+.rg-card .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rg-badge{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.rg-linked{background:var(--ok-bg);color:var(--ok)}
+.rg-unlinked{background:var(--sand);color:var(--muted)}
+.rg-owner{background:#111827;color:#fbbf24}
+.rg-role{background:#eff6ff;color:#1d4ed8}
+.rg-form{display:flex;flex-direction:column;gap:10px}
+.rg-form .row{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:560px){.rg-form .row{grid-template-columns:1fr 1fr}}
+.rg-form .fld>label{display:block;font-weight:700;font-size:.82rem;color:var(--ink-2);margin-bottom:5px}
+.rg-form .btn{align-self:flex-start}
+@media(max-width:559px){.rg-form .btn{align-self:stretch}}
+.rg-note{display:flex;align-items:flex-start;gap:10px;background:var(--info-bg);color:#2b5c72;border-radius:var(--r-sm);padding:12px 15px;font-size:.9rem;line-height:1.6;margin-bottom:var(--s5)}
+.rg-note svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--info)}
+.owner-note{display:flex;align-items:flex-start;gap:10px;background:#f4f7f5;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:12px 14px;color:var(--muted);font-size:.88rem;line-height:1.6}
+.owner-note svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--forest)}
+.rg-empty{padding:34px 20px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=48"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null, Q='', LINK='all';
+var app=document.getElementById('app');
+
+if(!TOKEN){ gate(); } else { boot(); }
+
+function gate(){
+  app.innerHTML='';
+  var m=document.createElement('div');
+  app.appendChild(m);
+  NS.gate(m,{title:'توزيع الأدوار',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة للمتابعة.'});
+}
+
+function netError(){
+  app.innerHTML='';
+  var m=document.createElement('div');
+  m.className='app-main app-narrow';
+  app.appendChild(m);
+  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+    '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+    '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>';
+}
+
+function boot(){
+  document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
+  NS.api('/api/roles/users',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    DATA=d; render();
+  }).catch(function(err){ if(err.type==='auth'){ NS.clearToken('mt'); gate(); } else netError(); });
+}
+
+function linkState(u){ return u.link_state || (u.linked ? 'linked' : 'unlinked'); }
+function isLinked(u){ return linkState(u)==='linked'; }
+function isOwner(u){ return !!u.is_owner; }
+function linkOk(u){
+  if(LINK==='all') return true;
+  if(isOwner(u)) return false;
+  return LINK==='linked' ? isLinked(u) : !isLinked(u);
+}
+function filterCount(list, kind){
+  return list.filter(function(u){
+    if(isOwner(u)) return false;
+    if(kind==='linked') return isLinked(u);
+    if(kind==='unlinked') return !isLinked(u);
+    return true;
+  }).length;
+}
+function chip(v,label,count){
+  return '<button type="button" data-link="'+v+'" class="'+(LINK===v?'on':'')+'"><span class="count">'+count+'</span>'+NS.esc(label)+'</button>';
+}
+function roleValue(label){
+  var s=String(label||'').trim();
+  if(s.indexOf('ولي')>=0) return 'parent';
+  if(s.indexOf('عاملة')>=0) return 'worker';
+  return 'teacher';
+}
+function roleLabel(u){
+  if(isOwner(u)) return 'أونر';
+  if(u.role) return u.role;
+  return 'بدون دور';
+}
+function initial(name){ return (String(name||'؟').trim().charAt(0)||'؟'); }
+
+function render(){
+  var users=(DATA.users||[]);
+  var linked=filterCount(users,'linked');
+  var unlinked=filterCount(users,'unlinked');
+  var linkTotal=filterCount(users,'all');
+  var total=users.length;
+  var h=NS.appbar({sub:'الأدوار', nav:NS.adminNav('roles')})+
+    '<main class="app-main">'+
+      '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+        '<div><h1>توزيع الأدوار</h1><div class="sub">'+(DATA.manager?('مسجّلة الدخول: '+NS.esc(DATA.manager)):'حدّدي دور كل مستخدم واربطي أولياء الأمور بأطفالهم.')+'</div></div>'+
+      '</div>'+
+      '<div class="rg-summary">'+
+        stat('is-forest','users','إجمالي المستخدمين',total)+
+        stat(linked?'is-forest':'is-amber','user','مرتبط بولي الأمر',linked)+
+        stat(unlinked?'is-amber':'is-forest','alert','غير مرتبط',unlinked)+
+      '</div>'+
+      '<div class="rg-toolbar">'+
+        '<div class="search"><input class="input" id="q" type="search" placeholder="ابحثي بالاسم أو البريد…" value="'+NS.attr(Q)+'"/></div>'+
+        '<div class="st-filter" id="link-filter">'+
+          chip('all','كل الربط',linkTotal)+
+          chip('linked','مرتبط بولي الأمر',linked)+
+          chip('unlinked','غير مرتبط',unlinked)+
+        '</div>'+
+      '</div>'+
+      '<div class="rg-note">'+I('info')+
+        '<span>أي شخص يسجّل الدخول لأول مرة يظهر هنا بحالة «بدون دور». لولي الأمر، اختاري الطفل ثم اضغطي «تعيين».</span></div>'+
+      '<div class="rg-head" id="list-head"></div>'+
+      '<div id="list"></div>'+
+    '</main>';
+  app.innerHTML=h; NS.wireLogout('mt');
+  var q=document.getElementById('q');
+  q.addEventListener('input',function(){ Q=q.value.trim().toLowerCase(); renderList(); });
+  [].forEach.call(document.querySelectorAll('#link-filter [data-link]'),function(b){
+    b.addEventListener('click',function(){ LINK=b.getAttribute('data-link')||'all'; render(); });
+  });
+  renderList();
+}
+
+function stat(accent,icon,label,value){
+  return '<div class="stat '+accent+'"><div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span></div>'+
+    '<div class="v tabnum">'+value+'</div></div>';
+}
+
+function renderList(){
+  var list=(DATA.users||[]).slice().filter(function(u){
+    if(!Q) return true;
+    return (String(u.name||'').toLowerCase().indexOf(Q)>=0) || (String(u.login||'').toLowerCase().indexOf(Q)>=0);
+  }).filter(linkOk);
+  var head=document.getElementById('list-head');
+  if(head){
+    head.innerHTML='<b>'+(LINK==='linked'?'المرتبطون بولي الأمر':(LINK==='unlinked'?'غير المرتبطين':'كل المستخدمين'))+'</b>'+
+      '<span><span class="tabnum">'+list.length+'</span> مستخدم</span>';
+  }
+  var box=document.getElementById('list');
+  if(!(DATA.users||[]).length){
+    box.innerHTML=NS.empty('users','لا يوجد مستخدمون بعد','سيظهر هنا كل من يسجّل الدخول عبر Google.');
+    return;
+  }
+  if(!list.length){
+    box.innerHTML='<div class="card card--pad rg-empty">'+NS.empty('search','لا نتائج','جرّبي بحثاً آخر بالاسم أو البريد.')+'</div>';
+    return;
+  }
+  var students=(DATA.students||[]);
+  box.innerHTML='<div class="rg-grid">'+list.map(function(u){ return card(u, students); }).join('')+'</div>';
+  list.forEach(function(u){
+    var root=document.getElementById('u-'+u.id); if(!root || isOwner(u)) return;
+    var roleSel=root.querySelector('.role-sel');
+    var studFld=root.querySelector('.stud-fld');
+    var btn=root.querySelector('.assign-btn');
+    function syncStud(){ if(!studFld) return; studFld.classList.toggle('hide', roleSel.value!=='parent'); }
+    roleSel.addEventListener('change', syncStud);
+    syncStud();
+    btn.addEventListener('click', function(){ assign(u, root); });
+  });
+}
+
+function card(u, students){
+  var state=linkState(u);
+  var role=roleValue(u.role);
+  var linkedTxt = state==='linked' ? 'مرتبط بولي الأمر' : 'غير مرتبط';
+  var h='<div class="rg-card" id="u-'+NS.attr(u.id)+'">'+
+    '<div class="top">'+
+      '<span class="avatar avatar--sm">'+NS.esc(initial(u.name))+'</span>'+
+      '<div class="who">'+
+        '<b>'+NS.esc(u.name)+'</b>'+
+        '<span>'+NS.esc(u.login||'—')+'</span>'+
+        '<div class="tags">'+
+          (isOwner(u)?'<span class="rg-badge rg-owner">'+I('shield')+' أونر</span>':'<span class="rg-badge '+(state==='linked'?'rg-linked':'rg-unlinked')+'">'+(state==='linked'?I('check'):'')+' '+linkedTxt+'</span>')+
+          '<span class="rg-badge rg-role">'+NS.esc(roleLabel(u))+'</span>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+
+  if(isOwner(u)){
+    h+='<div class="owner-note">'+I('shield')+' حساب أونر محمي — لا يمكن تعديل دوره من هنا.</div>';
+  } else {
+    var suggested=(u.suggested_students||[]);
+    var selected = suggested.length===1 ? String(suggested[0].id) : '';
+    function studentSelectOptions(){
+      return '<option value="">— اختاري الطفل —</option>'+students.map(function(s){
+        return '<option value="'+NS.attr(s.id)+'"'+(selected && String(selected)===String(s.id)?' selected':'')+'>'+NS.esc(s.name)+'</option>';
+      }).join('');
+    }
+    h+='<div class="rg-form">'+
+      '<div class="row">'+
+        '<div class="fld"><label>الدور</label>'+
+          '<select class="input role-sel">'+
+            '<option value="teacher"'+(role==='teacher'?' selected':'')+'>مدرّسة</option>'+
+            '<option value="worker"'+(role==='worker'?' selected':'')+'>عاملة</option>'+
+            '<option value="parent"'+(role==='parent'?' selected':'')+'>ولي أمر</option>'+
+          '</select>'+
+        '</div>'+
+        '<div class="fld stud-fld'+(role==='parent'?'':' hide')+'"><label>الطفل المرتبط</label>'+
+          '<select class="input stud-sel">'+studentSelectOptions()+'</select>'+
+        '</div>'+
+      '</div>'+
+      '<button class="btn btn--primary btn--sm assign-btn">'+I('check')+' تعيين</button>'+
+    '</div>';
+  }
+  return h+'</div>';
+}
+
+function assign(u, root){
+  var roleSel=root.querySelector('.role-sel');
+  var studSel=root.querySelector('.stud-sel');
+  var btn=root.querySelector('.assign-btn');
+  if(btn.classList.contains('is-loading')) return;
+  var role=roleSel.value;
+  var sid=studSel ? studSel.value : '';
+  if(role==='parent' && !sid){
+    NS.toast('اختاري الطفل المرتبط بولي الأمر أولاً','err');
+    if(studSel) studSel.focus();
+    return;
+  }
+  btn.classList.add('is-loading');
+  var current=roleLabel(u);
+  var next=role==='teacher'?'مدرّسة':(role==='worker'?'عاملة':'ولي أمر');
+  var body='تغيير دور «'+u.name+'» من ('+current+') إلى ('+next+')'+(role==='parent'&&studSel&&studSel.options[studSel.selectedIndex]?(' — مرتبط بـ: '+studSel.options[studSel.selectedIndex].text):'')+'؟';
+  NS.confirm({title:'تأكيد تعيين الدور', body:body, okText:'تعيين', cancelText:'إلغاء', icon:'users'})
+  .then(function(ok){
+    if(!ok){ btn.classList.remove('is-loading'); return; }
+    NS.api('/api/roles/assign',{mt:TOKEN,user_id:u.id,role:role,student_id:sid?parseInt(sid,10):null})
+    .then(function(r){
+      if(r&&r.ok){ NS.toast(r.msg||'تم التعيين'); boot(); }
+      else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'تعذّر التعيين','err'); }
+    }).catch(function(err){
+      btn.classList.remove('is-loading');
+      if(err.type==='auth'){ NS.clearToken('mt'); gate(); return; }
+      NS.toast(err.message||'تعذّر التعيين','err');
+    });
+  });
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+
+<title>الحسابات | حضانة مونتيسوري</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+.mo-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line-2);
+  border-radius:var(--r-md,14px);padding:12px 16px;margin-bottom:16px;box-shadow:var(--sh-1)}
+.mo-bar select{min-width:160px}
+.mo-state{font-size:.8rem;font-weight:800;padding:4px 13px;border-radius:999px}
+.mo-open{background:var(--ok-bg);color:var(--ok)}
+.mo-closed{background:#fdece9;color:var(--danger)}
+.acc-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.fee-table .paid-in{width:104px}
+.fee-table td{vertical-align:middle}
+.fee-row-paid{background:var(--ok-bg)}
+.entry-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:.93rem}
+.entry-row:last-child{border-bottom:0}
+.entry-row .en{flex:1;min-width:0}
+.entry-row .en b{display:block;color:var(--ink)}
+.entry-row .en small{color:var(--muted)}
+.entry-row .amt{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.entry-row .del{color:var(--danger);background:none;border:none;cursor:pointer;padding:6px;border-radius:8px}
+.closed-note{display:flex;align-items:center;gap:10px;background:#fdece9;color:var(--danger);border-radius:var(--r-sm);
+  padding:12px 16px;font-weight:700;margin-bottom:14px}
+.closed-note svg{width:20px;height:20px;flex:none}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.grand{display:flex;justify-content:space-between;align-items:center;background:var(--forest);color:#fff;
+  border-radius:12px;padding:14px 18px;margin-top:6px}
+.grand b{font-size:1.35rem;font-variant-numeric:tabular-nums}
+@media(max-width:640px){.fee-table .paid-in{width:88px}}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:420px){.mrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), MONTHS=null, M=null, CUR='';
+var app=document.getElementById('app');
+
+function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+if(!TOKEN){ gate(); } else { boot(); }
+function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'الحسابات',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة لإدارة حسابات الشهور.'}); }
+function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
+  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+  '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+function authOut(err){ if(err&&err.type==='auth'){ NS.clearToken('mt'); gate(); return true; } return false; }
+
+function boot(){
+  document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
+  NS.api('/api/manager/months',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    MONTHS=d;
+    if(d.months.length){ load(CUR && d.months.some(function(x){return x.ym===CUR;}) ? CUR : d.months[0].ym); }
+    else { M=null; render(); }
+  }).catch(function(err){ if(!authOut(err)) netError(); });
+}
+function load(ym){
+  CUR=ym;
+  NS.api('/api/manager/month/get',{mt:TOKEN,ym:ym}).then(function(d){
+    if(!d||!d.ok){ NS.toast((d&&d.error)||'خطأ','err'); return; }
+    M=d; render();
+  }).catch(function(err){ if(!authOut(err)) netError(); });
+}
+
+/* ---------- فتح شهر جديد ---------- */
+function openMonth(){
+  var sug=(MONTHS&&MONTHS.suggest)||'';
+  var first=!(MONTHS&&MONTHS.months.length);
+  var m=NS.modal('<div class="modal__icon">'+I('plus')+'</div><h3>فتح شهر جديد</h3>'+
+    '<p class="muted" style="font-size:.88rem;margin-bottom:10px">'+
+      (first?'أول شهر: سيُملأ الكشف بكل الطلاب النشطين، وتكتبين الرصيد الافتتاحي.':'سيترحّل كشف أسماء الشهر السابق تلقائياً، والرصيد الافتتاحي = ختامي الشهر السابق.')+'</p>'+
+    '<div class="field"><label>الشهر</label><input class="input" type="month" id="om-ym" value="'+NS.attr(sug)+'"/></div>'+
+    (first?'<div class="field"><label>الرصيد الافتتاحي (ر.س)</label><input class="input" type="number" id="om-open" value="0"/></div>':'')+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' فتح الشهر</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return;
+    var ym=m.el.querySelector('#om-ym').value;
+    if(!ym){ NS.toast('اختاري الشهر','err'); return; }
+    btn.classList.add('is-loading');
+    var op=m.el.querySelector('#om-open');
+    NS.api('/api/manager/month/open',{mt:TOKEN,ym:ym,opening:op?op.value:''}).then(function(r){
+      if(r&&r.ok){ m.close(); NS.toast('تم فتح '+ym+' وترحيل '+r.carried+' اسماً ✔'); CUR=ym; boot(); }
+      else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); }
+    }).catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الفتح','err'); });
+  });
+}
+
+/* ---------- قفل الشهر ---------- */
+function closeMonth(){
+  NS.confirm({title:'قفل شهر '+M.label+'؟',danger:true,okText:'قفل نهائي',
+    body:'بعد القفل لا يمكن تعديل أي بيانات في هذا الشهر (دفعات، مصروفات، رواتب). الرصيد الختامي سيصبح افتتاحي الشهر التالي.'})
+  .then(function(ok){
+    if(!ok) return;
+    NS.api('/api/manager/month/close',{mt:TOKEN,ym:M.ym}).then(function(r){
+      if(r&&r.ok){ NS.toast('تم قفل الشهر — الختامي '+NS.riyal(r.closing)); boot(); }
+      else NS.toast((r&&r.error)||'خطأ','err');
+    });
+  });
+}
+
+/* ---------- render ---------- */
+function render(){
+  var h=NS.appbar({sub:'الحسابات', nav:NS.adminNav('accounts')})+
+    '<main class="app-main">'+
+      '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+        '<div><h1>الحسابات الشهرية</h1><div class="sub">كشف شهري كامل: رسوم الطلبة والدخل والمصروفات والرواتب.</div></div>'+
+        '<button class="btn btn--primary" id="open-month">'+I('plus')+' فتح شهر جديد</button>'+
+      '</div>'+
+      '<div id="body"></div>'+
+    '</main>';
+  app.innerHTML=h; NS.wireLogout('mt');
+  document.getElementById('open-month').addEventListener('click',openMonth);
+  var B=document.getElementById('body');
+  if(!M){
+    B.innerHTML='<div class="card card--pad">'+NS.empty('calendar','لا توجد شهور بعد','ابدئي بفتح أول شهر محاسبي — سيُملأ كشف الطلبة تلقائياً.')+'</div>';
+    return;
+  }
+  var closed=M.state==='closed', t=M.totals;
+  var opts=MONTHS.months.map(function(x){
+    return '<option value="'+x.ym+'"'+(x.ym===M.ym?' selected':'')+'>'+NS.esc(x.label)+(x.state==='closed'?' 🔒':'')+'</option>';
+  }).join('');
+  var bh='<div class="mo-bar">'+
+    '<span style="font-weight:800;color:var(--forest);display:inline-flex;align-items:center;gap:7px">'+I('calendar')+' الشهر</span>'+
+    '<select class="input" id="mo-sel" style="max-width:220px">'+opts+'</select>'+
+    '<span class="mo-state '+(closed?'mo-closed':'mo-open')+'">'+(closed?'🔒 مقفول':'مفتوح')+'</span>'+
+    '<span style="flex:1"></span>'+
+    (closed?'':'<button class="btn btn--soft btn--sm" id="close-month">'+I('check')+' قفل الشهر</button>')+
+    '</div>';
+  if(closed) bh+='<div class="closed-note">'+I('alert')+' هذا الشهر مقفول — كل البيانات للعرض فقط ولا يمكن تعديلها.</div>';
+
+  bh+='<div class="acc-sum">'+
+    stat('is-forest','wallet','الرصيد الافتتاحي',NS.riyal(M.opening),closed?null:'edit-open')+
+    stat('is-forest','users','دخل الطلبة',NS.riyal(t.income_students))+
+    stat('is-forest','sparkle','دخل إضافي',NS.riyal(t.income_other))+
+    stat('is-clay','users','الرواتب',NS.riyal(t.salaries))+
+    stat('is-danger','wallet','المصروفات',NS.riyal(t.expenses))+
+    stat(t.net>=0?'is-forest':'is-danger','chart','صافي الشهر',NS.riyal(t.net))+
+  '</div>'+
+  '<div class="grand"><span>الرصيد الختامي (يترحّل للشهر التالي)</span><b class="tabnum">'+NS.riyal(t.closing)+'</b></div>';
+
+  /* كشف الطلبة */
+  bh+='<div class="card card--pad" style="margin-top:16px">'+
+    '<div class="sec-head"><span class="card__title">'+I('users')+' كشف الطلبة — '+NS.esc(M.label)+
+      ' <span class="tag tag--soft">'+M.fees.length+' طالباً · '+t.unpaid_count+' لم يدفع</span></span>'+
+    (closed?'':'<button class="btn btn--soft btn--sm" id="add-fee">'+I('plus')+' إضافة طالب للشهر</button>')+'</div>'+
+    feeTable(closed)+'</div>';
+
+  /* القيود */
+  bh+=entrySection('salary','الرواتب',t.salaries,closed,
+       closed?'':'<button class="btn btn--soft btn--sm" id="imp-sal">'+I('refresh')+' استيراد رواتب الموظفين</button>');
+  bh+=entrySection('expense','المصروفات',t.expenses,closed,'');
+  bh+=entrySection('income','دخل إضافي',t.income_other,closed,'');
+
+  B.innerHTML=bh;
+
+  document.getElementById('mo-sel').addEventListener('change',function(){ load(this.value); });
+  var cm=document.getElementById('close-month'); if(cm) cm.addEventListener('click',closeMonth);
+  var eo=document.querySelector('[data-editopen]'); if(eo) eo.addEventListener('click',editOpening);
+  var af=document.getElementById('add-fee'); if(af) af.addEventListener('click',addFee);
+  var is=document.getElementById('imp-sal'); if(is) is.addEventListener('click',importSalaries);
+  [].forEach.call(B.querySelectorAll('[data-pay]'),function(b){ b.addEventListener('click',function(){ payFee(+b.getAttribute('data-pay')); }); });
+  [].forEach.call(B.querySelectorAll('[data-fdel]'),function(b){ b.addEventListener('click',function(){ delFee(+b.getAttribute('data-fdel')); }); });
+  [].forEach.call(B.querySelectorAll('[data-eadd]'),function(b){ b.addEventListener('click',function(){ addEntry(b.getAttribute('data-eadd')); }); });
+  [].forEach.call(B.querySelectorAll('[data-edel]'),function(b){ b.addEventListener('click',function(){ delEntry(+b.getAttribute('data-edel')); }); });
+}
+function stat(accent,icon,label,value,editKey){
+  return '<div class="stat '+accent+'"><div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span>'+
+    (editKey?' <button class="btn btn--ghost btn--sm" data-editopen style="padding:0 8px;min-height:24px;font-size:.75rem">تعديل</button>':'')+
+    '</div><div class="v tabnum">'+value+'</div></div>';
+}
+function feeOf(id){ return M.fees.filter(function(f){return f.id===id;})[0]; }
+
+function feeTable(closed){
+  if(!M.fees.length) return NS.empty('users','الكشف فارغ','أضيفي طلاباً لهذا الشهر.');
+  var h='<div class="table-wrap fee-table"><table class="table"><thead><tr>'+
+    '<th>الطالب</th><th>الرسوم</th><th>المدفوع</th><th>التاريخ</th><th></th></tr></thead><tbody>';
+  M.fees.forEach(function(f){
+    var paid=(f.paid||0)>0;
+    h+='<tr'+(paid?' class="fee-row-paid"':'')+'><td><b>'+NS.esc(f.name)+'</b>'+(f.note?'<br/><small class="muted">'+NS.esc(f.note)+'</small>':'')+'</td>'+
+      '<td class="tabnum">'+NS.riyal(f.fees)+'</td>'+
+      '<td class="tabnum">'+(paid?'<b style="color:var(--ok)">'+NS.riyal(f.paid)+'</b>':'<span class="tag tag--none">لم يدفع</span>')+'</td>'+
+      '<td class="tabnum">'+(f.paid_date?NS.fmtShort(f.paid_date):'—')+'</td>'+
+      '<td style="text-align:left;white-space:nowrap">'+
+        (closed?'':'<button class="btn btn--primary btn--sm" data-pay="'+NS.attr(f.id)+'">'+I('wallet')+' '+(paid?'تعديل':'دفع')+'</button> '+
+        '<button class="btn btn--ghost btn--sm" data-fdel="'+NS.attr(f.id)+'" title="حذف من الشهر" style="color:var(--danger)">'+I('trash')+'</button>')+
+      '</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+function entrySection(etype,title,total,closed,extraBtn){
+  var icons={salary:'users',expense:'wallet',income:'sparkle'};
+  var list=M.entries.filter(function(e){return e.etype===etype;});
+  var h='<div class="card card--pad" style="margin-top:14px">'+
+    '<div class="sec-head"><span class="card__title">'+I(icons[etype])+' '+title+
+      ' <span class="tag tag--soft tabnum">'+NS.riyal(total)+'</span></span>'+
+    '<span style="display:flex;gap:8px">'+(extraBtn||'')+
+    (closed?'':'<button class="btn btn--soft btn--sm" data-eadd="'+etype+'">'+I('plus')+' إضافة</button>')+'</span></div>';
+  if(!list.length) h+='<p class="muted" style="font-size:.9rem">لا توجد قيود بعد.</p>';
+  else list.forEach(function(e){
+    h+='<div class="entry-row"><div class="en"><b>'+NS.esc(e.name)+'</b>'+
+      '<small>'+(e.date?NS.fmtShort(e.date):'')+(e.note?' · '+NS.esc(e.note):'')+'</small></div>'+
+      '<span class="amt">'+NS.riyal(e.amount)+'</span>'+
+      (closed?'':'<button class="del" data-edel="'+NS.attr(e.id)+'" title="حذف">'+I('trash')+'</button>')+'</div>';
+  });
+  return h+'</div>';
+}
+
+/* ---------- actions ---------- */
+function editOpening(){
+  var m=NS.modal('<div class="modal__icon">'+I('wallet')+'</div><h3>الرصيد الافتتاحي — '+NS.esc(M.label)+'</h3>'+
+    '<div class="field"><label>القيمة (ر.س)</label><input class="input" type="number" id="ob-v" value="'+M.opening+'"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    NS.api('/api/manager/month/opening',{mt:TOKEN,ym:M.ym,value:m.el.querySelector('#ob-v').value}).then(function(r){
+      if(r&&r.ok){ m.close(); NS.toast('تم الحفظ'); load(M.ym); } else NS.toast((r&&r.error)||'خطأ','err');
+    });
+  });
+}
+function addFee(){
+  var av=M.available_students||[];
+  if(!av.length){ NS.toast('كل الطلاب النشطين موجودون في الشهر','err'); return; }
+  var opts=av.map(function(s){ return '<option value="'+s.id+'">'+NS.esc(s.name)+'</option>'; }).join('');
+  var m=NS.modal('<div class="modal__icon">'+I('plus')+'</div><h3>إضافة طالب لكشف '+NS.esc(M.label)+'</h3>'+
+    '<div class="field"><label>الطالب</label><select class="input" id="fa-s">'+opts+'</select></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' إضافة</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    NS.api('/api/manager/month/fee/add',{mt:TOKEN,ym:M.ym,student_id:m.el.querySelector('#fa-s').value}).then(function(r){
+      if(r&&r.ok){ m.close(); NS.toast('تمت الإضافة'); load(M.ym); } else NS.toast((r&&r.error)||'خطأ','err');
+    });
+  });
+}
+function delFee(id){
+  var f=feeOf(id); if(!f) return;
+  NS.confirm({title:'حذف '+f.name+' من كشف الشهر؟',body:'يُحذف من هذا الشهر فقط — لا يؤثر على ملف الطالب.',okText:'حذف',danger:true})
+  .then(function(ok){
+    if(!ok) return;
+    NS.api('/api/manager/month/fee/del',{mt:TOKEN,id:id}).then(function(r){
+      if(r&&r.ok){ NS.toast('تم الحذف'); load(M.ym); } else NS.toast((r&&r.error)||'خطأ','err');
+    });
+  });
+}
+function payFee(id){
+  var f=feeOf(id); if(!f) return;
+  var m=NS.modal('<div class="modal__icon">'+I('wallet')+'</div><h3>دفع '+NS.esc(f.name)+' — '+NS.esc(M.label)+'</h3>'+
+    '<div class="mrow">'+
+      '<div class="field"><label>الرسوم المستحقة</label><input class="input" type="number" id="pf-fees" value="'+(f.fees||0)+'"/></div>'+
+      '<div class="field"><label>المدفوع (0 = إلغاء)</label><input class="input" type="number" id="pf-paid" value="'+(f.paid||f.fees||0)+'"/></div>'+
+    '</div>'+
+    '<div class="mrow">'+
+      '<div class="field"><label>تاريخ الدفع</label><input class="input" type="date" id="pf-date" value="'+(f.paid_date||todayISO())+'"/></div>'+
+      '<div class="field"><label>طريقة الدفع</label><select class="input" id="pf-m">'+
+        ['cash','transfer','card','other'].map(function(v){var L={cash:'نقداً',transfer:'تحويل',card:'شبكة',other:'أخرى'};
+          return '<option value="'+v+'"'+(f.method===v?' selected':'')+'>'+L[v]+'</option>';}).join('')+'</select></div>'+
+    '</div>'+
+    '<div class="field"><label>ملاحظة (اختياري)</label><input class="input" id="pf-note" value="'+NS.attr(f.note||'')+'"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return; btn.classList.add('is-loading');
+    NS.api('/api/manager/month/fee/save',{mt:TOKEN,id:id,
+      fees:m.el.querySelector('#pf-fees').value, paid:m.el.querySelector('#pf-paid').value,
+      paid_date:m.el.querySelector('#pf-date').value, method:m.el.querySelector('#pf-m').value,
+      note:m.el.querySelector('#pf-note').value}).then(function(r){
+      if(r&&r.ok){ m.close(); NS.toast('تم الحفظ — الدفعة ستظهر لولي الأمر أيضاً ✔'); load(M.ym); }
+      else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); }
+    }).catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الحفظ','err'); });
+  });
+}
+function addEntry(etype){
+  var T={salary:'راتب',expense:'مصروف',income:'دخل إضافي'};
+  var m=NS.modal('<div class="modal__icon">'+I('plus')+'</div><h3>إضافة '+T[etype]+' — '+NS.esc(M.label)+'</h3>'+
+    '<div class="field"><label>البيان *</label><input class="input" id="ea-n" placeholder="'+(etype==='salary'?'اسم الموظف':etype==='expense'?'مثال: فواتير كهرباء':'مثال: رسوم كتب')+'"/></div>'+
+    '<div class="field"><label>المبلغ (ر.س) *</label><input class="input" type="number" id="ea-a"/></div>'+
+    '<div class="field"><label>التاريخ</label><input class="input" type="date" id="ea-d" value="'+todayISO()+'"/></div>'+
+    '<div class="field"><label>ملاحظة</label><input class="input" id="ea-no"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' إضافة</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return; btn.classList.add('is-loading');
+    NS.api('/api/manager/month/entry/add',{mt:TOKEN,ym:M.ym,etype:etype,
+      name:m.el.querySelector('#ea-n').value, amount:m.el.querySelector('#ea-a').value,
+      date:m.el.querySelector('#ea-d').value, note:m.el.querySelector('#ea-no').value}).then(function(r){
+      if(r&&r.ok){ m.close(); NS.toast('تمت الإضافة'); load(M.ym); }
+      else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); }
+    }).catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الحفظ','err'); });
+  });
+}
+function delEntry(id){
+  NS.confirm({title:'حذف القيد؟',okText:'حذف',danger:true}).then(function(ok){
+    if(!ok) return;
+    NS.api('/api/manager/month/entry/del',{mt:TOKEN,id:id}).then(function(r){
+      if(r&&r.ok){ NS.toast('تم الحذف'); load(M.ym); } else NS.toast((r&&r.error)||'خطأ','err');
+    });
+  });
+}
+function importSalaries(){
+  NS.confirm({title:'استيراد رواتب الموظفين؟',okText:'استيراد',
+    body:'سيُضاف قيد راتب لكل موظف من صفحة المرتبات (المستحق أو المدفوع فعلياً). الموظف المُضاف مسبقاً لن يتكرر.'})
+  .then(function(ok){
+    if(!ok) return;
+    NS.api('/api/manager/month/salaries/import',{mt:TOKEN,ym:M.ym}).then(function(r){
+      if(r&&r.ok){ NS.toast('تم استيراد '+r.added+' راتباً'); load(M.ym); } else NS.toast((r&&r.error)||'خطأ','err');
+    });
+  });
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</body>
+</html>

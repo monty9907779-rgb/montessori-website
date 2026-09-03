@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+
+<title>الطلاب | حضانة مونتيسوري</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+.st-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.st-toolbar .search{flex:1;min-width:180px;position:relative}
+.st-toolbar .search input{width:100%}
+.st-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.st-card{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--sh-1);position:relative}
+.st-card .top{display:flex;align-items:center;gap:11px;margin-bottom:10px}
+.st-card .who{flex:1;min-width:0}
+.st-card .who b{color:var(--forest);font-size:1.04rem;display:block;line-height:1.3}
+.st-card .who span{color:var(--muted);font-size:.83rem}
+.st-rows .r{display:flex;justify-content:space-between;padding:6px 0;font-size:.9rem;border-bottom:1px solid var(--line-2)}
+.st-rows .r:last-child{border-bottom:0}
+.st-rows .r .l{color:var(--muted)}
+.st-actions{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.st-actions .btn{flex:1;min-width:84px}
+.pay-badge{font-size:.78rem;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap}
+.pay-paid{background:var(--ok-bg);color:var(--ok)}
+.pay-soon{background:#fbf1dd;color:#a86f27}
+.pay-over{background:#fdece9;color:var(--danger)}
+.pay-none{background:var(--sand);color:var(--muted)}
+/* payments history */
+.ph{display:flex;flex-direction:column;gap:0;max-height:44vh;overflow:auto;margin:6px 0}
+.ph .p{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line-2)}
+.ph .p:last-child{border-bottom:0}
+.ph .p .amt{font-weight:800;color:var(--forest);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ph .p .meta{flex:1;min-width:0}
+.ph .p .meta b{font-size:.92rem}
+.ph .p .meta span{display:block;color:var(--muted);font-size:.8rem}
+.ph .p .del{color:var(--danger);background:none;border:none;cursor:pointer;padding:6px;border-radius:8px}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null, Q='';
+var app=document.getElementById('app');
+
+var AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function plusMonthISO(iso){ var d=iso?new Date(iso):new Date(); d.setMonth(d.getMonth()+1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtD(iso){ return NS.fmtShort?NS.fmtShort(iso):iso; }
+
+if(!TOKEN){ gate(); } else { boot(); }
+function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'الطلاب',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة لإدارة الطلاب والرسوم.'}); }
+function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
+  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+  '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+
+function boot(){
+  document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
+  NS.api('/api/manager/students',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    DATA=d; render();
+  }).catch(function(err){ if(err.type==='auth'){ NS.clearToken('mt'); gate(); } else netError(); });
+}
+
+function statusBadge(s){
+  if(s.status==='overdue') return '<span class="pay-badge pay-over">متأخّر '+Math.abs(s.days)+' يوم</span>';
+  if(s.status==='due_soon') return '<span class="pay-badge pay-soon">'+(s.days<=0?'مستحقّ اليوم':('باقٍ '+s.days+' يوم')) +'</span>';
+  if(s.status==='paid') return '<span class="pay-badge pay-paid">مُسدَّد'+(s.paid_until?(' حتى '+fmtD(s.paid_until)):'')+'</span>';
+  return '<span class="pay-badge pay-none">لم يُسجَّل دفع</span>';
+}
+
+function render(){
+  var st=DATA.students||[];
+  var overdue=st.filter(function(s){return s.status==='overdue';}).length;
+  var soon=st.filter(function(s){return s.status==='due_soon';}).length;
+  var h=NS.appbar({sub:'الطلاب', nav:NS.adminNav('students')})+
+    '<main class="app-main">'+
+      '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+        '<div><h1>الطلاب</h1><div class="sub">أضيفي الطلاب، وسجّلي رسومهم ومتى دفعوا.</div></div>'+
+        '<button class="btn btn--primary" id="add">'+I('plus')+' طالب جديد</button>'+
+      '</div>'+
+      '<div class="st-summary">'+
+        stat('is-forest','users','إجمالي الطلاب',st.length)+
+        stat(overdue?'is-danger':'is-forest','alert','متأخرو السداد',overdue)+
+        stat(soon?'is-amber':'is-forest','clock','قرب موعدهم',soon)+
+      '</div>'+
+      '<div class="st-toolbar">'+
+        '<div class="search"><input class="input" id="q" type="search" placeholder="ابحثي باسم الطالب أو ولي الأمر…" value="'+NS.attr(Q)+'"/></div>'+
+      '</div>'+
+      '<div id="list"></div>'+
+    '</main>';
+  app.innerHTML=h; NS.wireLogout('mt');
+  document.getElementById('add').addEventListener('click',function(){ edit(null); });
+  var q=document.getElementById('q');
+  q.addEventListener('input',function(){ Q=q.value; renderList(); });
+  renderList();
+}
+function stat(accent,icon,label,value){
+  return '<div class="stat '+accent+'"><div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span></div>'+
+    '<div class="v tabnum">'+value+'</div></div>';
+}
+
+function filtered(){
+  var q=Q.trim();
+  var list=(DATA.students||[]).slice().sort(function(a,b){
+    var rank={overdue:0,due_soon:1,none:2,paid:3};
+    return (rank[a.status]-rank[b.status]) || a.name.localeCompare(b.name,'ar');
+  });
+  if(!q) return list;
+  return list.filter(function(s){ return (s.name+' '+s.guardian_name+' '+s.guardian_phone).indexOf(q)>=0; });
+}
+
+function renderList(){
+  var L=document.getElementById('list'); if(!L) return;
+  var list=filtered();
+  if(!(DATA.students||[]).length){ L.innerHTML=NS.empty('users','لا يوجد طلاب بعد','اضغطي «طالب جديد» لإضافة أول طالب.'); return; }
+  if(!list.length){ L.innerHTML=NS.empty('search','لا نتائج','جرّبي بحثاً آخر.'); return; }
+  var h='<div class="st-grid">';
+  list.forEach(function(s){
+    var initial=(s.name||'؟').trim().charAt(0);
+    h+='<div class="st-card">'+
+      '<div class="top"><span class="avatar avatar--sm">'+NS.esc(initial)+'</span>'+
+        '<div class="who"><b>'+NS.esc(s.name)+'</b><span>'+(s.class_name?NS.esc(s.class_name):'بدون فصل')+
+          (s.linked?' · <span style="color:var(--ok)">مرتبط بولي أمر</span>':'')+'</span></div>'+
+        statusBadge(s)+'</div>'+
+      '<div class="st-rows">'+
+        '<div class="r"><span class="l">الرسوم الشهرية</span><b class="tabnum">'+NS.riyal(s.fees)+'</b></div>'+
+        '<div class="r"><span class="l">آخر دفعة</span><b class="tabnum">'+(s.last_date?(NS.riyal(s.last_amount)+' · '+fmtD(s.last_date)):'—')+'</b></div>'+
+        '<div class="r"><span class="l">إجمالي المدفوع</span><b class="tabnum">'+NS.riyal(s.total_paid)+'</b></div>'+
+      '</div>'+
+      '<div class="st-actions">'+
+        '<button class="btn btn--primary btn--sm" data-pay="'+NS.attr(s.id)+'">'+I('wallet')+' تسجيل دفعة</button>'+
+        '<button class="btn btn--soft btn--sm" data-hist="'+NS.attr(s.id)+'">'+I('clock')+' الدفعات</button>'+
+        '<button class="btn btn--soft btn--sm" data-edit="'+NS.attr(s.id)+'">'+I('user')+' تعديل</button>'+
+        (s.guardian_phone?('<button class="btn btn--soft btn--sm" data-wa="'+NS.attr(s.id)+'">'+I('whatsapp')+'</button>'):'')+
+      '</div></div>';
+  });
+  h+='</div>'; L.innerHTML=h;
+  bind(L,'data-pay',function(id){ pay(get(id)); });
+  bind(L,'data-hist',function(id){ history(get(id)); });
+  bind(L,'data-edit',function(id){ edit(get(id)); });
+  bind(L,'data-wa',function(id){ remind(get(id)); });
+}
+function bind(root,attr,fn){ [].forEach.call(root.querySelectorAll('['+attr+']'),function(b){ b.addEventListener('click',function(){ fn(b.getAttribute(attr)); }); }); }
+function get(id){ return (DATA.students||[]).filter(function(s){return String(s.id)===String(id);})[0]; }
+function refreshRow(row){ if(!row) return boot(); var i=DATA.students.findIndex(function(s){return s.id===row.id;}); if(i>=0) DATA.students[i]=row; renderList(); }
+
+/* ---- add / edit student ---- */
+function edit(s){
+  var opts='<option value="">— بدون فصل —</option>';
+  (DATA.classes||[]).forEach(function(c){ opts+='<option value="'+c.id+'"'+(s&&s.class_id===c.id?' selected':'')+'>'+NS.esc(c.name)+'</option>'; });
+  var m=NS.modal(
+    '<div class="modal__icon">'+I(s?'user':'plus')+'</div>'+
+    '<h3>'+(s?'تعديل بيانات '+NS.esc(s.name):'طالب جديد')+'</h3>'+
+    '<div class="field"><label>اسم الطالب *</label><input class="input" id="f-name" value="'+NS.attr(s?s.name:'')+'" placeholder="الاسم الكامل"/></div>'+
+    '<div class="field"><label>الفصل</label><select class="input" id="f-class">'+opts+'</select></div>'+
+    '<div class="field"><label>الرسوم الشهرية (ر.س)</label><input class="input" type="number" min="0" id="f-fees" value="'+(s?s.fees:'')+'" placeholder="مثال: 1500"/></div>'+
+    '<div class="field"><label>اسم ولي الأمر</label><input class="input" id="f-gn" value="'+NS.attr(s?s.guardian_name:'')+'"/></div>'+
+    '<div class="field"><label>جوال ولي الأمر</label><input class="input" id="f-gp" type="tel" inputmode="tel" value="'+NS.attr(s?s.guardian_phone:'')+'" placeholder="05xxxxxxxx"/></div>'+
+    '<div class="field"><label>تاريخ الالتحاق</label><input class="input" type="date" id="f-jd" value="'+NS.attr(s?s.joining_date:todayISO())+'"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button>'+
+      (s?'<button class="btn btn--ghost" data-del style="color:var(--danger)">حذف</button>':'')+
+      '<button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  if(s) m.el.querySelector('[data-del]').addEventListener('click',function(){
+    m.close();
+    NS.confirm({title:'حذف الطالب؟',body:'سيُخفى '+NS.esc(s.name)+' من القوائم (لن تُحذف سجلاته نهائياً).',okText:'حذف',danger:true}).then(function(ok){
+      if(!ok) return;
+      NS.api('/api/manager/student/delete',{mt:TOKEN,id:s.id}).then(function(r){ if(r&&r.ok){ NS.toast('تم الحذف'); boot(); } else NS.toast((r&&r.error)||'خطأ','err'); });
+    });
+  });
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return;
+    var name=m.el.querySelector('#f-name').value.trim();
+    if(!name){ NS.toast('اكتبي اسم الطالب','err'); return; }
+    btn.classList.add('is-loading');
+    NS.api('/api/manager/student/save',{mt:TOKEN, id:s?s.id:'', name:name,
+      class_id:m.el.querySelector('#f-class').value, fees:m.el.querySelector('#f-fees').value,
+      guardian_name:m.el.querySelector('#f-gn').value, guardian_phone:m.el.querySelector('#f-gp').value,
+      joining_date:m.el.querySelector('#f-jd').value})
+    .then(function(r){ if(r&&r.ok){ m.close(); NS.toast(s?'تم الحفظ':'تمت إضافة الطالب'); boot(); } else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); } })
+    .catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الحفظ','err'); });
+  });
+}
+
+/* ---- record a payment ---- */
+function pay(s){
+  var defUntil = plusMonthISO(s.paid_until && s.paid_until>=todayISO() ? s.paid_until : todayISO());
+  var m=NS.modal(
+    '<div class="modal__icon">'+I('wallet')+'</div>'+
+    '<h3>تسجيل دفعة — '+NS.esc(s.name)+'</h3>'+
+    '<p class="muted" style="font-size:.86rem;margin-bottom:6px">الرسوم الشهرية: '+NS.riyal(s.fees)+'</p>'+
+    '<div class="field"><label>المبلغ المدفوع (ر.س) *</label><input class="input" type="number" min="1" id="p-amt" value="'+(s.fees||'')+'"/></div>'+
+    '<div class="field"><label>تاريخ الدفع</label><input class="input" type="date" id="p-date" value="'+todayISO()+'"/></div>'+
+    '<div class="field"><label>مدفوع حتى (موعد التجديد القادم)</label><input class="input" type="date" id="p-until" value="'+defUntil+'"/></div>'+
+    '<div class="field"><label>طريقة الدفع</label><select class="input" id="p-method">'+
+      '<option value="cash">نقداً</option><option value="transfer">تحويل</option><option value="card">شبكة</option><option value="other">أخرى</option></select></div>'+
+    '<div class="field"><label>ملاحظة (اختياري)</label><input class="input" id="p-note" placeholder="مثال: رسوم شهر يوليو"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' تأكيد الدفعة</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return;
+    var amt=parseFloat(m.el.querySelector('#p-amt').value);
+    if(!(amt>0)){ NS.toast('اكتبي مبلغاً صحيحاً','err'); return; }
+    btn.classList.add('is-loading');
+    NS.api('/api/manager/student/pay',{mt:TOKEN, student_id:s.id, amount:amt,
+      date:m.el.querySelector('#p-date').value, paid_until:m.el.querySelector('#p-until').value,
+      method:m.el.querySelector('#p-method').value, note:m.el.querySelector('#p-note').value})
+    .then(function(r){ if(r&&r.ok){ m.close(); NS.toast('تم تسجيل الدفعة ✔'); refreshRow(r.row); } else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); } })
+    .catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر التسجيل','err'); });
+  });
+}
+
+/* ---- payment history ---- */
+function history(s){
+  var m=NS.modal('<div class="modal__icon">'+I('clock')+'</div><h3>دفعات '+NS.esc(s.name)+'</h3><div id="ph-body"><div class="skel skel-line" style="width:80%"></div><div class="skel skel-line" style="width:60%;margin-top:8px"></div></div>'+
+    '<div class="actions"><button class="btn btn--ghost" data-cancel>إغلاق</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  NS.api('/api/manager/student/payments',{mt:TOKEN,student_id:s.id}).then(function(d){
+    var B=m.el.querySelector('#ph-body'); if(!B) return;
+    if(!d||!d.ok){ B.innerHTML='<p class="muted">تعذّر التحميل.</p>'; return; }
+    if(!d.payments.length){ B.innerHTML=NS.empty('wallet','لا توجد دفعات','لم تُسجَّل أي دفعة لهذا الطالب بعد.'); return; }
+    var h='<div class="ph">';
+    d.payments.forEach(function(p){
+      h+='<div class="p"><span class="amt">'+NS.riyal(p.amount)+'</span>'+
+        '<div class="meta"><b>'+fmtD(p.date)+(p.period?(' · '+NS.esc(p.period)):'')+'</b>'+
+        '<span>'+NS.esc(p.method)+(p.note?(' · '+NS.esc(p.note)):'')+'</span></div>'+
+        '<button class="del" data-del="'+NS.attr(p.id)+'" title="حذف الدفعة">'+I('trash')+'</button></div>';
+    });
+    h+='</div><div style="display:flex;justify-content:space-between;padding-top:10px;border-top:2px solid var(--line-2);font-weight:800;color:var(--forest)"><span>الإجمالي</span><span class="tabnum">'+NS.riyal(d.total_paid)+'</span></div>';
+    B.innerHTML=h;
+    bind(B,'data-del',function(id){
+      NS.confirm({title:'حذف الدفعة؟',body:'سيُحذف هذا السجل نهائياً.',okText:'حذف',danger:true}).then(function(ok){
+        if(!ok) return;
+        NS.api('/api/manager/payment/delete',{mt:TOKEN,id:id}).then(function(r){ if(r&&r.ok){ NS.toast('تم الحذف'); if(r.row) refreshRow(r.row); m.close(); history(get(s.id)); } else NS.toast((r&&r.error)||'خطأ','err'); });
+      });
+    });
+  }).catch(function(){ var B=m.el.querySelector('#ph-body'); if(B) B.innerHTML='<p class="muted">تعذّر التحميل.</p>'; });
+}
+
+/* ---- whatsapp reminder ---- */
+function remind(s){
+  var msg='السلام عليكم، تذكير ودّي برسوم الطالب '+s.name+' ('+Math.round(s.fees)+' ر.س)';
+  if(s.status==='overdue') msg+=' — المتأخرة منذ '+Math.abs(s.days)+' يوم';
+  msg+='. يسعدنا استقبال السداد أو الإجابة عن أي استفسار. شكراً لتعاونكم 🌿';
+  window.open(NS.wa(s.guardian_phone,msg),'_blank','noopener');
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</body>
+</html>

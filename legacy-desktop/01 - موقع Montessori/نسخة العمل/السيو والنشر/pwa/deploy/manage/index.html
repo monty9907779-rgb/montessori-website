@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+
+<title>حضانة مونتيسوري | طلبات الربط</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+/* page-specific polish, built on app.css tokens */
+.count-pill{display:inline-flex;align-items:center;gap:8px;background:var(--forest);color:#fff;
+  padding:6px 14px;border-radius:var(--pill);font-weight:800;font-size:.95rem;box-shadow:var(--sh-forest)}
+.count-pill svg{width:18px;height:18px;color:var(--amber)}
+.count-pill.is-zero{background:var(--sand);color:var(--forest);box-shadow:var(--sh-1)}
+.count-pill.is-zero svg{color:var(--sage)}
+.req-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.req-who{display:flex;align-items:flex-start;gap:12px;min-width:0}
+.req-who .nm{font-size:1.12rem;font-weight:800;color:var(--forest);line-height:1.25}
+.req-meta{margin-top:5px;display:flex;flex-direction:column;gap:4px}
+.req-meta .line{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:.9rem;word-break:break-word}
+.req-meta .line svg{width:15px;height:15px;flex:none;color:var(--sage)}
+.req-tags{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.claim{margin:14px 0;padding:13px 15px;background:var(--sand);border-radius:var(--r-sm);font-size:.96rem;line-height:1.7}
+.claim .lbl{color:var(--muted);font-size:.82rem;display:flex;align-items:center;gap:7px;margin-bottom:4px;font-weight:700}
+.claim .lbl svg{width:15px;height:15px;color:var(--clay)}
+.claim b{color:var(--forest)}
+.claim .match{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:.92rem}
+.phone-note{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 13px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600}
+.phone-note svg{width:17px;height:17px;flex:none}
+.phone-note.ok{background:var(--ok-bg);color:var(--ok)}
+.phone-note.warn{background:var(--warn-bg);color:#8a5f18}
+.phone-note.warn svg{color:var(--warn)}
+.req-form{margin-top:14px}
+.req-form .field{margin-bottom:12px}
+.req-actions{display:grid;grid-template-columns:1fr auto;gap:10px}
+@media(max-width:420px){.req-actions{grid-template-columns:1fr}}
+.reqs-list{display:flex;flex-direction:column;gap:14px}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main app-narrow" id="boot"></div></div>
+
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), S=null;
+var app=document.getElementById('app');
+
+/* JSON-RPC helper — token param name is 'mt', preserved from the API contract */
+function rpc(path,params){ return NS.api(path, Object.assign({mt:TOKEN}, params||{})); }
+
+/* ---------- entry ---------- */
+if(!TOKEN){ gate(); }
+else { boot(); }
+
+/* ---------- auth gate (on-site, never Odoo UI) ---------- */
+function gate(){
+  app.innerHTML='';
+  var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'طلبات الربط',body:'سجّل دخولك كمشرف لمراجعة طلبات أولياء الأمور وربطها بالأطفال.'});
+}
+function netError(){
+  app.innerHTML='';
+  var m=document.createElement('div'); app.appendChild(m); m.className='gate';
+  m.innerHTML='<div class="gate__card"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+    '<h2>تعذّر الاتصال</h2><p>تحقّق من اتصالك بالإنترنت وحاول مجدداً.</p>'+
+    '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>';
+}
+
+/* ---------- boot (skeleton -> state) ---------- */
+function boot(){
+  app.innerHTML=
+    '<header class="appbar"><div class="appbar__in">'+
+      '<a class="brand" href="/"><img src="/logo.png" alt=""/><span>حضانة مونتيسوري<small class="b-sub">طلبات الربط</small></span></a>'+
+      '<div class="spacer"></div></div></header>'+
+    '<main class="app-main app-narrow"><div class="page-head"><h1>طلبات الربط</h1><div class="sub">مراجعة طلبات أولياء الأمور</div></div>'+
+    NS.skelCard()+NS.skelCard()+'</main>';
+  rpc('/api/manager/pending').then(function(d){
+    if(!d || !d.ok){ NS.clearToken('mt'); gate(); return; }
+    S=d; render();
+  }).catch(function(err){
+    if(err.type==='auth'){ NS.clearToken('mt'); gate(); }
+    else { netError(); }
+  });
+}
+
+/* ---------- render shell ---------- */
+function render(){
+  app.innerHTML=
+    NS.appbar({sub:'طلبات الربط', nav:NS.adminNav('manage')})+
+    '<main class="app-main app-narrow">'+
+      '<div class="page-head between" style="align-items:flex-end">'+
+        '<div><h1>طلبات الربط</h1><div class="sub">'+(S.manager?NS.esc(S.manager):'مراجعة أولياء الأمور')+'</div></div>'+
+        '<span class="count-pill" id="count"></span>'+
+      '</div>'+
+      '<div class="reqs-list" id="list"></div>'+
+    '</main>'+
+    '<footer style="text-align:center;color:var(--muted);font-size:.82rem;padding:20px">حضانة مونتيسوري · جدة</footer>';
+  NS.wireLogout('mt');
+  updateCount();
+  renderList();
+}
+
+function updateCount(){
+  var n=S.requests.length, el=document.getElementById('count');
+  if(!el) return;
+  el.classList.toggle('is-zero', n===0);
+  el.innerHTML=I(n===0?'checkCircle':'bell')+'<span class="tabnum">'+n+'</span> '+(n===1?'طلب':'طلبات');
+}
+
+/* ---------- list of requests ---------- */
+function renderList(){
+  var list=document.getElementById('list');
+  if(!S.requests.length){
+    list.innerHTML='<div class="card card--pad">'+
+      NS.empty('checkCircle','لا توجد طلبات جديدة','راجعت كل الطلبات — سيظهر أي طلب ربط جديد هنا فور وصوله.')+'</div>';
+    return;
+  }
+  list.innerHTML=S.requests.map(reqCard).join('');
+  S.requests.forEach(function(r){ wireCard(r); });
+}
+
+function studentOptions(matchedId){
+  var h='<option value="">— اختر الطفل —</option>';
+  (S.students||[]).forEach(function(s){
+    h+='<option value="'+NS.attr(s.id)+'"'+(s.id===matchedId?' selected':'')+'>'+NS.esc(s.name)+'</option>';
+  });
+  return h;
+}
+
+function reqCard(r){
+  var conf = r.enrolled
+    ? '<span class="tag tag--ok">'+I('checkCircle')+' الطفل من طلابنا</span>'
+    : '<span class="tag tag--warn">'+I('help')+' بحاجة للتأكد</span>';
+  if(r.nudged) conf = '<span class="tag tag--none" style="background:var(--warn-bg);color:#a86f27">'+I('bell')+' بلّغ ولي الأمر</span> '+conf;
+
+  var phone='';
+  if(r.matched_phone){
+    var ok=!!r.phone_match;
+    phone='<div class="phone-note '+(ok?'ok':'warn')+'">'+I(ok?'check':'alert')+
+      '<span>'+(ok?'رقم ولي الأمر مطابق لسجلّنا':'الرقم يختلف عن سجلّنا — تأكّد')+
+      ' · '+NS.esc(r.matched_phone)+'</span></div>';
+  }
+
+  var contact='<div class="line">'+I('user')+'<span>'+NS.esc(r.parent_email)+'</span></div>';
+  if(r.parent_phone){ contact+='<div class="line">'+I('phone')+'<span dir="ltr">'+NS.esc(r.parent_phone)+'</span></div>'; }
+
+  return '<div class="card card--pad rev in" id="req-'+NS.attr(r.id)+'">'+
+    '<div class="req-head">'+
+      '<div class="req-who">'+
+        '<span class="avatar">'+NS.esc((r.parent_name||'؟').trim().charAt(0))+'</span>'+
+        '<div><div class="nm">'+NS.esc(r.parent_name)+'</div>'+
+        '<div class="req-meta">'+contact+'</div></div>'+
+      '</div>'+
+      '<div class="req-tags">'+conf+'</div>'+
+    '</div>'+
+    '<div class="claim">'+
+      '<div class="lbl">'+I('info')+' الطفل الذي يطالب به</div>'+
+      '<b>'+NS.esc(r.child_name)+'</b>'+
+      (r.matched_name?'<div class="match muted">طابقناه تلقائياً بـ: <b style="color:var(--forest)">'+NS.esc(r.matched_name)+'</b></div>':'')+
+    '</div>'+
+    phone+
+    '<div class="req-form">'+
+      '<div class="field"><label for="sel-'+NS.attr(r.id)+'">اربط بطفل من سجلّنا</label>'+
+        '<select class="select" id="sel-'+NS.attr(r.id)+'">'+studentOptions(r.matched_id)+'</select></div>'+
+      '<div class="req-actions">'+
+        '<button class="btn btn--primary" id="link-'+NS.attr(r.id)+'">'+I('check')+' ربط وموافقة</button>'+
+        '<button class="btn btn--danger" id="rej-'+NS.attr(r.id)+'">'+I('x')+' رفض</button>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function wireCard(r){
+  var linkBtn=document.getElementById('link-'+r.id);
+  var rejBtn=document.getElementById('rej-'+r.id);
+  if(linkBtn) linkBtn.addEventListener('click',function(){ doLink(r, linkBtn, rejBtn); });
+  if(rejBtn) rejBtn.addEventListener('click',function(){ doReject(r, linkBtn, rejBtn); });
+}
+
+function busy(on, a, b){
+  [a,b].forEach(function(btn){ if(!btn) return; btn.classList.toggle('is-loading', on); btn.disabled=on; });
+}
+
+function removeCard(id){
+  var card=document.getElementById('req-'+id);
+  if(card) card.remove();
+  S.requests=S.requests.filter(function(x){ return x.id!==id; });
+  updateCount();
+  if(!S.requests.length) renderList();
+}
+
+/* ---------- link + approve ---------- */
+function doLink(r, linkBtn, rejBtn){
+  if(linkBtn.classList.contains('is-loading')) return;
+  var sel=document.getElementById('sel-'+r.id);
+  var sid=sel ? sel.value : '';
+  if(!sid){ NS.toast('اختر الطفل أولاً','err'); if(sel) sel.focus(); return; }
+  var studentName='';
+  (S.students||[]).forEach(function(s){ if(String(s.id)===String(sid)) studentName=s.name; });
+
+  NS.confirm({
+    title:'ربط وموافقة؟',
+    body:'سيتم ربط '+(r.parent_name||'ولي الأمر')+(studentName?' بالطفل '+studentName:'')+' وتفعيل دخوله فوراً.',
+    okText:'ربط وموافقة', cancelText:'إلغاء'
+  }).then(function(ok){
+    if(!ok) return;
+    busy(true, linkBtn, rejBtn);
+    rpc('/api/manager/link',{request_id:r.id, student_id:parseInt(sid,10)}).then(function(res){
+      if(res && res.ok){
+        NS.toast('تم الربط — يستطيع ولي الأمر الدخول الآن','ok');
+        removeCard(r.id);
+      } else {
+        busy(false, linkBtn, rejBtn);
+        NS.toast((res && res.error) || 'تعذّر الربط','err');
+      }
+    }).catch(function(err){
+      if(err.type==='auth'){ NS.clearToken('mt'); gate(); return; }
+      busy(false, linkBtn, rejBtn);
+      NS.toast(err.message || 'تعذّر الربط','err');
+    });
+  });
+}
+
+/* ---------- reject ---------- */
+function doReject(r, linkBtn, rejBtn){
+  if(rejBtn.classList.contains('is-loading')) return;
+  NS.confirm({
+    title:'رفض الطلب؟',
+    body:'سيتم رفض طلب '+(r.parent_name||'ولي الأمر')+' ولن يُربط بأي طفل.',
+    okText:'رفض', cancelText:'إلغاء', danger:true
+  }).then(function(ok){
+    if(!ok) return;
+    busy(true, linkBtn, rejBtn);
+    rpc('/api/manager/reject',{request_id:r.id}).then(function(res){
+      if(res && res.ok){
+        NS.toast('تم رفض الطلب','ok');
+        removeCard(r.id);
+      } else {
+        busy(false, linkBtn, rejBtn);
+        NS.toast((res && res.error) || 'تعذّر الرفض','err');
+      }
+    }).catch(function(err){
+      if(err.type==='auth'){ NS.clearToken('mt'); gate(); return; }
+      busy(false, linkBtn, rejBtn);
+      NS.toast(err.message || 'تعذّر الرفض','err');
+    });
+  });
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</body>
+</html>

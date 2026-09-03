@@ -1,0 +1,122 @@
+import { getPayments, getStudents, getClasses, markPaymentPaid } from '../utils/database';
+import { useState } from 'react';
+import { Bell, Phone, Mail, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+
+export default function Reminders() {
+  const [refresh, setRefresh] = useState(0);
+  const payments = getPayments();
+  const students = getStudents();
+  const classes = getClasses();
+
+  const pending = payments.filter(p => p.status === 'pending');
+
+  // Group by student
+  const byStudent = {};
+  pending.forEach(p => {
+    if (!byStudent[p.studentId]) byStudent[p.studentId] = [];
+    byStudent[p.studentId].push(p);
+  });
+
+  const overdueStudents = Object.entries(byStudent).map(([studentId, pms]) => {
+    const student = students.find(s => s.id === studentId);
+    const cls = classes.find(c => c.id === student?.classId);
+    const totalDue = pms.reduce((s, p) => s + p.amount, 0);
+    return { student, cls, payments: pms, totalDue };
+  }).sort((a, b) => b.totalDue - a.totalDue);
+
+  const pay = (paymentId) => {
+    markPaymentPaid(paymentId, 'cash');
+    setRefresh(r => r + 1);
+  };
+
+  const totalOverdue = overdueStudents.reduce((s, r) => s + r.totalDue, 0);
+
+  if (overdueStudents.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+        <div style={{ fontSize: '4rem', marginBottom: 16 }}>🎉</div>
+        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--green-deep)', marginBottom: 8 }}>All Payments Are Clear!</h2>
+        <p style={{ color: 'var(--text-light)' }}>No pending payments at this time. Great job!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Summary */}
+      <div className="alert alert-warning" style={{ marginBottom: 20 }}>
+        <AlertTriangle size={18} />
+        <div>
+          <strong>{overdueStudents.length} student{overdueStudents.length > 1 ? 's' : ''} have pending payments</strong>
+          <div style={{ marginTop: 2 }}>Total outstanding: <strong>SAR {totalOverdue.toLocaleString()}</strong></div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {overdueStudents.map(({ student, cls, payments: pms, totalDue }) => (
+          <div key={student?.id} className="card">
+            <div className="card-body">
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: cls?.color + '22' || '#eee', color: cls?.color || '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1rem' }}>
+                      {student?.name?.[0]}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--green-deep)' }}>{student?.name}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-light)' }}>{cls?.name} · Parent: {student?.parentName}</div>
+                    </div>
+                  </div>
+
+                  {/* Contact Buttons */}
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+                    {student?.parentPhone && (
+                      <a href={`tel:${student.parentPhone}`} className="btn btn-ghost btn-sm">
+                        <Phone size={13} /> Call Parent
+                      </a>
+                    )}
+                    {student?.parentEmail && (
+                      <a href={`mailto:${student.parentEmail}?subject=Payment Reminder - Montessori Nursery&body=Dear ${student.parentName},%0D%0A%0D%0AThis is a friendly reminder that payment of SAR ${totalDue.toLocaleString()} is outstanding for ${student.name}.%0D%0A%0D%0APlease contact us to arrange payment.%0D%0A%0D%0AThank you,%0D%0AMontessori Nursery Finance Team`}
+                        className="btn btn-ghost btn-sm">
+                        <Mail size={13} /> Email Reminder
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Pending months */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {pms.map(p => (
+                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--cream)', borderRadius: 8, padding: '10px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Clock size={13} style={{ color: '#dc2626' }} />
+                          <span style={{ fontSize: '0.85rem', color: 'var(--text-mid)' }}>
+                            {new Date(p.month + '-01').toLocaleDateString('en', { month: 'long', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontWeight: 600, color: '#dc2626' }}>SAR {p.amount.toLocaleString()}</span>
+                          <button className="btn btn-success btn-sm" onClick={() => pay(p.id)}>
+                            <CheckCircle size={12} /> Paid
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Total due */}
+                <div style={{ textAlign: 'right', minWidth: 120 }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-light)', marginBottom: 2 }}>TOTAL DUE</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: '#dc2626', fontWeight: 700 }}>
+                    SAR {totalDue.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginTop: 2 }}>{pms.length} month{pms.length > 1 ? 's' : ''} overdue</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

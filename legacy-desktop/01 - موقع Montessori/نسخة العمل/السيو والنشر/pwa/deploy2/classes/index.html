@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+
+<title>الفصول | حضانة مونتيسوري</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+.cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.cls-card{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:20px;box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:12px}
+.cls-card h3{color:var(--forest);font-size:1.15rem;display:flex;align-items:center;gap:9px}
+.cls-card h3 svg{width:20px;height:20px;color:var(--clay)}
+.cls-meta{display:flex;flex-wrap:wrap;gap:8px}
+.cls-actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+.cls-actions .btn{flex:1;min-width:90px}
+.stu-list{max-height:46vh;overflow-y:auto;margin:6px 0 4px;border:1px solid var(--line-2);border-radius:var(--r-sm)}
+.stu-item{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--line-2);cursor:pointer}
+.stu-item:last-child{border-bottom:0}
+.stu-item:hover{background:var(--sand)}
+.stu-item input{width:20px;height:20px;accent-color:var(--forest);flex:none}
+.stu-item .nm{flex:1;font-weight:600}
+.stu-item .cur{font-size:.78rem;color:var(--muted)}
+.stu-item.in-other .cur{color:var(--warn)}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null;
+var app=document.getElementById('app');
+
+if(!TOKEN){ gate(); } else { boot(); }
+
+function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'إدارة الفصول',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة.'}); }
+function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
+  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+  '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+
+function boot(){
+  document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
+  NS.api('/api/manager/classes',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    DATA=d; render();
+  }).catch(function(err){ if(err.type==='auth'){ NS.clearToken('mt'); gate(); } else netError(); });
+}
+
+function render(){
+  var h=NS.appbar({sub:'الفصول', nav:NS.adminNav('classes')})+
+    '<main class="app-main">'+
+      '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+        '<div><h1>الفصول</h1><div class="sub">أنشئي الفصول وعيّني لكل فصل معلّمة وطلاباً.</div></div>'+
+        '<button class="btn btn--primary" id="add">'+I('plus')+' فصل جديد</button>'+
+      '</div>'+
+      '<div id="list"></div>'+
+    '</main>';
+  app.innerHTML=h; NS.wireLogout('mt');
+  document.getElementById('add').addEventListener('click',function(){ classForm(null); });
+  renderList();
+}
+
+function renderList(){
+  var L=document.getElementById('list');
+  if(!DATA.classes.length){
+    L.innerHTML=NS.empty('book','لا توجد فصول بعد','اضغطي «فصل جديد» لإنشاء أول فصل وتعيين معلّمته.');
+    return;
+  }
+  var h='<div class="cls-grid">';
+  DATA.classes.forEach(function(c){
+    h+='<div class="cls-card">'+
+      '<h3>'+I('book')+' '+NS.esc(c.name)+'</h3>'+
+      '<div class="cls-meta">'+
+        (c.teacher_name?'<span class="tag tag--teach">'+I('user')+' '+NS.esc(c.teacher_name)+'</span>'
+                        :'<span class="tag tag--none">'+I('alert')+' بدون معلّمة</span>')+
+        '<span class="tag tag--soft">'+I('users')+' '+c.student_count+' / '+c.capacity+'</span>'+
+      '</div>'+
+      '<div class="cls-actions">'+
+        '<button class="btn btn--soft btn--sm" data-stu="'+NS.attr(c.id)+'">'+I('users')+' الطلاب</button>'+
+        '<button class="btn btn--ghost btn--sm" data-edit="'+NS.attr(c.id)+'">'+I('info')+' تعديل</button>'+
+        '<button class="btn btn--danger btn--sm" data-del="'+NS.attr(c.id)+'">'+I('x')+'</button>'+
+      '</div></div>';
+  });
+  h+='</div>'; L.innerHTML=h;
+  [].forEach.call(L.querySelectorAll('[data-edit]'),function(b){ b.addEventListener('click',function(){ classForm(cls(+b.getAttribute('data-edit'))); }); });
+  [].forEach.call(L.querySelectorAll('[data-stu]'),function(b){ b.addEventListener('click',function(){ studentsModal(cls(+b.getAttribute('data-stu'))); }); });
+  [].forEach.call(L.querySelectorAll('[data-del]'),function(b){ b.addEventListener('click',function(){ delClass(cls(+b.getAttribute('data-del'))); }); });
+}
+function cls(id){ return DATA.classes.filter(function(c){return c.id===id;})[0]; }
+
+function teacherOptions(sel){
+  var h='<option value="">— بدون معلّمة —</option>';
+  DATA.teachers.forEach(function(t){ h+='<option value="'+NS.attr(t.id)+'"'+(sel===t.id?' selected':'')+'>'+NS.esc(t.name)+'</option>'; });
+  return h;
+}
+
+function classForm(c){
+  var m=NS.modal(
+    '<div class="modal__icon">'+I('book')+'</div>'+
+    '<h3>'+(c?'تعديل الفصل':'فصل جديد')+'</h3>'+
+    '<div class="field"><label>اسم الفصل</label><input class="input" id="cf-name" placeholder="مثال: فصل الأزهار" value="'+(c?NS.attr(c.name):'')+'"/></div>'+
+    '<div class="field"><label>المعلّمة المسؤولة</label><select class="select" id="cf-teacher">'+teacherOptions(c?c.teacher_id:0)+'</select></div>'+
+    '<div class="field"><label>السعة القصوى</label><input class="input" type="number" min="1" id="cf-cap" value="'+(c?c.capacity:15)+'"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this, name=m.el.querySelector('#cf-name').value.trim();
+    if(!name){ NS.toast('اكتبي اسم الفصل','err'); return; }
+    if(btn.classList.contains('is-loading')) return; btn.classList.add('is-loading');
+    NS.api('/api/manager/class/save',{mt:TOKEN, id:(c?c.id:null),
+      name:name, teacher_id:m.el.querySelector('#cf-teacher').value, capacity:m.el.querySelector('#cf-cap').value})
+    .then(function(r){ if(r&&r.ok){ m.close(); NS.toast('تم الحفظ'); boot(); } else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); } })
+    .catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الحفظ','err'); });
+  });
+}
+
+function delClass(c){
+  NS.confirm({title:'حذف الفصل؟',body:'سيتم حذف «'+c.name+'» وإلغاء ربط طلابه (لن يُحذف الطلاب).',okText:'حذف',danger:true})
+  .then(function(ok){ if(!ok) return;
+    NS.api('/api/manager/class/delete',{mt:TOKEN,id:c.id})
+    .then(function(r){ if(r&&r.ok){ NS.toast('تم الحذف'); boot(); } else NS.toast((r&&r.error)||'خطأ','err'); })
+    .catch(function(){ NS.toast('تعذّر الحذف','err'); }); });
+}
+
+function studentsModal(c){
+  var sel={}; c.student_ids.forEach(function(id){ sel[id]=true; });
+  function rows(filter){
+    var f=(filter||'').trim();
+    return DATA.students.filter(function(s){ return !f || s.name.indexOf(f)>=0; }).map(function(s){
+      var inOther=s.class_id && s.class_id!==c.id;
+      var curName=''; if(inOther){ var oc=cls(s.class_id); curName=oc?oc.name:''; }
+      return '<label class="stu-item'+(inOther?' in-other':'')+'">'+
+        '<input type="checkbox" data-sid="'+NS.attr(s.id)+'"'+(sel[s.id]?' checked':'')+'/>'+
+        '<span class="nm">'+NS.esc(s.name)+'</span>'+
+        (inOther?'<span class="cur">في: '+NS.esc(curName)+'</span>':(s.class_id===c.id?'<span class="cur">في هذا الفصل</span>':''))+
+      '</label>';
+    }).join('') || '<div class="empty" style="padding:24px">لا نتائج</div>';
+  }
+  var m=NS.modal(
+    '<h3>'+I('users')+' طلاب «'+NS.esc(c.name)+'»</h3>'+
+    '<div class="field" style="margin-bottom:8px"><input class="input" id="stu-q" placeholder="ابحثي عن طالب..."/></div>'+
+    '<div class="stu-list" id="stu-list">'+rows('')+'</div>'+
+    '<p class="muted" style="font-size:.82rem;margin:6px 0 14px">اختيار طالب من فصل آخر ينقله لهذا الفصل.</p>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' <span id="stu-n"></span></button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  var list=m.el.querySelector('#stu-list'), nEl=m.el.querySelector('#stu-n');
+  function count(){ var n=0; for(var k in sel) if(sel[k]) n++; nEl.textContent='حفظ ('+n+')'; }
+  count();
+  list.addEventListener('change',function(e){ var cb=e.target; if(cb.dataset.sid){ sel[cb.dataset.sid]=cb.checked; count(); } });
+  m.el.querySelector('#stu-q').addEventListener('input',function(){ list.innerHTML=rows(this.value); });
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return; btn.classList.add('is-loading');
+    var ids=Object.keys(sel).filter(function(k){return sel[k];}).map(Number);
+    NS.api('/api/manager/class/students',{mt:TOKEN,id:c.id,student_ids:ids})
+    .then(function(r){ if(r&&r.ok){ m.close(); NS.toast('تم تحديث طلاب الفصل'); boot(); } else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); } })
+    .catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الحفظ','err'); });
+  });
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script src="/assets/install.js?v=1" defer></script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>حالة السيرفر | روضة كوكب الطفل الحر</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preload" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/Iurf6YBj_oCad4k1l5anHrRpiZtK6GwN9w.woff2" as="font" type="font/woff2" crossorigin><style>/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5qjHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5qjHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/assets/fonts/Iura6YBj_oCad4k1nzGBC5xLhLE.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l8KiHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l8KiHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l4qkHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5anHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5anHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l7KmHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l7KmHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<link rel="stylesheet" href="/assets/app.css?v=22"/>
+<style>
+.gsec{background:var(--card,#fff);border-radius:14px;box-shadow:0 3px 12px rgba(15,23,42,.06);padding:18px;margin-bottom:16px}
+.gsec>h3{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;margin-bottom:4px}
+.gsec>h3 .st{margin-inline-start:auto;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px}
+.s-ok{background:#dcfce7;color:#15803d}.s-warn{background:#fef3c7;color:#b45309}
+.s-bad{background:#fee2e2;color:#b91c1c}.s-off{background:#eef2f7;color:#64748b}
+.sub{color:#79857c;font-size:11px;margin-bottom:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px;margin-bottom:6px}
+.kpi{background:#f7faf8;border-radius:11px;padding:11px;text-align:center}
+.kpi b{display:block;font-size:23px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi span{display:block;font-size:11px;color:#79857c;margin-top:3px}
+.grow{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line-2,#eef2f0);font-size:13px}
+.grow:last-child{border-bottom:0}
+.grow .l{color:#79857c}
+.grow .v{margin-inline-start:auto;font-weight:800;font-variant-numeric:tabular-nums;direction:ltr}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:9px}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:start;color:#79857c;font-weight:700;font-size:11px;padding:6px 7px;border-bottom:1px solid var(--line-2,#eef2f0)}
+.tbl td{padding:7px;border-bottom:1px solid var(--line-2,#f2f5f3)}
+.tbl td.n{text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
+.tbl tr:last-child td{border-bottom:0}
+.tbl.wide{min-width:560px}
+.tbl.wide th,.tbl.wide td{white-space:nowrap}
+.tbl.wide td:first-child{white-space:normal;min-width:120px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;direction:ltr}
+.hd{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:15px}
+.hd .sp{margin-inline-start:auto}
+#rf[disabled]{opacity:.55;cursor:progress}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-inline-end:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.stale{background:#fef3c7;color:#b45309;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;margin-bottom:13px;line-height:1.7}
+.bad{background:#fee2e2;color:#b91c1c}
+.note{color:#79857c;font-size:11.5px;margin-top:9px;line-height:1.65}
+.none{color:#9aa3a8;font-size:12.5px;padding:9px 0}
+.split{display:flex;height:9px;border-radius:5px;overflow:hidden;background:#eef2f7;min-width:70px}
+.split i{display:block;height:100%}
+.lg{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:#79857c;margin-top:9px}
+.lg b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-inline-end:4px}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+/* ===== إجراءات السيرفر ===== */
+.ops{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px}
+.opsb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:start;
+  background:#f7faf8;border:1px solid var(--line-2,#eef2f0);border-radius:12px;padding:12px 13px;
+  cursor:pointer;font:inherit;color:inherit;transition:background .15s}
+.opsb:hover{background:#eef5f0}
+.opsb b{font-size:13.5px;font-weight:800}
+.opsb span{font-size:11px;color:#79857c;line-height:1.6}
+.opsb[disabled]{opacity:.5;cursor:not-allowed}
+.opsb.d1{background:#fffbeb;border-color:#fde68a}.opsb.d1:hover{background:#fef3c7}
+.opsb.d2{background:#fef2f2;border-color:#fecaca}.opsb.d2:hover{background:#fee2e2}
+.opsb.d2 b{color:#b91c1c}
+.opslog{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.opslog td{padding:6px 7px;border-bottom:1px solid var(--line-2,#f2f5f3);vertical-align:top}
+.opslog tr:last-child td{border-bottom:0}
+.opslog .o{color:#15803d;font-weight:800}.opslog .x{color:#b91c1c;font-weight:800}
+.opslog .t{color:#9aa3a8;font-size:11px;white-space:nowrap;direction:ltr}
+.opsout{color:#79857c;font-size:11px;white-space:pre-wrap;word-break:break-word}
+.need{background:#b45309;color:#fff;border-radius:20px;padding:1px 8px;font-size:10px;
+  font-weight:800;margin-inline-start:5px;vertical-align:1px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="/assets/app.js?v=48"></script>
+<script>
+var TOKEN = NS.token('mt');
+var app = document.getElementById('app');
+var D = null, busy = false;
+
+var C_PAID='#7c3aed', C_ORG='#16a34a', C_DIR='#f59e0b', C_OTH='#cbd5e1';
+
+function bar(){ return NS.appbar({sub:'حالة السيرفر', nav:NS.adminNav('server')}); }
+function gate(){
+  app.innerHTML = bar()+'<main class="app-main app-narrow" id="m"></main>';
+  NS.gate(document.getElementById('m'), {title:'حالة السيرفر',
+    body:'سجّلي دخولك كصاحبة الحضانة لعرض حالة السيرفر والأمان.'});
+}
+function num(v){ return (v==null||v==='')?'—':Number(v).toLocaleString('en-US'); }
+function esc(v){ return NS.esc(v==null?'—':v); }
+function pill(k,t){ return '<span class="st s-'+k+'">'+NS.esc(t)+'</span>'; }
+function row(l,v){ return '<div class="grow"><span class="l">'+NS.esc(l)+'</span><span class="v">'+v+'</span></div>'; }
+function sec(t,st,sb,b){ return '<div class="gsec"><h3>'+NS.esc(t)+st+'</h3>'+(sb?'<div class="sub">'+sb+'</div>':'')+b+'</div>'; }
+function kpis(l){ return '<div class="kpis">'+l.map(function(k){ return '<div class="kpi"><b>'+k[1]+'</b><span>'+NS.esc(k[0])+'</span></div>'; }).join('')+'</div>'; }
+function table(head,rows){
+  if(!rows.length) return '<div class="none">لا توجد بيانات</div>';
+  var wide = head.length>=5 ? ' wide':'';
+  return '<div class="tw"><table class="tbl'+wide+'"><thead><tr>'+head.map(function(h){
+    return '<th class="u-center"'+(h[1]?'':'')+'>'+NS.esc(h[0])+'</th>';
+  }).join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
+}
+
+var AR_C = {'Saudi Arabia':'السعودية','Egypt':'مصر','United Arab Emirates':'الإمارات',
+'Kuwait':'الكويت','Qatar':'قطر','Bahrain':'البحرين','Oman':'عُمان','Jordan':'الأردن',
+'Lebanon':'لبنان','Syria':'سوريا','Iraq':'العراق','Yemen':'اليمن','Sudan':'السودان',
+'Palestine':'فلسطين','Libya':'ليبيا','Tunisia':'تونس','Algeria':'الجزائر','Morocco':'المغرب',
+'United States':'أمريكا','United Kingdom':'بريطانيا','Canada':'كندا','France':'فرنسا',
+'Germany':'ألمانيا','Netherlands':'هولندا','India':'الهند','Pakistan':'باكستان',
+'Philippines':'الفلبين','Turkey':'تركيا','China':'الصين','Denmark':'الدنمارك',
+'Bulgaria':'بلغاريا','Armenia':'أرمينيا','Albania':'ألبانيا','Afghanistan':'أفغانستان',
+'Russia':'روسيا','Indonesia':'إندونيسيا','(not set)':'غير محدّد'};
+function flag(cc){
+  if(!cc||cc.length!==2||!/^[A-Za-z]{2}$/.test(cc)) return '🏳️';
+  return String.fromCodePoint.apply(null, cc.toUpperCase().split('').map(function(c){
+    return 0x1F1E6 + c.charCodeAt(0) - 65; }));
+}
+
+/* ===== الدول حسب مصدر الزيارة ===== */
+function secGeo(g){
+  if(!g) return sec('🌍 الدول اللي بتزور', pill('off','لا بيانات'),'','<div class="none">—</div>');
+  if(g.error) return sec('🌍 الدول اللي بتزور', pill('bad','خطأ'),'','<div class="stale bad">'+NS.esc(g.error)+'</div>');
+  var t = g.totals||{}, cs = g.countries||[];
+  var gt = (t.paid||0)+(t.organic||0)+(t.direct||0)+(t.other||0) || 1;
+
+  var rows = cs.map(function(c){
+    var tot = c.total||1;
+    function seg(v,col){ return v? '<i style="width:'+(v*100/tot)+'%;background:'+col+'"></i>':''; }
+    return '<tr><td>'+flag(c.cc)+' '+esc(AR_C[c.name]||c.name)+'</td>'+
+      '<td class="n">'+num(c.total)+'</td>'+
+      '<td class="n" style="color:'+C_PAID+'">'+num(c.paid)+'</td>'+
+      '<td class="n" style="color:'+C_ORG+'">'+num(c.organic)+'</td>'+
+      '<td class="n" style="color:'+C_DIR+'">'+num(c.direct)+'</td>'+
+      '<td style="width:22%"><span class="split">'+seg(c.paid,C_PAID)+seg(c.organic,C_ORG)+
+        seg(c.direct,C_DIR)+seg(c.other,C_OTH)+'</span></td></tr>';
+  });
+
+  var body =
+    kpis([['من الإعلان',num(t.paid)],['من البحث المجاني',num(t.organic)],
+          ['مباشر',num(t.direct)],['غير مصنّف',num(t.other)]])+
+    row('نصيب الإعلان من الزيارات', Math.round((t.paid||0)*100/gt)+'%')+
+    row('نصيب البحث المجاني (SEO)', Math.round((t.organic||0)*100/gt)+'%')+
+    table([['الدولة'],['كل الجلسات',1],['إعلان',1],['بحث',1],['مباشر',1],['']], rows)+
+    '<div class="lg"><span><b style="background:'+C_PAID+'"></b>إعلان</span>'+
+      '<span><b style="background:'+C_ORG+'"></b>بحث مجاني</span>'+
+      '<span><b style="background:'+C_DIR+'"></b>مباشر</span>'+
+      '<span><b style="background:'+C_OTH+'"></b>غير مصنّف</span></div>';
+
+  if((t.other||0) > gt*0.5){
+    body = '<div class="stale">⚠️ أكتر من نص الجلسات «غير مصنّفة» — يعني '+
+      'GA4 مش عارف مصدرها. ده بيحصل لما وسم الإعلانات (gclid) مايوصلش، '+
+      'وبيخلي قياس عائد الإعلان غير موثوق.</div>' + body;
+  }
+  return sec('🌍 الدول اللي بتزور', pill('ok','آخر '+(g.window||'٢٨ يوم')),
+    'مقسّمة حسب مصدر الزيارة — إعلان مدفوع مقابل بحث مجاني', body);
+}
+
+/* ===== الأمان ===== */
+function secSSH(s){
+  if(!s) return '';
+  var hard = s.password_auth==='no';
+  return sec('🔐 محاولات اختراق SSH',
+    pill(hard?'ok':'bad', hard?'محمي بمفتاح':'كلمة سر مفعّلة!'),
+    'آخر ٢٤ ساعة',
+    kpis([['محاولة فاشلة',num(s.attempts_24h)],['عنوان مختلف',num(s.unique_ips)]])+
+    row('الدخول بكلمة سر', hard?'✅ مقفول — المحاولات دي مستحيلة تنجح':'🔴 مفتوح — خطر')+
+    '<div class="u-lbl">أكتر العناوين محاولة</div>'+
+    table([['العنوان'],['محاولات',1]], (s.top_ips||[]).map(function(x){
+      return '<tr><td class="mono">'+esc(x.ip)+'</td><td class="n">'+num(x.n)+'</td></tr>'; }))+
+    '<div class="u-lbl">أسماء بيجرّبوها</div>'+
+    table([['الاسم'],['محاولات',1]], (s.top_users||[]).map(function(x){
+      return '<tr><td class="mono">'+esc(x.user)+'</td><td class="n">'+num(x.n)+'</td></tr>'; }))+
+    (hard?'<div class="note">الأرقام دي طبيعية لأي سيرفر على الإنترنت. طالما الدخول '+
+      'بكلمة سر مقفول، المحاولات دي بتترفض كلها ومش خطر.</div>':''));
+}
+
+function secF2B(j){
+  if(!j||!j.length) return '';
+  var banned = j.reduce(function(a,x){ return a+(x.banned||0); },0);
+  return sec('🛡️ الحظر التلقائي (fail2ban)', pill('ok',banned+' محظور حالياً'),
+    'بيحظر أي عنوان بيحاول يخمّن كلمات سر البريد',
+    table([['الحارس'],['محظور الآن',1],['إجمالي',1],['محاولات',1]],
+      j.map(function(x){
+        return '<tr><td>'+esc(x.name)+'</td><td class="n">'+num(x.banned)+'</td>'+
+          '<td class="n">'+num(x.total)+'</td><td class="n">'+num(x.failed)+'</td></tr>'; })));
+}
+
+function secWeb(w){
+  if(!w) return '';
+  return sec('🌐 محاولات فحص الموقع', pill(w.probe_paths&&w.probe_paths.length?'warn':'ok',
+      num(w.errors_4xx)+' طلب مرفوض'),
+    'بوتات بتدوّر على ثغرات معروفة',
+    '<div style="font-weight:800;font-size:13px">المسارات اللي بيدوّروا عليها</div>'+
+    table([['المسار'],['مرات',1]], (w.probe_paths||[]).map(function(x){
+      return '<tr><td class="mono">'+esc(x.path)+'</td><td class="n">'+num(x.n)+'</td></tr>'; }))+
+    '<div class="note">كل دي بترجع 404 لأن المسارات دي مش موجودة أصلاً على السيرفر — '+
+    'الموقع مش ووردبريس ومفيش phpmyadmin. وجودها في القايمة معناه إنها اترفضت.</div>');
+}
+
+function secTLS(t){
+  if(!t||!t.length) return '';
+  var used = t.filter(function(x){ return x.in_use; });
+  var soon = used.length? used[0] : t[0];
+  var warn = soon.days < 21;
+  return sec('🔒 شهادات التشفير', pill(warn?'bad':'ok',
+      warn? 'أقربها '+soon.days+' يوم' : 'كلها سليمة'),
+    'التجديد تلقائي قبل الانتهاء بـ٣٠ يوم',
+    table([['الشهادة'],['باقي',1],['مستخدمة',1]],
+      t.slice(0,8).map(function(x){
+        return '<tr><td class="mono">'+esc(x.name)+'</td>'+
+          '<td class="n" style="color:'+(x.days<21?'#b91c1c':'#15803d')+'">'+x.days+' يوم</td>'+
+          '<td class="n">'+(x.in_use?'✅':'—')+'</td></tr>'; }))+
+    '<div class="note">الشهادات غير المستخدمة بقايا خدمات اتشالت — مش خطر، '+
+    'بس ممكن تتنضف عشان التجديد مايفضلش يحاول عليها.</div>');
+}
+
+function secHost(h){
+  if(!h) return '';
+  var down = (h.containers||[]).filter(function(c){ return !c.up; });
+  var memPct = h.mem_total? Math.round(h.mem_used*100/h.mem_total):0;
+  return sec('🖥️ الجهاز والخدمات',
+    pill(down.length?'bad':'ok', down.length? down.length+' خدمة واقفة':'كل الخدمات شغالة'),
+    esc(h.uptime),
+    kpis([['رام مستخدمة',memPct+'%'],['رام متاحة',num(h.mem_avail)+'م'],
+          ['القرص',esc(h.disk_pct)],['خدمات',num((h.containers||[]).length)]])+
+    row('مساحة القرص', esc(h.disk_used)+' من '+esc(h.disk_total))+
+    row('تحديثات الأمان التلقائية', h.unattended_upgrades==='yes'?'✅ مفعّلة':'⚠️ مش مفعّلة')+
+    row('المنافذ المفتوحة للإنترنت', '<span class="mono">'+(h.open_ports||[]).join(', ')+'</span>')+
+    '<div class="u-lbl">الخدمات</div>'+
+    table([['الخدمة'],['الحالة',1]], (h.containers||[]).map(function(c){
+      return '<tr><td>'+esc(c.name)+'</td><td class="n" style="color:'+(c.up?'#15803d':'#b91c1c')+'">'+
+        (c.up?'شغالة':'واقفة')+'</td></tr>'; })));
+}
+
+function secAppsec(a){
+  if(!a) return sec('🧪 الفحص الأمني الدوري', pill('off','مش موجود'),'',
+    '<div class="none">مفيش تقرير فحص</div>');
+  var stale = (a.age_days==null) || a.age_days > 2;
+  return sec('🧪 الفحص الأمني الدوري',
+    pill(stale?'bad':'ok', stale? 'متوقف':'حديث'),
+    'فحص يومي لملفات الموقع والتطبيقات',
+    (stale? '<div class="stale bad">🔴 آخر فحص من '+esc(a.age_days)+' يوم على جهاز اسمه «'+
+      esc(a.host)+'» — والجهاز ده اتشال. يعني الفحص الأمني اليومي '+
+      '<b>مش شغال دلوقتي</b>.</div>':'')+
+    row('آخر فحص', esc(a.generated_at))+
+    row('الجهاز', esc(a.host))+
+    row('ملاحظات', num(a.findings)));
+}
+
+/* ===== إجراءات السيرفر: زراير بتنفّذ قايمة أوامر مقفولة على المضيف ===== */
+var OPS = null, opsBusy = false;
+
+function loadOps(){
+  NS.api('/api/manager/ops',{mt:TOKEN}).then(function(r){
+    if(r && r.ok){ OPS = r; renderOps(); }
+  }).catch(function(){});
+}
+
+/* أوبنتو بيركّب النواة الجديدة ومبيعملش ريستارت لوحده — فبننبّه هنا
+   بدل ما السيرفر يفضل على نواة قديمة أسابيع من غير ما حد ياخد باله */
+function opsReboot(rb){
+  if(!rb || !rb.required) return '';
+  var why = rb.kernel_stale
+    ? 'نواة جديدة اتركّبت (<b>'+esc(rb.kernel_newest)+'</b>) والسيرفر لسه شغّال بالقديمة (<b>'+
+      esc(rb.kernel_running)+'</b>).'
+    : 'تحديثات اتركّبت ومحتاجة إعادة تشغيل عشان تشتغل.';
+  return '<div class="stale" style="display:flex;gap:10px;align-items:flex-start">'+
+    '<span style="font-size:16px;line-height:1.2">🔄</span><div>'+
+    '<b>في تحديثات مستنية إعادة تشغيل</b><br>'+why+
+    (rb.pkgs && rb.pkgs.length ? '<br><span style="font-weight:400;font-size:11px">'+
+      esc(rb.pkgs.join('، '))+'</span>' : '')+
+    '<br><span style="font-weight:400;font-size:11.5px">مفيش استعجال — اضغطي '+
+    '«إعادة تشغيل السيرفر كله» تحت في وقت هادي (الحضانة مقفولة مثلاً).</span>'+
+    '</div></div>';
+}
+
+function opsSnap(sn){
+  if(!sn) return '';
+  var bad = (sn.containers||[]).filter(function(c){ return c.state!=='running'; });
+  return '<div class="note" style="margin:0 0 12px">مشتغل من: <b>'+esc(sn.uptime)+
+    '</b> · الرام المتاحة: <b>'+num(sn.ram_mb)+' ميجا</b> · القرص: <b>'+esc(sn.disk_pct)+'%</b>'+
+    (bad.length? ' · <span style="color:#b91c1c;font-weight:800">خدمات واقفة: '+
+      bad.map(function(c){ return NS.esc(c.name); }).join('، ')+'</span>'
+     : ' · <span style="color:#15803d;font-weight:800">كل الخدمات شغّالة</span>')+'</div>';
+}
+
+function opsLog(rows){
+  if(!(rows||[]).length) return '<div class="none">مفيش إجراءات اتنفّذت لسه.</div>';
+  return '<table class="opslog"><tbody>'+rows.slice(0,12).map(function(r){
+    return '<tr><td class="'+(r.ok?'o':'x')+'">'+(r.ok?'✓':'✗')+'</td>'+
+      '<td><b>'+esc(r.label)+'</b>'+(r.by?' <span class="opsout">— '+esc(r.by)+'</span>':'')+
+      (r.out?'<div class="opsout">'+esc(r.out)+'</div>':'')+'</td>'+
+      '<td class="t">'+esc(r.at)+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+
+function renderOps(){
+  var box = document.getElementById('opsbox');
+  if(!box) return;
+  if(!OPS){ box.innerHTML = ''; return; }
+  var rbq = ((OPS.snapshot||{}).reboot||{}).required;
+  var btns = (OPS.actions||[]).map(function(a){
+    var cd = a.cooldown>0;
+    return '<button class="opsb d'+a.danger+'" data-ops="'+NS.esc(a.id)+
+      '" data-danger="'+a.danger+'"'+(cd?' disabled':'')+'>'+
+      '<b>'+esc(a.label)+
+      (rbq && a.id==='reboot' ? ' <span class="need">مطلوب</span>':'')+
+      '</b><span>'+esc(a.desc)+
+      (cd? '<br><b style="color:#b45309">متاح بعد '+a.cooldown+' ثانية</b>':'')+
+      '</span></button>';
+  }).join('');
+  box.innerHTML = sec('⚡ إجراءات السيرفر', pill('ok','للمالك'),
+    'الزراير دي بتنفّذ أوامر محدّدة سلفاً على السيرفر. الواتساب والـCRM '+
+    'مش في القايمة عمداً — قطعهم بيضيّع جلسة الواتساب فمحتاج تدخّل يدوي.',
+    opsReboot((OPS.snapshot||{}).reboot) + opsSnap(OPS.snapshot) +
+    '<div class="ops">'+btns+'</div>' +
+    '<div class="sub" style="margin:16px 0 0">آخر الإجراءات</div>' + opsLog(OPS.log));
+}
+
+document.addEventListener('click', function(ev){
+  var b = ev.target && ev.target.closest ? ev.target.closest('.opsb') : null;
+  if(!b || opsBusy) return;
+  var id = b.getAttribute('data-ops'), danger = Number(b.getAttribute('data-danger')||0);
+  var label = b.querySelector('b') ? b.querySelector('b').textContent : id;
+  if(!confirm(label+'؟')) return;
+  if(danger>=2 && !confirm('تأكيد أخير: كل الخدمات هتقف لحوالي دقيقة ونص. أكمّل؟')) return;
+  opsBusy = true;
+  var old = b.innerHTML;
+  b.disabled = true; b.innerHTML = '<b><span class="spin" style="border-color:rgba(0,0,0,.2);border-top-color:#2f6b46"></span> بينفّذ…</b>';
+  NS.api('/api/manager/opsrun',{mt:TOKEN, action:id, confirm:(danger>=2?id:null)}).then(function(r){
+    opsBusy = false;
+    if(r && r.ok) NS.toast(r.msg || (label+' — تم'),'ok');
+    else NS.toast((r&&r.error)||'تعذّر التنفيذ','err');
+    b.innerHTML = old; b.disabled = false;
+    loadOps();
+  }).catch(function(){
+    opsBusy = false; b.innerHTML = old; b.disabled = false;
+    /* إعادة تشغيل أودو بتقطع الرد نفسه — ده متوقّع مش فشل */
+    NS.toast(id==='restart_odoo'||id==='reboot'
+      ? 'الأمر اتبعت — الخدمة بتعيد التشغيل دلوقتي.' : 'تعذّر الاتصال','err');
+    setTimeout(loadOps, 45000);
+  });
+}, false);
+
+function render(){
+  var s = D.server||{};
+  app.innerHTML = bar()+
+  '<main class="app-main app-narrow">'+
+    '<div class="hd"><b style="font-size:16px">حالة السيرفر والأمان</b>'+
+      '<span class="sp"></span>'+
+      '<a class="btn btn--soft" data-owner="1" data-sso-api="/api/manager/beszel_sso" '+
+        'href="https://mon.montessori-ksa.com" target="_blank" rel="noopener">📊 الرسوم البيانية</a>'+
+      '<button class="btn btn--primary" id="rf">تحديث الآن</button></div>'+
+    '<div id="opsbox"></div>'+
+    secGeo(s.geo) + secAppsec(s.appsec) + secSSH(s.ssh) + secF2B(s.fail2ban) +
+    secWeb(s.web) + secTLS(s.tls) + secHost(s.host) +
+    '<div class="note" style="text-align:center;margin-bottom:26px">آخر تحديث: '+
+      esc(s.received_at)+' · زرار «تحديث الآن» بيعيد الفحص فوراً (~١٢ ثانية).</div>'+
+  '</main>';
+  document.getElementById('rf').onclick = refresh;
+  if(OPS) renderOps(); else loadOps();
+}
+
+function boot(){
+  if(!TOKEN){ gate(); return; }
+  NS.api('/api/server/status',{mt:TOKEN}).then(function(d){
+    if(!d||d.ok===false){
+      if(d&&d.error&&d.error!=='unauthorized'){
+        app.innerHTML = bar()+'<main class="app-main app-narrow"><div class="card card--pad">'+
+          NS.esc(d.error)+'</div></main>';
+        return;
+      }
+      NS.clearToken('mt'); gate(); return;
+    }
+    D=d; render();
+  }).catch(function(e){
+    if(e.type==='auth'){ NS.clearToken('mt'); gate(); }
+    else app.innerHTML = bar()+'<main class="app-main"><div class="card card--pad">تعذّر الاتصال.</div></main>';
+  });
+}
+
+function refresh(){
+  if(busy) return;
+  busy = true;
+  var b = document.getElementById('rf');
+  b.disabled = true; b.innerHTML = '<span class="spin"></span>بيفحص…';
+  NS.api('/api/server/status',{mt:TOKEN,refresh:true}).then(function(d){
+    busy=false;
+    if(!d||d.ok===false){ NS.toast((d&&d.error)||'فشل','err');
+      b.disabled=false; b.textContent='تحديث الآن'; return; }
+    D=d; render(); NS.toast('اتحدّثت');
+  }).catch(function(){
+    busy=false; NS.toast('تعذّر الاتصال','err');
+    var x=document.getElementById('rf'); if(x){ x.disabled=false; x.textContent='تحديث الآن'; }
+  });
+}
+
+boot();
+if(NS.refreshNav) NS.refreshNav();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</body>
+</html>

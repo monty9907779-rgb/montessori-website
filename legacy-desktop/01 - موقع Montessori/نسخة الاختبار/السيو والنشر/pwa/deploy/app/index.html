@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>تثبيت تطبيق حضانة مونتيسوري</title>
+<meta name="description" content="ثبّت تطبيق حضانة مونتيسوري على هاتفك مجاناً — لولي الأمر والمعلمة والإدارة."/>
+<meta name="robots" content="noindex"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<link rel="icon" href="/logo.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="مونتيسوري"/>
+<style>
+  :root{--forest:#184e3e;--forest2:#1f6b52;--clay:#c67c54;--sand:#f4ecdd;--cream:#faf6ee;--ink:#22302a;--ink2:#3c4a42;--muted:#79857c;--line:#eadfce;--paper:#fff}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Tahoma,"Noto Kufi Arabic",sans-serif}
+  body{background:var(--cream);color:var(--ink);line-height:1.85;-webkit-text-size-adjust:100%}
+  .wrap{max-width:520px;margin:0 auto;padding:0 16px 48px}
+  header{background:linear-gradient(160deg,var(--forest2),var(--forest));color:#eaf3ee;text-align:center;padding:34px 18px 30px;border-radius:0 0 26px 26px}
+  header img{width:76px;height:76px;border-radius:20px;background:#fff;padding:8px;margin-bottom:12px}
+  header h1{font-size:22px;color:#fff}
+  header p{font-size:14px;color:#cfe0d6;margin-top:6px}
+  .free{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:999px;margin-top:14px}
+  h2{font-size:16px;color:var(--forest);margin:26px 4px 12px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(24,78,62,.06);margin-bottom:12px}
+  .os{display:flex;gap:8px;background:var(--sand);border-radius:14px;padding:5px;margin:18px 0 8px}
+  .os button{flex:1;border:0;background:transparent;padding:11px;border-radius:11px;font-size:14px;font-weight:800;color:var(--forest);cursor:pointer}
+  .os button.on{background:#fff;box-shadow:0 1px 6px rgba(24,78,62,.1)}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:11px 2px;border-bottom:1px dashed var(--line)}
+  .step:last-child{border:0}
+  .step .n{flex:none;width:30px;height:30px;border-radius:10px;background:var(--forest);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .step .t{font-size:14.5px;color:var(--ink2)}
+  .step .t b{color:var(--ink)}
+  .ic{display:inline-flex;vertical-align:middle;width:20px;height:20px;align-items:center;justify-content:center}
+  .roles{display:grid;gap:10px}
+  .role{display:flex;align-items:center;gap:12px;text-decoration:none;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 2px 8px rgba(24,78,62,.05)}
+  .role:active{transform:scale(.99)}
+  .role .emo{font-size:26px}
+  .role .tx{flex:1}
+  .role .tx b{display:block;color:var(--forest);font-size:16px}
+  .role .tx small{color:var(--muted);font-size:12.5px}
+  .role .go{color:var(--clay);font-weight:800}
+  .note{background:var(--sand);border-radius:14px;padding:13px 15px;font-size:13px;color:var(--ink2);margin-top:8px}
+  .install-btn{display:none;width:100%;background:var(--forest);color:#fff;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;margin-top:10px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <img src="/logo.png" alt="حضانة مونتيسوري"/>
+  <h1>تطبيق حضانة مونتيسوري</h1>
+  <p>ثبّت التطبيق على هاتفك وتابع كل شيء أول بأول</p>
+  <span class="free">✓ مجاني تماماً — بدون أي رسوم</span>
+</header>
+
+<div class="wrap">
+  <div id="installed" class="card hide" style="text-align:center;background:#eaf5ef;border-color:#cfe5d8">
+    <div style="font-size:34px">✅</div>
+    <b style="color:var(--forest);font-size:17px">التطبيق مُثبّت ويعمل الآن</b>
+    <p style="color:var(--ink2);font-size:14px;margin-top:6px">اختر دورك من الأسفل للدخول.</p>
+  </div>
+
+  <h2>1) اختر دورك وسجّل الدخول</h2>
+  <div class="roles">
+    <a class="role" href="/login/">
+      <span class="emo">👩‍👧</span>
+      <span class="tx"><b>ولي الأمر</b><small>متابعة الطفل: حضور، رسوم، صور، تقييم، تواصل</small></span>
+      <span class="go">دخول ←</span>
+    </a>
+    <a class="role" href="/login/">
+      <span class="emo">👩‍🏫</span>
+      <span class="tx"><b>المعلمة</b><small>حضور الأطفال، التقييم اليومي والأسبوعي</small></span>
+      <span class="go">دخول ←</span>
+    </a>
+    <a class="role" href="/login/">
+      <span class="emo">👩‍💼</span>
+      <span class="tx"><b>المديرة / الإدارة</b><small>الطلاب، الرسوم، الرواتب، الحسابات، الألبومات</small></span>
+      <span class="go">دخول ←</span>
+    </a>
+  </div>
+  <div class="note">💡 وليّ الأمر: لو وصلك <b>رابط خاص بطفلك</b> من الحضانة، افتحه مباشرة ثم اتبع خطوات التثبيت بالأسفل.</div>
+
+  <h2>2) ثبّت التطبيق على هاتفك</h2>
+  <button id="androidInstall" class="install-btn">⬇️ تثبيت التطبيق الآن</button>
+  <div class="os" id="osTabs">
+    <button data-os="ios" class="on">آيفون (iPhone)</button>
+    <button data-os="android">أندرويد (Android)</button>
+  </div>
+
+  <div class="card" id="ios">
+    <div class="step"><span class="n">1</span><span class="t">افتح هذه الصفحة داخل متصفح <b>Safari</b> (المتصفح الأزرق 🧭).</span></div>
+    <div class="step"><span class="n">2</span><span class="t">اضغط زر <b>المشاركة</b> <span class="ic">􀈂</span> (المربّع مع السهم لأعلى) في الأسفل.</span></div>
+    <div class="step"><span class="n">3</span><span class="t">مرّر واختر <b>«إضافة إلى الشاشة الرئيسية»</b> (Add to Home Screen).</span></div>
+    <div class="step"><span class="n">4</span><span class="t">اضغط <b>«إضافة»</b> — ستظهر أيقونة الحضانة على شاشتك كأي تطبيق. 🌸</span></div>
+  </div>
+
+  <div class="card hide" id="android">
+    <div class="step"><span class="n">1</span><span class="t">افتح هذه الصفحة في متصفح <b>Chrome</b>.</span></div>
+    <div class="step"><span class="n">2</span><span class="t">اضغط زر <b>القائمة</b> (⋮ ثلاث نقاط) أعلى اليمين.</span></div>
+    <div class="step"><span class="n">3</span><span class="t">اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.</span></div>
+    <div class="step"><span class="n">4</span><span class="t">اضغط <b>«تثبيت»</b> — ستظهر أيقونة الحضانة على شاشتك. 🌸</span></div>
+  </div>
+
+  <div class="note">بعد التثبيت، افتح التطبيق من أيقونته على الشاشة الرئيسية — يعمل ملء الشاشة تماماً كأي تطبيق، وبياناتك محفوظة.</div>
+
+  <footer>حضانة مونتيسوري • جدة 🇸🇦 • montessori-ksa.com</footer>
+</div>
+
+<script>
+(function(){
+  // كشف نظام التشغيل وإظهار التبويب المناسب
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  var isAndroid = /Android/.test(ua);
+  function show(os){
+    document.getElementById('ios').classList.toggle('hide', os!=='ios');
+    document.getElementById('android').classList.toggle('hide', os!=='android');
+    document.querySelectorAll('#osTabs button').forEach(function(b){ b.classList.toggle('on', b.dataset.os===os); });
+  }
+  document.querySelectorAll('#osTabs button').forEach(function(b){ b.onclick=function(){ show(b.dataset.os); }; });
+  show(isAndroid ? 'android' : 'ios');
+
+  // لو التطبيق مفتوح مثبّتاً (standalone) — رسالة ترحيب
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (standalone) { document.getElementById('installed').classList.remove('hide'); }
+
+  // زر تثبيت أندرويد الأصلي (beforeinstallprompt)
+  var deferred = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); deferred = e;
+    var btn = document.getElementById('androidInstall');
+    btn.style.display = 'block';
+    btn.onclick = function(){ deferred.prompt(); deferred = null; btn.style.display='none'; };
+  });
+
+  // تسجيل service worker (يفعّل التثبيت)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>

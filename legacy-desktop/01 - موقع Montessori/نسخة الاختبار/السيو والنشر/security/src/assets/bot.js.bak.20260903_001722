@@ -1,0 +1,216 @@
+/* ============================================================
+   مساعد حضانة مونتيسوري — شات بوت مساعدة خفيف (عربي/إنجليزي)
+   ملف مستقل: لا يعتمد على app.js، يحقن أنماطه بنفسه.
+   ============================================================ */
+(function(){
+'use strict';
+if(window.__NBOT) return; window.__NBOT=1;
+
+var LANG=(document.documentElement.lang||'ar').toLowerCase().indexOf('en')===0?'en':'ar';
+var WA='https://wa.me/966543068147';
+var MAPS='https://www.google.com/maps/search/?api=1&query=21.5795281,39.194829';
+var HOME= LANG==='en' ? '/en/' : '/';
+
+/* ---------- نصوص الواجهة ---------- */
+var UI={
+  ar:{title:'مساعد الحضانة',sub:'يجيب فوراً على أسئلتك الشائعة',ph:'اكتب سؤالك هنا…',send:'إرسال',
+      hello:'أهلاً بك في حضانة مونتيسوري 🌿 أنا المساعد الآلي — اسألني عن المواعيد أو التسجيل أو الأعمار أو أي شيء، أو اختر سؤالاً:',
+      fallback:'لم أفهم سؤالك تماماً 🙏 جرّب صياغة أخرى أو اختر من الأسئلة، أو تواصل مع الإدارة مباشرة:',
+      wa:'💬 تواصل واتساب مع الإدارة',open:'افتح مساعد الحضانة',close:'إغلاق المساعد'},
+  en:{title:'Nursery Assistant',sub:'Instant answers to common questions',ph:'Type your question…',send:'Send',
+      hello:'Welcome to Montessori Nursery 🌿 I’m the help assistant — ask me about hours, registration, ages, or anything, or pick a question:',
+      fallback:'I didn’t quite get that 🙏 Try rephrasing, pick a question below, or message us directly:',
+      wa:'💬 WhatsApp the administration',open:'Open nursery assistant',close:'Close assistant'}
+};
+
+/* ---------- قاعدة المعرفة ---------- */
+var KB=[
+ {id:'hours',
+  kw:{ar:['مواعيد','الدوام','ساعات','وقت','متى','يفتح','يقفل','ايام','أيام','دوام'],
+      en:['hours','time','open','close','schedule','when','days','timing']},
+  q:{ar:'🕗 مواعيد الدوام',en:'🕗 Working hours'},
+  a:{ar:'مواعيدنا: <b>الأحد إلى الخميس، من ٨:٠٠ صباحاً حتى ١:٠٠ ظهراً</b>. الجمعة والسبت إجازة.',
+     en:'We are open <b>Sunday to Thursday, 8:00 AM – 1:00 PM</b>. Friday and Saturday are off.'}},
+ {id:'ages',
+  kw:{ar:['عمر','اعمار','أعمار','سن','سنه','سنة','سنوات','يقبل','تقبلون','صغير','رضيع','برامج','برنامج','مراحل','تمهيدي','روضه','روضة','صيفي'],
+      en:['age','ages','old','year','accept','program','programs','level','kg','preschool','summer','toddler']},
+  q:{ar:'👶 الأعمار والبرامج',en:'👶 Ages & programs'},
+  a:{ar:'نستقبل الأطفال من <b>2 to 5 years</b>:<br/>• الحضانة: 1–2 yrs<br/>• Pre-K: 2–4 yrs<br/>• Kindergarten: 4–6 yrs<br/>• Fun summer program all summer long',
+     en:'We welcome children aged <b>1 to 6 years</b>:<br/>• Nursery: 1–2 yrs<br/>• Pre-K: 2–4 yrs<br/>• Kindergarten: 4–6 yrs<br/>• Fun summer program all summer long'}},
+ {id:'fees',
+  kw:{ar:['رسوم','سعر','اسعار','أسعار','تكلفه','تكلفة','كم','فلوس','اشتراك','دفع','قسط','خصم'],
+      en:['fee','fees','price','cost','much','tuition','pay','discount','installment']},
+  q:{ar:'💳 الرسوم',en:'💳 Fees'},
+  a:{ar:'الرسوم حسب الجدول المعتمد لعام ٢٠٢٦-٢٠٢٧:<br/>• الاشتراك الشهري: ١,٣٠٠ ريال سعودي<br/>• الترم الكامل: ٥,٤٠٠ ريال سعودي<br/>• السنة الكاملة: ١٠,٠٠٠ ريال سعودي<br/>• حجز المقعد: ٥٠٠ ريال سعودي<br/>• كتب/لوازم (KG1-KG3): ١,٠٠٠ ريال سعودي<br/>• كتب/لوازم (Pre-KG): ٦٠٠ ريال سعودي<br/>• **العروض والمميزات**: <br/>• **باقة السنة الكاملة توفر ١٥٪**.<br/>• **باقة الفصل الدراسي توفر ١٠٪**.<br/>• **خصم الطفل الثاني والثالث: ١٠٪**.<br/>يؤكد المشرفون المتاحية والتفاصيل الحالية.',
+     en:'Fees vary by program and age, with early-bird and sibling offers. For exact details please contact the administration:'},
+  wa:1},
+ {id:'register',
+  kw:{ar:['تسجيل','اسجل','أسجل','سجل','التحاق','انضمام','اضيف','أضيف','ضم','حجز','زياره','زيارة','معاينه','معاينة'],
+      en:['register','enroll','enrol','join','sign','visit','tour','book','apply','admission']},
+  q:{ar:'📝 كيف أسجّل طفلي؟',en:'📝 How do I register?'},
+  a:{ar:'التسجيل سهل جداً:<br/>١. اكتب اسم طفلك وإيميلك في نموذج <b>«سجّل ابنك»</b> بالصفحة الرئيسية.<br/>٢. ادخل بحساب Google بنفس الإيميل.<br/>٣. تراجع الإدارة طلبك وتربط حسابك بصفحة طفلك.<br/>ويسعدنا استقبالك لجولة في الحضانة قبل التسجيل!',
+     en:'Registering is easy:<br/>1. Enter your child’s name and your email in the <b>registration form</b> on the home page.<br/>2. Sign in with Google using the same email.<br/>3. Our team reviews and links your account to your child’s page.<br/>You’re also welcome to visit for a tour first!'},
+  act:{ar:[{t:'✍️ اذهب لنموذج التسجيل',h:HOME+'#register'}],en:[{t:'✍️ Go to the registration form',h:HOME+'#register'}]}},
+ {id:'location',
+  kw:{ar:['عنوان','مكان','موقع','فين','وين','خريطه','خريطة','اوصل','أوصل','حي','الفيصليه','الفيصلية','جده','جدة'],
+      en:['where','address','location','map','directions','faisaliyyah','jeddah','find']},
+  q:{ar:'📍 العنوان',en:'📍 Location'},
+  a:{ar:'نحن في <b>جدة — حي الفيصلية</b> (شارع محمد عبدالكريم).',
+     en:'We are in <b>Jeddah — Al Faisaliyyah district</b> (Muhammad Abdul Karim St).'},
+  act:{ar:[{t:'🗺️ افتح الموقع في الخرائط',h:MAPS}],en:[{t:'🗺️ Open in Google Maps',h:MAPS}]}},
+ {id:'login',
+  kw:{ar:['دخول','لوجن','اسجل دخول','حساب','باسورد','كلمه','كلمة','مرور','صفحه ابني','صفحة ابني','متابعه','متابعة','تطبيق'],
+      en:['login','log in','sign in','account','password','portal','parent page','app','track']},
+  q:{ar:'🔑 دخول الأهالي والفريق',en:'🔑 Parent & staff login'},
+  a:{ar:'من صفحة <b>الدخول</b> تقدر تدخل بحساب Google أو بالإيميل وكلمة المرور. ولي الأمر المرتبط بطفله تفتح له صفحة الطفل: الحضور والرسوم والصور ورسائل المعلّمة.',
+     en:'From the <b>login page</b> you can sign in with Google or email &amp; password. Linked parents get their child’s page: attendance, fees, photos, and teacher messages.'},
+  act:{ar:[{t:'🚪 صفحة الدخول',h:'/login/'}],en:[{t:'🚪 Go to login',h:'/login/'}]}},
+ {id:'montessori',
+  kw:{ar:['مونتيسوري','منهج','المنهج','تعليم','فلسفه','فلسفة','طريقه','طريقة','قران','قرآن','انجليزي','إنجليزي','لغه','لغة'],
+      en:['montessori','curriculum','method','philosophy','teach','learning','quran','english','language','arabic']},
+  q:{ar:'🌱 ما هو منهج مونتيسوري؟',en:'🌱 What is Montessori?'},
+  a:{ar:'منهج <b>مونتيسوري</b> فلسفة تعليمية عمرها أكثر من مئة عام: بيئة مُعدّة بأدوات حسّية، يختار فيها الطفل نشاطه ويتعلّم بالتجربة — فينمو مستقلاً وواثقاً ومحباً للتعلّم. وعندنا أيضاً قرآن وقيم ولغة عربية أصيلة جنباً إلى جنب مع الإنجليزية.',
+     en:'<b>Montessori</b> is a century-old philosophy: a prepared environment with hands-on materials where children choose their activities and learn by doing — growing independent, confident and curious. We also nurture Quran, values, and authentic Arabic alongside English.'}},
+ {id:'food',
+  kw:{ar:['اكل','أكل','وجبه','وجبة','طعام','تغذيه','تغذية','فطور','غدا','غداء','حساسيه','حساسية'],
+      en:['food','meal','lunch','breakfast','snack','allergy','eat','nutrition']},
+  q:{ar:'🍎 الوجبات',en:'🍎 Meals'},
+  a:{ar:'نقدّم وجبات صحية متوازنة ونراعي الحساسية الغذائية — أخبرنا عن احتياج طفلك عند التسجيل وسنهتم به.',
+     en:'We serve healthy balanced meals and carefully handle food allergies — tell us your child’s needs when registering and we’ll take care of it.'}},
+ {id:'contact',
+  kw:{ar:['تواصل','اتصال','اتصل','رقم','واتساب','واتس','هاتف','جوال','ايميل','إيميل','بريد','انستجرام','انستقرام'],
+      en:['contact','phone','call','whatsapp','number','email','instagram','reach']},
+  q:{ar:'📞 التواصل مع الإدارة',en:'📞 Contact us'},
+  a:{ar:'يسعدنا تواصلك:<br/>واتساب: <b>0543068147</b> أو <b>0541558173</b><br/>البريد: info@montessori-ksa.com<br/>انستجرام: @montessori_nursery',
+     en:'We’d love to hear from you:<br/>WhatsApp: <b>0543068147</b> or <b>0541558173</b><br/>Email: info@montessori-ksa.com<br/>Instagram: @montessori_nursery'},
+  wa:1},
+ {id:'hi',
+  kw:{ar:['السلام','سلام','اهلا','أهلا','هاي','هلا','مرحبا','صباح','مساء','شكرا','شكراً','تمام','ممتاز'],
+      en:['hi','hello','hey','salam','thanks','thank','good morning','good evening','great']},
+  hideChip:1,
+  a:{ar:'أهلاً وسهلاً 😊 كيف أقدر أساعدك؟ اختر سؤالاً أو اكتب ما تريد.',
+     en:'Hello! 😊 How can I help? Pick a question or type anything.'}}
+];
+
+/* ---------- تطبيع النص العربي للمطابقة ---------- */
+function norm(s){
+  return String(s||'').toLowerCase()
+    .replace(/[ً-ْـ]/g,'')
+    .replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
+    .replace(/[^؀-ۿa-z0-9\s]/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+function match(txt){
+  var t=' '+norm(txt)+' ', best=null, bestScore=0;
+  KB.forEach(function(it){
+    var score=0;
+    (it.kw?(it.kw[LANG].concat(it.kw[LANG==='ar'?'en':'ar'])):[]).forEach(function(k){
+      if(t.indexOf(' '+norm(k))>=0 || t.indexOf(norm(k))>=0) score+= norm(k).length>3?2:1;
+    });
+    if(score>bestScore){ bestScore=score; best=it; }
+  });
+  return bestScore>0?best:null;
+}
+
+/* ---------- الأنماط ---------- */
+var css=''+
+'#nbot-fab{position:fixed;inset-block-end:22px;inset-inline-end:22px;z-index:90;width:60px;height:60px;border-radius:50%;'+
+'border:none;cursor:pointer;background:linear-gradient(160deg,#1f6b52,#184e3e);color:#fff;display:flex;align-items:center;justify-content:center;'+
+'box-shadow:0 10px 28px rgba(24,78,62,.4);transition:transform .2s ease,box-shadow .2s ease}'+
+'#nbot-fab:hover{transform:translateY(-3px) scale(1.05)}'+
+'#nbot-fab svg{width:28px;height:28px}'+
+'#nbot-fab .dot{position:absolute;top:4px;inset-inline-end:4px;width:13px;height:13px;border-radius:50%;background:#e0a458;border:2.5px solid #fff}'+
+'#nbot{position:fixed;inset-block-end:94px;inset-inline-end:22px;z-index:95;width:min(380px,calc(100vw - 28px));max-height:min(600px,calc(100dvh - 120px));'+
+'display:none;flex-direction:column;background:#faf6ee;border:1px solid #e9e0cf;border-radius:22px;overflow:hidden;'+
+'box-shadow:0 24px 70px rgba(15,44,31,.3);font-family:Tajawal,system-ui,sans-serif}'+
+'#nbot.open{display:flex;animation:nbotIn .25s ease}'+
+'@keyframes nbotIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}'+
+'#nbot header{background:linear-gradient(160deg,#1f6b52,#0f3226);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px}'+
+'#nbot header img{width:40px;height:40px;border-radius:12px;background:#fff;padding:3px}'+
+'#nbot header .t b{display:block;font-size:1.02rem}'+
+'#nbot header .t span{font-size:.76rem;color:#bcd6c8}'+
+'#nbot header button{margin-inline-start:auto;background:rgba(255,255,255,.12);border:none;color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:1.05rem;line-height:1}'+
+'#nbot .msgs{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:10px}'+
+'#nbot .m{max-width:86%;padding:10px 14px;border-radius:16px;font-size:.92rem;line-height:1.7;word-break:break-word}'+
+'#nbot .m.bot{background:#fff;border:1px solid #e9e0cf;border-start-start-radius:6px;align-self:flex-start;color:#22302a}'+
+'#nbot .m.user{background:#184e3e;color:#fff;border-start-end-radius:6px;align-self:flex-end}'+
+'#nbot .chips{display:flex;flex-wrap:wrap;gap:7px;align-self:flex-start;max-width:95%}'+
+'#nbot .chips button{background:#f4ecdd;border:1px solid #e9e0cf;color:#184e3e;font-family:inherit;font-weight:700;'+
+'font-size:.8rem;padding:7px 12px;border-radius:999px;cursor:pointer;transition:background .15s}'+
+'#nbot .chips button:hover{background:#eadfc8}'+
+'#nbot .act{display:inline-block;background:#c67c54;color:#fff!important;font-weight:800;font-size:.85rem;padding:9px 16px;'+
+'border-radius:999px;text-decoration:none;margin-top:8px}'+
+'#nbot .act.wa{background:#2f8f5b}'+
+'#nbot .typing{display:inline-flex;gap:4px;padding:12px 16px}'+
+'#nbot .typing i{width:7px;height:7px;border-radius:50%;background:#8fa598;animation:nbotB 1s infinite}'+
+'#nbot .typing i:nth-child(2){animation-delay:.15s}#nbot .typing i:nth-child(3){animation-delay:.3s}'+
+'@keyframes nbotB{40%{transform:translateY(-5px)}}'+
+'#nbot form{display:flex;gap:8px;padding:12px;border-top:1px solid #e9e0cf;background:#fff}'+
+'#nbot form input{flex:1;border:1px solid #e9e0cf;border-radius:999px;padding:11px 16px;font-family:inherit;font-size:.92rem;'+
+'background:#faf6ee;color:#22302a;outline:none}'+
+'#nbot form input:focus{border-color:#1f6b52}'+
+'#nbot form button{border:none;background:#184e3e;color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}'+
+'#nbot form button svg{width:20px;height:20px}'+
+'@media(max-width:480px){#nbot{inset-inline-end:14px;inset-block-end:86px}#nbot-fab{inset-inline-end:16px;inset-block-end:16px}}';
+
+/* ---------- البناء ---------- */
+var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+var T=UI[LANG];
+var fab=document.createElement('button');
+fab.id='nbot-fab'; fab.type='button'; fab.setAttribute('aria-label',T.open);
+fab.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L4 21l1.7-5.7A8 8 0 1 1 21 12z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" stroke-width="2.6"/></svg><span class="dot"></span>';
+var box=document.createElement('div');
+box.id='nbot'; box.setAttribute('role','dialog'); box.setAttribute('aria-label',T.title); box.dir=(LANG==='en'?'ltr':'rtl');
+box.innerHTML='<header><img src="/logo.png" alt=""/><div class="t"><b>'+T.title+'</b><span>'+T.sub+'</span></div>'+
+  '<button type="button" id="nbot-x" aria-label="'+T.close+'">✕</button></header>'+
+  '<div class="msgs" id="nbot-msgs"></div>'+
+  '<form id="nbot-form" autocomplete="off"><input id="nbot-in" type="text" placeholder="'+T.ph+'" aria-label="'+T.ph+'"/>'+
+  '<button type="submit" aria-label="'+T.send+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate('+(LANG==='en'?0:180)+'deg)"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg></button></form>';
+document.body.appendChild(fab); document.body.appendChild(box);
+
+var msgs=document.getElementById('nbot-msgs'), form=document.getElementById('nbot-form'), inp=document.getElementById('nbot-in');
+var opened=false;
+
+function scrollEnd(){ msgs.scrollTop=msgs.scrollHeight; }
+function addUser(t){ var d=document.createElement('div'); d.className='m user'; d.textContent=t; msgs.appendChild(d); scrollEnd(); }
+function addBot(html,acts,waBtn){
+  var d=document.createElement('div'); d.className='m bot'; d.innerHTML=html;
+  (acts||[]).forEach(function(a){ d.innerHTML+='<br/><a class="act" href="'+a.h+'" '+(a.h.indexOf('http')===0?'target="_blank" rel="noopener"':'')+'>'+a.t+'</a>'; });
+  if(waBtn) d.innerHTML+='<br/><a class="act wa" href="'+WA+'" target="_blank" rel="noopener">'+T.wa+'</a>';
+  msgs.appendChild(d); scrollEnd();
+}
+function addChips(){
+  var wrap=document.createElement('div'); wrap.className='chips';
+  KB.filter(function(it){ return it.q && !it.hideChip; }).forEach(function(it){
+    var b=document.createElement('button'); b.type='button'; b.textContent=it.q[LANG];
+    b.addEventListener('click',function(){ addUser(it.q[LANG].replace(/^[^\s]+\s/,'')); reply(it); });
+    wrap.appendChild(b);
+  });
+  msgs.appendChild(wrap); scrollEnd();
+}
+function typing(cb){
+  var t=document.createElement('div'); t.className='m bot typing'; t.innerHTML='<i></i><i></i><i></i>';
+  msgs.appendChild(t); scrollEnd();
+  setTimeout(function(){ t.remove(); cb(); }, 450+Math.random()*350);
+}
+function reply(it){
+  typing(function(){
+    if(it){ addBot(it.a[LANG], it.act?it.act[LANG]:null, it.wa); }
+    else  { addBot(T.fallback, null, true); addChips(); }
+  });
+}
+function openBot(){
+  box.classList.add('open'); opened=true;
+  if(!msgs.children.length){ typing(function(){ addBot(T.hello); addChips(); }); }
+  setTimeout(function(){ inp.focus(); },250);
+}
+function closeBot(){ box.classList.remove('open'); opened=false; }
+fab.addEventListener('click',function(){ opened?closeBot():openBot(); });
+document.getElementById('nbot-x').addEventListener('click',closeBot);
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&opened) closeBot(); });
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  var v=inp.value.trim(); if(!v) return;
+  inp.value=''; addUser(v); reply(match(v));
+});
+})();

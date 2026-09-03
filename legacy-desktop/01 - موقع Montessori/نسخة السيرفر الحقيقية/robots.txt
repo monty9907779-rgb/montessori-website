@@ -1,0 +1,22 @@
+User-agent: *
+Disallow: /me/
+Disallow: /manage/
+Disallow: /staff/
+Disallow: /dashboard/
+Disallow: /roles/
+Disallow: /classes/
+Disallow: /salaries/
+Disallow: /accounts/
+Disallow: /students/
+Disallow: /albums/
+Disallow: /cameras/
+Disallow: /receivables/
+Disallow: /login/
+Disallow: /funnel/
+Disallow: /social/
+Disallow: /google/
+Disallow: /meta/
+Disallow: /visits/
+Allow: /blog/
+
+Sitemap: https://montessori-ksa.com/sitemap.xml

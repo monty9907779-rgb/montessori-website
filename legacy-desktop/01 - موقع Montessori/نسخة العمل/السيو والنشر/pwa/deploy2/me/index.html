@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-me.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="طفلي"/>
+
+<title>حضانة مونتيسوري | صفحة ولي الأمر</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app.css?v=10"/>
+<style>
+.child-hero{display:flex;align-items:center;gap:16px;background:linear-gradient(155deg,var(--forest),#123c2f);color:#fff;
+  border-radius:var(--r-lg);padding:22px;box-shadow:var(--sh-forest);position:relative;overflow:hidden;margin-bottom:14px}
+.child-hero::after{content:"";position:absolute;inset-block-start:-40px;inset-inline-end:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(224,164,88,.25),transparent 70%)}
+.child-hero .avatar{width:60px;height:60px;font-size:1.5rem;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 2px rgba(255,255,255,.3)}
+.child-hero .nm{font-size:1.45rem;font-weight:800;line-height:1.2}
+.child-hero .meta{opacity:.9;font-size:.9rem;margin-top:3px}
+.att-card .att-status{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r-sm);background:var(--sand);font-weight:600;margin-bottom:14px;font-size:.95rem}
+.att-card .att-status svg{width:20px;height:20px;flex:none;color:var(--forest)}
+.att-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line-2);font-size:.96rem}
+.info-row:last-child{border-bottom:0}
+.info-row .l{color:var(--muted)}
+.info-row b{color:var(--ink)}
+.pay-cta{background:var(--clay);color:#fff;border-radius:var(--r);padding:16px;text-align:center;margin-top:6px}
+.hol{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+.hol:last-child{border-bottom:0}
+/* تقييمات المعلمة */
+.evp-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:.93rem}
+.evp-row:last-of-type{border-bottom:0}
+.evp-row .l{color:var(--ink-2);font-weight:600}
+.evp-stars{display:inline-flex;gap:1px;direction:ltr}
+.evp-st{color:var(--line);line-height:0}
+.evp-st svg{width:17px;height:17px;fill:currentColor;stroke:currentColor}
+.evp-st.on{color:var(--amber)}
+.evp-avg{display:flex;align-items:center;gap:10px;background:var(--sand);border-radius:var(--r-sm);padding:9px 14px;margin-bottom:8px}
+.evp-avg b{color:var(--forest)}
+.evp-avg .evp-st svg{width:20px;height:20px}
+.evp-note{display:flex;gap:8px;background:var(--info-bg,#eaf3f7);border-radius:var(--r-sm);padding:10px 13px;margin-top:10px;font-size:.9rem;color:var(--ink-2)}
+.evp-note svg{width:17px;height:17px;flex:none;color:var(--info,#3b7ea1);margin-top:2px}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main app-narrow" id="boot"></div></div>
+
+<script src="/assets/app.js?v=10"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('t'), S=null, cdTimer=null;
+function rpc(path,params){ return NS.api('/parent/'+TOKEN+path, params||{}); }
+var app=document.getElementById('app');
+
+/* ---------- entry ---------- */
+if(!TOKEN){ pending(); }
+else { boot(); }
+
+/* ---------- pending / logged-out (on-site, no Odoo UI) ---------- */
+function pending(){
+  var email=NS.pending;
+  app.innerHTML='';
+  var mount=document.createElement('div'); app.appendChild(mount);
+  if(email){
+    mount.className='gate';
+    mount.innerHTML=
+     '<div class="gate__card">'+
+       '<img class="logo" src="/logo.png" alt=""/>'+
+       '<div class="modal__icon" style="margin:0 auto 14px;background:var(--warn-bg)">'+I('clock','style="color:var(--warn)"')+'</div>'+
+       '<h2>حسابك جاهز — بانتظار الربط</h2>'+
+       '<p>أنشأنا حسابك بنجاح. الإدارة تربط حسابك بصفحة طفلك الآن، وعادةً يتم ذلك خلال دقائق.</p>'+
+       '<div class="tag tag--soft" style="margin-bottom:18px">'+I('user')+' '+NS.esc(email)+'</div>'+
+       '<button class="btn btn--primary btn--block btn--lg" id="recheck">'+I('refresh')+' تحقّق الآن</button>'+
+       '<button class="btn btn--accent btn--block" style="margin-top:10px" id="notify">'+I('bell')+' بلّغ الإدارة أنك سجّلت</button>'+
+       '<div id="notify-msg" style="min-height:18px;margin-top:8px;font-size:.9rem;font-weight:700"></div>'+
+       '<a class="btn btn--ghost btn--block" id="wa">'+I('whatsapp')+' أو راسلنا على واتساب</a>'+
+       '<div class="switch" style="margin-top:16px"><a href="'+NS.SWITCH+'" style="color:var(--clay-600);font-weight:700;font-size:.9rem">'+I('refresh')+' دخول بإيميل آخر</a></div>'+
+       '<div style="margin-top:12px"><a class="btn btn--soft btn--block" href="/">'+I('home')+' رجوع للموقع</a></div>'+
+     '</div>';
+    mount.querySelector('#recheck').addEventListener('click',function(){ location.href = NS.ODOO + '/portal-home'; });
+    var waMsg='السلام عليكم، سجّلت في الموقع بإيميل '+email+' وأرغب بربط حسابي بطفلي.';
+    mount.querySelector('#wa').setAttribute('href', NS.wa(NS.WA_MANAGER,waMsg));
+    mount.querySelector('#wa').setAttribute('target','_blank');
+    mount.querySelector('#wa').setAttribute('rel','noopener noreferrer');
+    /* تبليغ داخل النظام — يظهر منبّهاً في صفحة الطلبات عند المديرة */
+    var nb=mount.querySelector('#notify'), nm=mount.querySelector('#notify-msg');
+    nb.addEventListener('click',function(){
+      if(nb.classList.contains('is-loading')) return;
+      nb.classList.add('is-loading'); nm.textContent='';
+      NS.api('/api/parent/notify',{email:email}).then(function(r){
+        nb.classList.remove('is-loading');
+        if(r&&r.ok){
+          nb.innerHTML=I('check')+' تم إبلاغ الإدارة ✔'; nb.disabled=true;
+          nm.style.color='var(--ok)'; nm.textContent='وصل تنبيهك للإدارة، وسيتم ربط حسابك قريباً. يمكنك أيضاً مراسلتنا على واتساب.';
+        } else if(r&&r.no_request){
+          nm.style.color='var(--danger)';
+          nm.innerHTML='لم نجد طلب تسجيل بهذا البريد — <a href="/#register" style="color:var(--clay-600);font-weight:800">سجّل طفلك أولاً</a>';
+        } else { nm.style.color='var(--danger)'; nm.textContent=(r&&r.error)||'تعذّر الإرسال، جرّب واتساب'; }
+      }).catch(function(){
+        nb.classList.remove('is-loading'); nm.style.color='var(--danger)';
+        nm.innerHTML='تعذّر الإرسال — <a href="'+NS.wa(NS.WA_MANAGER,waMsg)+'" target="_blank" rel="noopener" style="color:var(--clay-600);font-weight:800">راسلنا واتساب</a>';
+      });
+    });
+  } else {
+    NS.gate(mount,{title:'صفحة ولي الأمر',body:'سجّل دخولك لمتابعة حضور طفلك ورسومه وصوره ورسائل معلّمته.'});
+  }
+}
+
+/* ---------- boot (skeleton -> state) ---------- */
+function boot(){
+  document.getElementById('boot').innerHTML =
+    '<div class="skel" style="height:104px;border-radius:22px;margin-bottom:14px"></div>'+
+    NS.skelCard()+NS.skelCard();
+  rpc('/state').then(function(d){ S=d; render(); })
+  .catch(function(err){
+    if(err.type==='auth'){ NS.clearToken('t'); expired(); }
+    else { netError(); }
+  });
+}
+function netError(){
+  app.innerHTML='';var m=document.createElement('div');app.appendChild(m);m.className='gate';
+  m.innerHTML='<div class="gate__card"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+    '<h2>تعذّر الاتصال</h2><p>تحقّق من اتصالك بالإنترنت وحاول مجدداً.</p>'+
+    '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>';
+}
+function expired(){
+  app.innerHTML='';var m=document.createElement('div');app.appendChild(m);
+  NS.gate(m,{title:'انتهت الجلسة',body:'لأمان بيانات طفلك، سجّل دخولك من جديد.',cta:'تسجيل الدخول'});
+}
+
+/* ---------- render shell ---------- */
+function render(){
+  var c=S.child;
+  app.innerHTML=
+   '<header class="appbar"><div class="appbar__in">'+
+     '<a class="brand" href="/"><img src="/logo.png" alt=""/><span>حضانة مونتيسوري<small class="b-sub">صفحة ولي الأمر</small></span></a>'+
+     '<div class="spacer"></div>'+
+     '<button class="btn icon-btn" id="logout" aria-label="خروج">'+I('logout')+'</button>'+
+   '</div></header>'+
+   '<main class="app-main app-narrow">'+
+     '<div class="child-hero rev in">'+
+       '<span class="avatar">'+NS.esc((c.name||'؟').trim().charAt(0))+'</span>'+
+       '<div><div class="nm">'+NS.esc(c.name)+'</div>'+
+       '<div class="meta">'+[c.class_name,c.teacher?('أ. '+c.teacher):''].filter(Boolean).map(NS.esc).join(' · ')+'</div></div>'+
+     '</div>'+
+     '<div id="countdown"></div>'+
+     '<div class="card card--pad att-card" style="margin-bottom:14px">'+
+       '<div class="card__head"><span class="card__title">'+I('pin')+' حضور اليوم</span></div>'+
+       '<div class="att-status" id="att-status"></div>'+
+       '<div class="att-btns"><button class="btn btn--primary" id="arrive">'+I('check')+' وصل ابني</button>'+
+       '<button class="btn btn--soft" id="depart">'+I('home')+' استلمت ابني</button></div>'+
+     '</div>'+
+     '<div class="segmented" id="tabs">'+
+       '<button data-t="pay" class="on">'+I('wallet')+'<span>الرسوم</span></button>'+
+       '<button data-t="evals">'+I('star')+'<span>التقييم</span></button>'+
+       '<button data-t="chat">'+I('chat')+'<span>الرسائل</span></button>'+
+       '<button data-t="photos">'+I('camera')+'<span>الصور</span></button>'+
+       '<button data-t="info">'+I('calendar')+'<span>الحضانة</span></button>'+
+     '</div>'+
+     '<div id="content" style="margin-top:14px"></div>'+
+   '</main>'+
+   '<footer style="text-align:center;color:var(--muted);font-size:.82rem;padding:20px">حضانة مونتيسوري · جدة</footer>';
+
+  document.getElementById('logout').addEventListener('click',function(){
+    NS.confirm({title:'تسجيل الخروج؟',body:'ستحتاج لتسجيل الدخول مجدداً لرؤية بيانات طفلك.',okText:'خروج',danger:true})
+      .then(function(ok){ if(ok){ NS.clearToken('t'); location.href='/'; } });
+  });
+  document.getElementById('arrive').addEventListener('click',function(){ punch('/checkin', this); });
+  document.getElementById('depart').addEventListener('click',function(){ punch('/checkout', this); });
+  [].forEach.call(document.querySelectorAll('#tabs button'),function(b){ b.addEventListener('click',function(){ tab(b.dataset.t); }); });
+  attStatus(); countdown(); tab('pay');
+}
+
+/* ---------- attendance ---------- */
+function attStatus(){
+  var a=S.today, s=document.getElementById('att-status'),
+      bA=document.getElementById('arrive'), bD=document.getElementById('depart');
+  bA.disabled=!!a.arrival; bD.disabled=!a.arrival||!!a.departure;
+  var txt, ic;
+  if(!a.arrival){ txt='لم يُسجَّل حضور اليوم بعد'; ic='clock'; }
+  else if(!a.departure){ txt='حضر الساعة '+a.arrival; ic='checkCircle'; }
+  else { txt='حضر '+a.arrival+' · خرج '+a.departure; ic='checkCircle'; }
+  s.innerHTML=I(ic)+'<span>'+NS.esc(txt)+'</span>';
+}
+function punch(path,btn){
+  btn.classList.add('is-loading');
+  NS.geo().then(function(pos){
+    return rpc(path,{latitude:pos.latitude,longitude:pos.longitude});
+  }).then(function(r){
+    btn.classList.remove('is-loading');
+    if(r&&r.error){ NS.toast(r.error,'err'); }
+    else { S.today=r; attStatus(); NS.toast(path==='/checkin'?'تم تسجيل حضور طفلك':'تم تسجيل الخروج'); }
+  }).catch(function(err){
+    btn.classList.remove('is-loading');
+    if(err.type==='auth'){ NS.clearToken('t'); expired(); return; }
+    NS.toast(err.message||'تعذّر التسجيل','err');
+    if(err.type==='geo'){
+      NS.confirm({title:'تعذّر تحديد موقعك',body:'يجب أن تكون داخل الحضانة (٤٠٠م) وتسمح بالوصول للموقع. تقدر أيضاً تطلب من المعلّمة تسجيل الحضور.',okText:'حسناً',cancelText:'تواصل مع المعلّمة'})
+        .then(function(ok){ if(!ok){ window.open(NS.wa(NS.WA_MANAGER,'السلام عليكم، أرجو تسجيل حضور/خروج طفلي '+S.child.name),'_blank'); } });
+    }
+  });
+}
+
+/* ---------- countdown ---------- */
+function countdown(){
+  if(cdTimer) clearInterval(cdTimer);
+  var p=S.payment; var box=document.getElementById('countdown');
+  if(!p||!p.paid_until){ box.innerHTML=''; return; }
+  var target=new Date(p.paid_until.replace(' ','T')); target.setHours(23,59,59,0);
+  function tick(){
+    var diff=target-new Date();
+    if(diff>0){
+      var d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4);
+      box.innerHTML='<div class="countdown rev in" style="margin-bottom:14px">'+
+        '<div class="cd-label">'+I('clock')+' باقٍ على تجديد الرسوم</div>'+
+        '<div class="cd-units"><div><b>'+d+'</b><span>يوم</span></div><div><b>'+h+'</b><span>ساعة</span></div><div><b>'+m+'</b><span>دقيقة</span></div></div>'+
+        '<div class="cd-sub">الرسوم '+NS.riyal(p.fees)+' · مدفوع حتى '+NS.fmtShort(p.paid_until)+'</div></div>';
+    } else {
+      var late=Math.floor(-diff/864e5);
+      box.innerHTML='<div class="countdown overdue rev in" style="margin-bottom:14px">'+
+        '<div class="cd-label">'+I('alert')+' الرسوم مستحقّة</div>'+
+        '<div class="cd-time">متأخّر '+late+' يوم</div>'+
+        '<div class="cd-sub">'+NS.riyal(p.fees)+' — يمكنك السداد من تبويب «الرسوم»</div></div>';
+    }
+  }
+  tick(); cdTimer=setInterval(tick,60000);
+}
+
+/* ---------- tabs ---------- */
+function tab(t){
+  [].forEach.call(document.querySelectorAll('#tabs button'),function(b){ b.classList.toggle('on',b.dataset.t===t); });
+  if(t==='pay') pay(); else if(t==='evals') evals(); else if(t==='chat') chat(); else if(t==='photos') photos(); else info();
+}
+
+/* ---------- تقييمات المعلمة ---------- */
+function starsRO(v){
+  var s='<span class="evp-stars">';
+  for(var i=1;i<=5;i++) s+='<span class="evp-st'+(i<=v?' on':'')+'">'+I('star')+'</span>';
+  return s+'</span>';
+}
+function evals(){
+  var C=document.getElementById('content');
+  C.innerHTML='<div class="card card--pad"><div class="skel skel-line" style="width:60%;height:20px"></div>'+NS.skelLines(4)+'</div>';
+  rpc('/evals').then(function(d){
+    var list=(d&&d.evals)||[];
+    if(!list.length){
+      C.innerHTML='<div class="card card--pad">'+NS.empty('star','لا توجد تقييمات بعد','ستجد هنا تقييم المعلّمة اليومي والأسبوعي لطفلك فور تسجيله.')+'</div>';
+      return;
+    }
+    var h='';
+    list.forEach(function(e){
+      var badge=e.etype==='daily'
+        ? '<span class="tag tag--soft">'+I('sun')+' '+NS.esc(e.type_label)+'</span>'
+        : '<span class="tag tag--ok">'+I('calendar')+' '+NS.esc(e.type_label)+'</span>';
+      h+='<div class="card card--pad" style="margin-bottom:14px">'+
+        '<div class="card__head"><span class="card__title">'+badge+'</span>'+
+          '<span class="muted" style="font-size:.85rem">'+NS.fmtDate(e.date)+'</span></div>'+
+        (e.avg?'<div class="evp-avg">'+starsRO(Math.round(e.avg))+'<b>'+e.avg+' / 5</b></div>':'');
+      (e.criteria||[]).forEach(function(c){
+        h+='<div class="evp-row"><span class="l">'+NS.esc(c.label)+'</span>'+starsRO(c.val)+'</div>';
+      });
+      if(e.note) h+='<div class="evp-note">'+I('chat')+' <span>'+NS.esc(e.note)+'</span></div>';
+      if(e.teacher) h+='<div class="muted" style="font-size:.8rem;margin-top:8px">أ. '+NS.esc(e.teacher)+'</div>';
+      h+='</div>';
+    });
+    C.innerHTML=h;
+  }).catch(function(err){
+    if(err.type==='auth'){ NS.clearToken('t'); expired(); return; }
+    C.innerHTML='<div class="card card--pad">'+NS.empty('wifi','تعذّر تحميل التقييمات','حاول مرة أخرى.')+
+      '<button class="btn btn--ghost btn--block" id="ev-rt">'+I('refresh')+' إعادة المحاولة</button></div>';
+    document.getElementById('ev-rt').addEventListener('click',evals);
+  });
+}
+
+/* ---------- pay ---------- */
+function pay(){
+  var p=S.payment, C=document.getElementById('content');
+  var payMsg='السلام عليكم، أرغب بسداد رسوم الطفل '+S.child.name+' ('+NS.riyal(p.fees)+'). شكراً لكم.';
+  var h='<div class="card card--pad" style="margin-bottom:14px"><div class="card__head"><span class="card__title">'+I('wallet')+' حالة الرسوم</span>'+
+      (p.paid?'<span class="tag tag--ok">'+I('check')+' مدفوع</span>':'<span class="tag tag--none">'+I('alert')+' مستحق</span>')+'</div>'+
+     '<div class="info-row"><span class="l">الرسوم الشهرية</span><b>'+NS.riyal(p.fees)+'</b></div>'+
+     (p.paid_until?'<div class="info-row"><span class="l">مدفوع حتى</span><b>'+NS.fmtDate(p.paid_until)+'</b></div>':'')+
+     (p.next_due?'<div class="info-row"><span class="l">الدفعة القادمة</span><span class="tag tag--warn">'+NS.fmtDate(p.next_due)+'</span></div>':'')+
+     '</div>';
+  h+='<div class="card card--pad" style="margin-bottom:14px"><span class="card__title" style="margin-bottom:8px">'+I('whatsapp')+' سداد الرسوم</span>'+
+     '<p class="muted" style="font-size:.92rem;margin:6px 0 14px">للسداد أو الاستفسار عن طرق الدفع، تواصل مع الإدارة مباشرةً عبر واتساب وسيتم تأكيد الدفعة وتحديث حسابك.</p>'+
+     '<a class="btn btn--accent btn--block btn--lg" target="_blank" rel="noopener noreferrer" href="'+NS.wa(NS.WA_MANAGER,payMsg)+'">'+I('whatsapp')+' تواصل للسداد</a></div>';
+  h+='<div class="card card--pad"><span class="card__title" style="margin-bottom:10px">'+I('info')+' سجل المدفوعات</span>';
+  if(!p.history||!p.history.length) h+=NS.empty('wallet','لا توجد مدفوعات مسجلة','ستظهر هنا كل دفعة بعد تأكيدها من الإدارة.');
+  else p.history.forEach(function(x){ h+='<div class="info-row"><span class="l">'+NS.fmtDate(x.date)+(x.period?' · '+NS.esc(x.period):'')+'</span><b>'+NS.riyal(x.amount)+'</b></div>'; });
+  C.innerHTML=h+'</div>';
+}
+
+/* ---------- info / holidays ---------- */
+function info(){
+  var i=S.child, C=document.getElementById('content');
+  var h='<div class="card card--pad" style="margin-bottom:14px"><span class="card__title" style="margin-bottom:10px">'+I('user')+' بيانات '+NS.esc(i.name)+'</span>'+
+    (i.class_name?'<div class="info-row"><span class="l">الفصل</span><b>'+NS.esc(i.class_name)+'</b></div>':'')+
+    (i.teacher?'<div class="info-row"><span class="l">المعلّمة</span><b>'+NS.esc(i.teacher)+'</b></div>':'')+
+    (i.joining_date?'<div class="info-row"><span class="l">تاريخ الالتحاق</span><b>'+NS.fmtDate(i.joining_date)+'</b></div>':'')+'</div>';
+  h+='<div class="card card--pad" style="margin-bottom:14px"><span class="card__title" style="margin-bottom:10px">'+I('calendar')+' إجازات الحضانة</span>';
+  if(!S.holidays||!S.holidays.length) h+='<p class="muted" style="font-size:.92rem">لا توجد إجازات قريبة.</p>';
+  else S.holidays.forEach(function(x){ h+='<div class="hol"><b>'+NS.esc(x.name)+'</b><span class="tag tag--soft">'+NS.fmtShort(x.from)+(x.to&&x.to!==x.from?' → '+NS.fmtShort(x.to):'')+'</span></div>'; });
+  h+='<div class="hol"><span class="muted">نهاية الأسبوع</span><span class="tag tag--soft">الجمعة والسبت</span></div></div>';
+  h+='<div class="card card--pad"><span class="card__title" style="margin-bottom:10px">'+I('clock')+' مواعيد العمل</span>'+
+     '<div class="info-row"><span class="l">الأحد – الخميس</span><b>٨:٠٠ ص – ٢:٠٠ م</b></div></div>';
+  C.innerHTML=h;
+}
+
+/* ---------- chat (optimistic) ---------- */
+function chat(){
+  var C=document.getElementById('content');
+  C.innerHTML='<div class="card card--pad">'+NS.skelLines(4)+'</div>';
+  rpc('/messages').then(function(d){
+    var h='<div class="card card--pad"><span class="card__title" style="margin-bottom:12px">'+I('chat')+' التواصل مع المعلّمة</span>'+
+      '<div class="chat" id="thread"></div>'+
+      '<div class="composer"><textarea class="input" id="mb" rows="1" placeholder="اكتب رسالتك..."></textarea>'+
+      '<button class="btn btn--primary" id="ms" aria-label="إرسال" style="min-width:52px">'+I('send')+'</button></div></div>';
+    C.innerHTML=h;
+    renderThread(d.messages||[]);
+    var mb=document.getElementById('mb');
+    mb.addEventListener('input',function(){ mb.style.height='auto'; mb.style.height=Math.min(mb.scrollHeight,120)+'px'; });
+    document.getElementById('ms').addEventListener('click',send);
+    mb.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+  }).catch(function(err){ chatErr(C,err); });
+}
+function renderThread(msgs){
+  var th=document.getElementById('thread');
+  if(!msgs.length){ th.innerHTML='<div style="padding:14px 0">'+NS.empty('chat','ابدأ المحادثة','راسل معلّمة '+NS.esc(S.child.name)+' لمتابعة يومه.')+'</div>'; return; }
+  th.innerHTML=msgs.map(function(m){
+    return '<div class="bubble '+(m.is_parent?'me':'them')+'">'+NS.esc(m.body)+
+      '<div class="meta">'+(m.is_parent?'أنا':NS.esc(m.author))+' · '+NS.esc(m.time)+'</div></div>';
+  }).join('');
+  th.scrollTop=th.scrollHeight;
+}
+function send(){
+  var mb=document.getElementById('mb'), body=mb.value.trim(); if(!body) return;
+  var th=document.getElementById('thread');
+  if(th.querySelector('.empty')) th.innerHTML='';
+  var bub=document.createElement('div'); bub.className='bubble me pending';
+  bub.innerHTML=NS.esc(body)+'<div class="meta">جارٍ الإرسال…</div>';
+  th.appendChild(bub); th.scrollTop=th.scrollHeight;
+  mb.value=''; mb.style.height='auto';
+  rpc('/messages/post',{body:body}).then(function(r){
+    if(r&&r.ok){ bub.classList.remove('pending'); bub.querySelector('.meta').textContent='أنا · الآن'; }
+    else { bub.remove(); mb.value=body; NS.toast('لم تُرسل الرسالة','err'); }
+  }).catch(function(err){
+    bub.remove(); mb.value=body;
+    if(err.type==='auth'){ NS.clearToken('t'); expired(); return; }
+    NS.toast('لم تُرسل الرسالة','err');
+  });
+}
+function chatErr(C,err){
+  if(err.type==='auth'){ NS.clearToken('t'); expired(); return; }
+  C.innerHTML='<div class="card card--pad">'+NS.empty('wifi','تعذّر تحميل الرسائل','حاول مرة أخرى.')+
+    '<button class="btn btn--ghost btn--block" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>';
+}
+
+/* ---------- photos + lightbox ---------- */
+function photos(albumId){
+  var C=document.getElementById('content');
+  C.innerHTML='<div class="card card--pad"><div class="album-grid">'+
+    '<div class="skel" style="aspect-ratio:1"></div><div class="skel" style="aspect-ratio:1"></div>'+
+    '<div class="skel" style="aspect-ratio:1"></div><div class="skel" style="aspect-ratio:1"></div></div></div>';
+  if(!albumId){
+    rpc('/albums').then(function(d){
+      if(!d.albums||!d.albums.length){ C.innerHTML='<div class="card card--pad">'+NS.empty('camera','لا توجد ألبومات بعد','ستظهر هنا صور أنشطة طفلك فور رفعها.')+'</div>'; return; }
+      var h='<div class="album-grid">';
+      d.albums.forEach(function(a){
+        h+='<a data-album="'+a.id+'">'+(a.cover?'<img loading="lazy" src="'+NS.driveThumb(a.cover,500)+'" alt=""/>':'<div class="skel" style="width:100%;height:100%"></div>')+
+          '<span class="cap">'+NS.esc(a.name)+' · '+a.count+'</span></a>';
+      });
+      C.innerHTML='<div class="card card--pad"><span class="card__title" style="margin-bottom:12px">'+I('camera')+' ألبومات الصور</span>'+h+'</div></div>';
+      [].forEach.call(C.querySelectorAll('[data-album]'),function(a){ a.addEventListener('click',function(){ photos(a.getAttribute('data-album')); }); });
+    }).catch(function(err){ photosErr(C,err); });
+  } else {
+    rpc('/albums/'+albumId).then(function(d){
+      var ids=(d.photos||[]).map(function(p){ return p.drive_id; });
+      var full=ids.map(function(id){ return NS.driveThumb(id,1400); });
+      var h='<div class="card card--pad"><div class="card__head"><span class="card__title">'+I('camera')+' '+NS.esc(d.name)+'</span>'+
+        '<button class="btn btn--soft btn--sm" id="back-albums">'+I('arrowLeft')+' الألبومات</button></div>';
+      if(!ids.length) h+=NS.empty('camera','هذا الألبوم فارغ','');
+      else { h+='<div class="photo-grid">'; ids.forEach(function(id,i){ h+='<a data-i="'+i+'"><img loading="lazy" src="'+NS.driveThumb(id,400)+'" alt=""/></a>'; }); h+='</div>'; }
+      C.innerHTML=h+'</div>';
+      var back=document.getElementById('back-albums'); if(back) back.addEventListener('click',function(){ photos(); });
+      [].forEach.call(C.querySelectorAll('.photo-grid a'),function(a){ a.addEventListener('click',function(){ NS.lightbox(full, +a.getAttribute('data-i')); }); });
+    }).catch(function(err){ photosErr(C,err); });
+  }
+}
+function photosErr(C,err){
+  if(err.type==='auth'){ NS.clearToken('t'); expired(); return; }
+  C.innerHTML='<div class="card card--pad">'+NS.empty('wifi','تعذّر تحميل الصور','حاول مرة أخرى.')+'</div>';
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script src="/assets/install.js?v=1" defer></script>
+</body>
+</html>

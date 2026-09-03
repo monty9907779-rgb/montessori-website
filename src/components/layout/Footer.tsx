@@ -53,6 +53,11 @@ export default function Footer() {
               </li>
             ))}
             <li>
+              <a href={`/${locale}/${locale === "ar" ? "hadana-qariba-minni" : "daycare-near-me-jeddah"}`} className="text-sm text-gray-400 hover:text-white transition-colors">
+                {locale === "ar" ? "حضانة قريبة مني" : "Daycare Near Me"}
+              </a>
+            </li>
+            <li>
               <a
                 href={parentPortalUrl}
                 target="_blank"

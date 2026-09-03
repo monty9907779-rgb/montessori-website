@@ -1,9 +1,9 @@
-import Script from 'next/script';
+import Script from "next/script";
 
 export function StructuredData({ locale }: { locale: string }) {
   const isArabic = locale === 'ar';
 
-  const structuredData = {
+  const business = {
     "@context": "https://schema.org",
     "@type": "ChildCare",
     "name": isArabic ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery",
@@ -83,17 +83,17 @@ export function StructuredData({ locale }: { locale: string }) {
       ]
     },
     "sameAs": [
-      "https://www.instagram.com/planet.of.the.free.child/",
-      "https://www.facebook.com/PlanetoftheFreeChild",
-      "https://www.tiktok.com/@planet.of.the.free.child"
-    ]
+      "https://www.instagram.com/montessori_nursery/",
+      "https://www.facebook.com/p/Montessori-nursery-100063063920027/"
+    ],
+    "availableLanguage": ["ar", "en"]
   };
 
   return (
     <Script
       id="structured-data"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(business) }}
     />
   );
 }

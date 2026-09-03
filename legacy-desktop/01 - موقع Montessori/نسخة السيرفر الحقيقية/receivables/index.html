@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+<title>الذمم المدينة | روضة كوكب الطفل الحر</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=1"/>
+<style>
+.ar-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.ar-summary button.stat{border:0;width:100%;text-align:inherit;font-family:inherit;cursor:pointer}
+.ar-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.ar-toolbar .search{flex:1;min-width:180px}
+.ar-toolbar .search input{width:100%}
+.ar-seg{display:flex;gap:6px}
+.ar-seg button{border:1px solid var(--line-2);background:var(--paper);color:var(--muted);border-radius:999px;padding:7px 15px;font-weight:700;font-size:.85rem;cursor:pointer}
+.ar-seg button.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+.ar-link{display:flex;gap:6px;flex-wrap:wrap}.ar-link button{border:1px solid var(--line-2);background:var(--paper);color:var(--muted);border-radius:999px;padding:7px 13px;font-weight:900;font-size:.85rem;cursor:pointer}.ar-link button.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+.ar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.ar-card{background:var(--paper);border:1px solid var(--line-2);border-radius:30px;padding:24px 30px 28px;box-shadow:var(--sh-1);overflow:hidden}
+.ar-card.owes{border-inline-start-color:var(--danger)}
+.ar-card.credit{border-inline-start-color:var(--ok)}
+.ar-card .top{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.ar-card .avatar{width:64px;height:64px;min-width:64px;border:6px solid #d9e5dc;background:#2d6b55;color:#fff;font-size:1.5rem;box-shadow:inset 0 -8px 14px rgba(0,0,0,.12)}
+.ar-card .who{flex:1;min-width:0}
+.ar-card .who b{color:var(--forest);font-size:1.18rem;display:block;line-height:1.35;font-weight:900}
+.ar-card .who span{color:var(--muted);font-size:.95rem;line-height:1.7}
+.ar-bal{text-align:center;flex:none;border-radius:999px;padding:8px 17px;background:var(--sand);align-self:flex-start}
+.ar-bal .v{font-weight:900;font-size:.95rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ar-bal.owes .v{color:var(--danger)} .ar-bal.credit .v{color:var(--ok)} .ar-bal.zero .v{color:var(--muted)}
+.ar-bal .l{font-size:.76rem;color:var(--muted);font-weight:800}
+.ar-rows .r{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:12px 0;font-size:1.02rem;border-bottom:1px solid var(--line-2)}
+.ar-rows .r:last-child{border-bottom:0}
+.ar-rows .r .l{color:var(--muted)}
+.ar-rows .r .v{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.06rem;color:var(--ink);white-space:nowrap}
+.ar-act{margin-top:11px}
+.ar-act .btn{min-height:50px;border-radius:999px;font-size:1rem}
+.ar-note{display:flex;gap:9px;background:#eaf3f7;border-radius:var(--r-sm);padding:10px 13px;font-size:.83rem;color:var(--ink-2);margin-bottom:16px}
+.ar-note svg{width:17px;height:17px;flex:none;margin-top:2px;color:#3b7ea1}
+@media(max-width:520px){.ar-card{padding:20px 18px;border-radius:24px}.ar-grid{grid-template-columns:1fr}.ar-bal{padding:7px 12px}.ar-card .avatar{width:56px;height:56px;min-width:56px}}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=48"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null, Q='', FILT='all', LINK='all';
+var app=document.getElementById('app');
+
+if(!TOKEN){ gate(); } else { boot(); }
+function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'الذمم المدينة',body:'سجّلي دخولك كمديرة لعرض المستحقات على أولياء الأمور.'}); }
+function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
+  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+
+function boot(){
+  document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
+  NS.api('/api/manager/receivables',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    DATA=d; render();
+  }).catch(function(err){ if(err.type==='auth'){ NS.clearToken('mt'); gate(); } else netError(); });
+}
+
+function stat(accent,icon,label,value,key){
+  return '<button type="button" data-stat="'+NS.attr(key||'all')+'" class="stat '+accent+'" title="عرض مصدر الرقم">'+
+    '<div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span></div>'+
+    '<div class="v tabnum">'+value+'</div></button>';
+}
+function render(){
+  var t=DATA.totals||{};
+  var h=NS.appbar({sub:'الذمم', nav:NS.adminNav('accounts')})+
+    '<main class="app-main">'+
+      '<div class="page-head"><div><h1>الذمم المدينة (A/R)</h1>'+
+        '<div class="sub">المفوتر (الإيراد المُعترَف به) ناقص المُحصَّل — لكل وليّ أمر عبر كل الشهور.</div></div></div>'+
+      '<div class="ar-note">'+I('info')+'<span>محاسبة استحقاق: كل شهر يُسجَّل إيراده تلقائياً من تسجيل الطالب، ويظل ديناً على وليّ الأمر حتى يُغلق بالتحصيل. <b>موجب = مستحق عليه · سالب = دفع مقدّم.</b></span></div>'+
+      '<div class="ar-summary">'+
+        stat('is-forest','ledger','إجمالي المفوتر',NS.riyal(t.billed||0),'all')+
+        stat('is-forest','wallet','إجمالي المُحصَّل',NS.riyal(t.collected||0),'all')+
+        stat((t.receivable||0)>0?'is-danger':'is-forest','alert','صافي المستحق',NS.riyal(t.receivable||0),'owes')+
+        stat((t.debtors||0)?'is-amber':'is-forest','users','عدد المدينين',(t.debtors||0)+' / '+(DATA.students||[]).length,'owes')+
+      '</div>'+
+      '<div class="ar-toolbar">'+
+        '<div class="search"><input class="input" id="q" type="search" placeholder="ابحثي باسم الطالب أو وليّ الأمر…" value="'+NS.attr(Q)+'"/></div>'+
+        '<div class="ar-seg" id="seg">'+
+          seg('all','الكل')+seg('owes','مدينون')+seg('credit','مقدّمون')+
+        '</div>'+
+        '<div class="ar-link" id="link-filter">'+linkSeg('all','كل الربط')+linkSeg('linked','مرتبط بولي الأمر')+linkSeg('unlinked','غير مرتبط')+'</div>'+
+      '</div>'+
+      '<div id="list"></div>'+
+    '</main>';
+  app.innerHTML=h; NS.wireLogout('mt');
+  var q=document.getElementById('q'); q.addEventListener('input',function(){ Q=q.value; renderList(); });
+  [].forEach.call(document.querySelectorAll('.ar-summary [data-stat]'),function(b){
+    b.addEventListener('click',function(){ FILT=b.getAttribute('data-stat')||'all'; Q='';
+      [].forEach.call(document.querySelectorAll('#seg button'),function(x){x.classList.toggle('on',x.getAttribute('data-f')===FILT);});
+      renderList(); setTimeout(function(){var el=document.getElementById('list');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80);
+    });
+  });
+  [].forEach.call(document.querySelectorAll('#seg button'),function(b){
+    b.addEventListener('click',function(){ FILT=b.getAttribute('data-f'); [].forEach.call(document.querySelectorAll('#seg button'),function(x){x.classList.toggle('on',x===b);}); renderList(); });
+  });
+  [].forEach.call(document.querySelectorAll('#link-filter button'),function(b){
+    b.addEventListener('click',function(){ LINK=b.getAttribute('data-link'); [].forEach.call(document.querySelectorAll('#link-filter button'),function(x){x.classList.toggle('on',x===b);}); renderList(); });
+  });
+  renderList();
+}
+function seg(f,label){ return '<button data-f="'+f+'" class="'+(FILT===f?'on':'')+'">'+NS.esc(label)+'</button>'; }
+function linkSeg(v,label){ return '<button data-link="'+v+'" class="'+(LINK===v?'on':'')+'">'+NS.esc(label)+'</button>'; }
+function linkOk(s){ return LINK==='all'||(LINK==='linked'&&!!s.linked)||(LINK==='unlinked'&&!s.linked); }
+
+function renderList(){
+  var st=(DATA.students||[]).slice();
+  if(FILT==='owes') st=st.filter(function(s){return s.receivable>0.01;});
+  else if(FILT==='credit') st=st.filter(function(s){return s.receivable<-0.01;});
+  st=st.filter(linkOk);
+  if(Q){ var q=Q.trim(); st=st.filter(function(s){return ([s.name,s.guardian,s.phone,s.parent_email].join(' ')).indexOf(q)>=0;}); }
+  var box=document.getElementById('list');
+  if(!st.length){ box.innerHTML='<div class="card card--pad">'+NS.empty('checkCircle','لا يوجد','جرّبي تصفية أخرى.')+'</div>'; return; }
+  box.innerHTML='<div class="ar-grid">'+st.map(card).join('')+'</div>';
+  [].forEach.call(box.querySelectorAll('[data-wa]'),function(b){
+    b.addEventListener('click',function(){
+      var s=(DATA.students||[]).filter(function(x){return x.id===parseInt(b.getAttribute('data-wa'),10);})[0]; if(!s) return;
+      var msg='السلام عليكم، تذكير ودّي بخصوص رسوم '+s.name+'. الرصيد المستحق حالياً: '+Math.round(s.receivable)+' ر.س. شكراً لتعاونكم 🌿 — روضة كوكب الطفل الحر';
+      window.open(NS.wa(s.phone||NS.WA_MANAGER,msg),'_blank');
+    });
+  });
+}
+function card(s){
+  var owes=s.receivable>0.01, credit=s.receivable<-0.01;
+  var cls=owes?'owes':(credit?'credit':'');
+  var balCls=owes?'owes':(credit?'credit':'zero');
+  var balV=(owes?'':(credit?'+':''))+NS.fmtMoney(Math.abs(s.receivable))+' ر.س';
+  var balL=owes?'مستحق عليه':(credit?'دفع مقدّم':'مسدَّد بالكامل');
+  var initial=(s.name||'؟').trim().charAt(0);
+  var linkTxt=s.linked?'مرتبط بولي الأمر':(s.link_state==='pending'?'بانتظار الربط':'غير مرتبط');
+  return '<div class="ar-card '+cls+'"><div class="top"><span class="avatar avatar--sm">'+NS.esc(initial)+'</span>'+ 
+      '<div class="who"><b>'+NS.esc(s.name)+'</b><span>'+(s.guardian?NS.esc(s.guardian):'بدون ولي أمر')+' · رسوم '+NS.fmtMoney(s.monthly_fee)+' · '+NS.esc(linkTxt)+'</span></div>'+ 
+      '<div class="ar-bal '+balCls+'"><div class="v">'+balV+'</div><div class="l">'+balL+'</div></div>'+ 
+    '</div>'+ 
+    '<div class="ar-rows">'+
+      '<div class="r"><span class="l">إجمالي المفوتر</span><span class="v">'+NS.riyal(s.billed)+'</span></div>'+
+      '<div class="r"><span class="l">إجمالي المُحصَّل</span><span class="v">'+NS.riyal(s.collected)+'</span></div>'+
+    '</div>'+
+    (owes?'<div class="ar-act"><button class="btn btn--soft btn--block" data-wa="'+s.id+'">'+I('whatsapp')+' تذكير واتساب</button></div>':'')+
+  '</div>';
+}
+})();
+</script>
+</body>
+</html>

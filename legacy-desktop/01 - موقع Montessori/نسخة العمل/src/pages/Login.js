@@ -1,0 +1,46 @@
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+
+export default function Login({ onSuccess }) {
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    const user = login(email, password);
+    if (user) {
+      onSuccess && onSuccess();
+    } else {
+      setError('Invalid email or password');
+    }
+  };
+
+  return (
+    <div className="login-page">
+      <div className="login-card">
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <img src="logo.png" alt="Kawkab Al-Tifl" style={{ width: 96, height: 'auto', marginBottom: 12 }} />
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--green-deep)' }}>Staff Login</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Kawkab Al-Tifl Al-Hurr Kindergarten</p>
+        </div>
+
+        {error && <div className="alert alert-error">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email</label>
+            <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input type="password" className="form-input" value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Login</button>
+        </form>
+      </div>
+    </div>
+  );
+}

@@ -11,6 +11,7 @@ const GallerySection = dynamic(() => import("@/components/sections/GallerySectio
 const RolesSection = dynamic(() => import("@/components/sections/RolesSection"));
 const ContactSection = dynamic(() => import("@/components/sections/ContactSection"));
 import FollowUsSection from "@/components/sections/FollowUsSection";
+import SeoLinksSection from "@/components/SeoLinksSection";
 
 export default function HomePage() {
   return (
@@ -24,6 +25,7 @@ export default function HomePage() {
       <GallerySection />
       <RolesSection />
       <ContactSection />
+      <SeoLinksSection />
       <FollowUsSection />
     </>
   );

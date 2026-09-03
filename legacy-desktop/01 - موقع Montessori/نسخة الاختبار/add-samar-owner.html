@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إضافة سمر كـ Owner</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0F131C;
+      color: #e2e8f0;
+    }
+    button {
+      padding: 12px 24px;
+      background: #3B6DFF;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover { background: #2952cc; }
+    .success { color: #6EE7B7; }
+    .error { color: #ef4444; }
+    pre {
+      background: #1E2636;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>إضافة سمر كـ Owner</h1>
+
+  <div id="status"></div>
+
+  <button onclick="addSamar()">إضافة سمر</button>
+  <button onclick="showUsers()">عرض كل المستخدمين</button>
+  <button onclick="clearAll()">مسح كل البيانات</button>
+
+  <div id="output"></div>
+
+  <script>
+    const DB_KEY = 'montessori_users';
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2);
+    }
+
+    function getUsers() {
+      try {
+        return JSON.parse(localStorage.getItem(DB_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(DB_KEY, JSON.stringify(users));
+    }
+
+    function addSamar() {
+      const users = getUsers();
+
+      // Check if Samar already exists
+      const existing = users.find(u =>
+        u.email === 'samar.badie1@gmail.com' ||
+        u.email === 'montessori@gmail.com'
+      );
+
+      if (existing) {
+        // Update existing user to owner
+        existing.role = 'owner';
+        existing.name = 'سمر · Samar';
+        existing.email = 'samar.badie1@gmail.com';
+        saveUsers(users);
+        document.getElementById('status').innerHTML =
+          '<p class="success">✓ تم تحديث سمر إلى Owner</p>';
+      } else {
+        // Add new user
+        users.push({
+          id: uid(),
+          name: 'سمر · Samar',
+          email: 'samar.badie1@gmail.com',
+          password: 'samar123',
+          role: 'owner'
+        });
+        saveUsers(users);
+        document.getElementById('status').innerHTML =
+          '<p class="success">✓ تم إضافة سمر كـ Owner<br>الإيميل: samar.badie1@gmail.com<br>الباسورد: samar123</p>';
+      }
+
+      showUsers();
+    }
+
+    function showUsers() {
+      const users = getUsers();
+      const output = document.getElementById('output');
+
+      if (users.length === 0) {
+        output.innerHTML = '<p class="error">لا يوجد مستخدمين</p>';
+        return;
+      }
+
+      output.innerHTML = '<h3>المستخدمين الحاليين:</h3><pre>' +
+        JSON.stringify(users.map(u => ({
+          name: u.name,
+          email: u.email,
+          role: u.role
+        })), null, 2) + '</pre>';
+    }
+
+    function clearAll() {
+      if (confirm('متأكد؟ هيمسح كل المستخدمين!')) {
+        localStorage.removeItem(DB_KEY);
+        document.getElementById('status').innerHTML =
+          '<p class="success">تم مسح كل البيانات</p>';
+        document.getElementById('output').innerHTML = '';
+      }
+    }
+
+    // Show users on load
+    showUsers();
+  </script>
+</body>
+</html>

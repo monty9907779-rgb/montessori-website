@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>تطبيقات حضانة مونتيسوري — تحميل مجاني</title>
+<meta name="description" content="حمّل تطبيق حضانة مونتيسوري مجاناً على آيفون أو أندرويد — لولي الأمر والمعلمة والإدارة."/>
+<meta name="robots" content="noindex"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<link rel="icon" href="/logo.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="مونتيسوري"/>
+<style>
+  :root{--forest:#184e3e;--forest2:#1f6b52;--clay:#c67c54;--clay6:#b0663f;--sand:#f4ecdd;--cream:#faf6ee;--ink:#22302a;--ink2:#3c4a42;--muted:#79857c;--line:#eadfce;--paper:#fff}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Tahoma,sans-serif}
+  body{background:var(--cream);color:var(--ink);line-height:1.8;-webkit-text-size-adjust:100%}
+  .wrap{max-width:560px;margin:0 auto;padding:0 15px 46px}
+  header{background:linear-gradient(160deg,var(--forest2),var(--forest));color:#eaf3ee;text-align:center;padding:32px 18px 28px;border-radius:0 0 26px 26px}
+  header img{width:74px;height:74px;border-radius:20px;background:#fff;padding:8px;margin-bottom:11px}
+  header h1{font-size:21px;color:#fff}
+  header p{font-size:13.5px;color:#cfe0d6;margin-top:5px}
+  .free{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:999px;margin-top:12px}
+  h2{font-size:16px;color:var(--forest);margin:24px 4px 6px}
+  .hint{font-size:13px;color:var(--muted);margin:0 4px 12px}
+  .rolecard{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px rgba(24,78,62,.05)}
+  .rolecard .rt{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+  .rolecard .rt .emo{font-size:26px}
+  .rolecard .rt b{color:var(--forest);font-size:16px;display:block}
+  .rolecard .rt small{color:var(--muted);font-size:12px}
+  .apps{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .appbtn{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;border-radius:13px;padding:12px;font-size:14px;font-weight:800;border:1.5px solid var(--line)}
+  .appbtn.ios{background:#111827;color:#fff;border-color:#111827}
+  .appbtn.and{background:#e8f2ec;color:var(--forest);border-color:#cfe5d8}
+  .appbtn:active{transform:scale(.98)}
+  .appbtn .st{font-size:18px}
+  .install-btn{display:none;width:100%;background:var(--forest);color:#fff;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;margin:6px 0 4px;cursor:pointer}
+  details{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:4px 16px;margin-bottom:10px}
+  summary{padding:13px 0;font-weight:800;color:var(--forest);cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";font-size:20px;font-weight:400;color:var(--clay6)}
+  details[open] summary::after{content:"–"}
+  .step{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-top:1px dashed var(--line)}
+  .step .n{flex:none;width:28px;height:28px;border-radius:9px;background:var(--forest);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .step .t{font-size:14px;color:var(--ink2)}
+  .step .t b{color:var(--ink)}
+  .note{background:var(--sand);border-radius:14px;padding:13px 15px;font-size:13px;color:var(--ink2);margin-top:6px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+</style>
+</head>
+<body>
+<header>
+  <img src="/logo.png" alt="حضانة مونتيسوري"/>
+  <h1>تطبيقات حضانة مونتيسوري</h1>
+  <p>ثبّت التطبيق على جوالك وتابع كل شيء أول بأول</p>
+  <span class="free">✓ مجاني تماماً — بدون رسوم ولا متجر</span>
+</header>
+
+<div class="wrap">
+  <button id="mk-install-hero" class="install-btn">📲 ثبّت التطبيق الآن بضغطة واحدة</button>
+
+  <h2>اختر دورك ونوع جوالك</h2>
+  <p class="hint">اضغط زر جوالك — يفتح التطبيق ويرشدك للتثبيت خطوة واحدة.</p>
+
+  <!-- ولي الأمر -->
+  <div class="rolecard">
+    <div class="rt"><span class="emo">👩‍👧</span><span><b>ولي الأمر</b><small>حضور الطفل، الرسوم، الصور، التقييم، التواصل</small></span></div>
+    <div class="apps">
+      <a class="appbtn and" href="/login/?install=android"><span class="st">🤖</span> أندرويد</a>
+      <a class="appbtn ios" href="/login/?install=ios"><span class="st">🍎</span> آيفون</a>
+    </div>
+  </div>
+
+  <!-- المعلمة -->
+  <div class="rolecard">
+    <div class="rt"><span class="emo">👩‍🏫</span><span><b>المعلمة</b><small>حضور الأطفال، التقييم اليومي والأسبوعي</small></span></div>
+    <div class="apps">
+      <a class="appbtn and" href="/login/?install=android"><span class="st">🤖</span> أندرويد</a>
+      <a class="appbtn ios" href="/login/?install=ios"><span class="st">🍎</span> آيفون</a>
+    </div>
+  </div>
+
+  <!-- المديرة -->
+  <div class="rolecard">
+    <div class="rt"><span class="emo">👩‍💼</span><span><b>المديرة / الإدارة</b><small>الطلاب، الرسوم، الرواتب، الحسابات، الألبومات</small></span></div>
+    <div class="apps">
+      <a class="appbtn and" href="/login/?install=android"><span class="st">🤖</span> أندرويد</a>
+      <a class="appbtn ios" href="/login/?install=ios"><span class="st">🍎</span> آيفون</a>
+    </div>
+  </div>
+
+  <div class="note">💡 <b>ولي الأمر:</b> لو وصلك <b>رابط خاص بطفلك</b> من الحضانة، افتحه مباشرة — سيظهر لك زر/دليل التثبيت تلقائياً.</div>
+
+  <h2>طريقة التثبيت (للاطلاع)</h2>
+  <details>
+    <summary>🍎 آيفون (iPhone)</summary>
+    <div class="step"><span class="n">1</span><span class="t">افتح الرابط في متصفح <b>Safari</b>.</span></div>
+    <div class="step"><span class="n">2</span><span class="t">اضغط زر <b>المشاركة</b> 􀈂 بالأسفل، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>.</span></div>
+    <div class="step"><span class="n">3</span><span class="t">اضغط <b>«إضافة»</b> — تظهر أيقونة الحضانة على شاشتك. 🌸</span></div>
+  </details>
+  <details>
+    <summary>🤖 أندرويد (Android)</summary>
+    <div class="step"><span class="n">1</span><span class="t">افتح الرابط في متصفح <b>Chrome</b>.</span></div>
+    <div class="step"><span class="n">2</span><span class="t">سيظهر زر أخضر <b>«ثبّت التطبيق»</b> — اضغطه (أو من قائمة ⋮ اختر «تثبيت التطبيق»).</span></div>
+    <div class="step"><span class="n">3</span><span class="t">اضغط <b>«تثبيت»</b> — تظهر أيقونة الحضانة على شاشتك. 🌸</span></div>
+  </details>
+
+  <footer>حضانة مونتيسوري • جدة 🇸🇦 • montessori-ksa.com</footer>
+</div>
+
+<script>
+// زر التثبيت الرئيسي على أندرويد (beforeinstallprompt)
+(function(){
+  var hero=document.getElementById('mk-install-hero'), deferred=null;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;hero.style.display='block';});
+  hero.onclick=function(){ if(deferred){deferred.prompt();deferred.userChoice.finally(function(){deferred=null;hero.style.display='none';});} };
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}
+})();
+</script>
+<script src="/assets/install.js?v=1" defer></script>
+</body>
+</html>

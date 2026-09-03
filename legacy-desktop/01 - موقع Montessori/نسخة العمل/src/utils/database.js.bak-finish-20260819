@@ -1,0 +1,382 @@
+// Database utility using localStorage for persistence
+// Can be swapped for a real backend (Firebase/Supabase) later
+
+const DB_KEYS = {
+  STUDENTS: 'montessori_students',
+  PAYMENTS: 'montessori_payments',
+  CLASSES: 'montessori_classes',
+  USERS: 'montessori_users',
+  TEACHERS: 'montessori_teachers',
+  REGISTRATIONS: 'montessori_registrations',
+  GALLERY: 'montessori_gallery',
+  ATTENDANCE: 'montessori_attendance',
+  LOCATION: 'montessori_location',
+  SETTINGS: 'montessori_settings',
+};
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+const read = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || [];
+  } catch {
+    return [];
+  }
+};
+
+const write = (key, data) => {
+  localStorage.setItem(key, JSON.stringify(data));
+};
+
+// ─── Users / Auth ───────────────────────────────────────────────────────────
+export const getUsers = () => read(DB_KEYS.USERS);
+export const getUser = (email) => getUsers().find(u => u.email === email);
+export const addUser = (user) => {
+  const users = getUsers();
+  const newUser = { ...user, id: uid() };
+  write(DB_KEYS.USERS, [...users, newUser]);
+  return newUser;
+};
+export const updateUser = (id, updates) => {
+  write(DB_KEYS.USERS, getUsers().map(u => u.id === id ? { ...u, ...updates } : u));
+};
+export const deleteUser = (id) => {
+  write(DB_KEYS.USERS, getUsers().filter(u => u.id !== id));
+};
+export const authenticateUser = (email, password) => {
+  const user = getUser(email);
+  if (!user || user.password !== password) return null;
+  return { ...user, password: undefined };
+};
+
+// ─── Attendance ────────────────────────────────────────────────────────────
+export const getAttendance = () => read(DB_KEYS.ATTENDANCE);
+export const getAttendanceForDate = (date) => read(DB_KEYS.ATTENDANCE).filter(a => a.date === date);
+export const getStudentAttendance = (studentId) => read(DB_KEYS.ATTENDANCE).filter(a => a.studentId === studentId);
+export const markAttendance = (studentId, date, status, notes = '') => {
+  const records = read(DB_KEYS.ATTENDANCE);
+  const existing = records.findIndex(a => a.studentId === studentId && a.date === date);
+  if (existing >= 0) {
+    records[existing] = { ...records[existing], status, notes };
+    write(DB_KEYS.ATTENDANCE, records);
+    return records[existing];
+  }
+  const newRecord = { id: uid(), studentId, date, status, notes };
+  write(DB_KEYS.ATTENDANCE, [...records, newRecord]);
+  return newRecord;
+};
+export const getAttendanceReport = (studentId) => {
+  const records = getStudentAttendance(studentId);
+  const total = records.length;
+  const present = records.filter(r => r.status === 'present').length;
+  const absent = records.filter(r => r.status === 'absent').length;
+  const excused = records.filter(r => r.status === 'excused').length;
+  return { total, present, absent, excused, rate: total ? Math.round((present / total) * 100) : 0 };
+};
+
+// ─── Location ──────────────────────────────────────────────────────────────
+const DEFAULT_LOCATION = {
+  lat: 21.5433,
+  lng: 39.1728,
+  address: 'Jeddah, Saudi Arabia',
+  mapsLink: 'https://maps.google.com/?q=Bada%27a+Early+Childhood+Center+Jeddah,+Saudi+Arabia',
+  name: 'Bada\'a Early Childhood Center',
+};
+export const getLocation = () => {
+  try {
+    return JSON.parse(localStorage.getItem(DB_KEYS.LOCATION)) || DEFAULT_LOCATION;
+  } catch { return DEFAULT_LOCATION; }
+};
+export const setLocation = (loc) => {
+  write(DB_KEYS.LOCATION, { ...DEFAULT_LOCATION, ...loc });
+};
+
+// Compute distance in meters between two lat/lng points (Haversine)
+export const distanceInMeters = (lat1, lng1, lat2, lng2) => {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+// ─── Seed initial data ──────────────────────────────────────────────────────
+const SEED_USERS = [
+  { name: 'Director', email: 'director@montessori.com', password: 'director123', role: 'director' },
+  { name: 'Finance', email: 'finance@montessori.com', password: 'finance123', role: 'finance' },
+  { name: 'Admin', email: 'admin@montessori.com', password: 'admin123', role: 'admin' },
+  { name: 'Noura Al-Saud', email: 'noura@montessori.com', password: 'teacher123', role: 'teacher' },
+  { name: 'Sarah Al-Otaibi', email: 'sarah@montessori.com', password: 'teacher123', role: 'teacher' },
+];
+
+const ensureUsers = () => {
+  const existing = getUsers();
+  if (existing.length >= SEED_USERS.length) return;
+  const merged = [...existing];
+  SEED_USERS.forEach(u => {
+    if (!merged.find(m => m.email === u.email)) {
+      merged.push({ ...u, id: uid() });
+    }
+  });
+  write(DB_KEYS.USERS, merged);
+};
+
+export const seedDatabase = () => {
+  ensureUsers();
+  if (localStorage.getItem('montessori_seeded')) return;
+
+  const users = SEED_USERS.map(u => ({ ...u, id: uid() }));
+  write(DB_KEYS.USERS, users);
+
+  const classes = [
+    { id: uid(), name: 'Toddlers', ageRange: '18 months – 3 years', monthlyFee: 1500, color: '#f59e0b' },
+    { id: uid(), name: 'Primary', ageRange: '3 – 6 years', monthlyFee: 1800, color: '#10b981' },
+    { id: uid(), name: 'Lower Elementary', ageRange: '6 – 9 years', monthlyFee: 2000, color: '#3b82f6' },
+    { id: uid(), name: 'Upper Elementary', ageRange: '9 – 12 years', monthlyFee: 2200, color: '#8b5cf6' },
+  ];
+  write(DB_KEYS.CLASSES, classes);
+
+  const students = [
+    { id: uid(), name: 'Layla Al-Rashid', classId: classes[1].id, enrollDate: '2024-09-01', parentName: 'Ahmed Al-Rashid', parentPhone: '+966501234567', parentEmail: 'ahmed@example.com', status: 'active' },
+    { id: uid(), name: 'Omar Khalid', classId: classes[0].id, enrollDate: '2024-10-01', parentName: 'Sara Khalid', parentPhone: '+966502345678', parentEmail: 'sara@example.com', status: 'active' },
+    { id: uid(), name: 'Noor Hassan', classId: classes[2].id, enrollDate: '2024-09-15', parentName: 'Khalid Hassan', parentPhone: '+966503456789', parentEmail: 'khalid@example.com', status: 'active' },
+    { id: uid(), name: 'Ziad Mansour', classId: classes[1].id, enrollDate: '2024-11-01', parentName: 'Dina Mansour', parentPhone: '+966504567890', parentEmail: 'dina@example.com', status: 'active' },
+    { id: uid(), name: 'Rima Saleh', classId: classes[3].id, enrollDate: '2024-09-01', parentName: 'Faisal Saleh', parentPhone: '+966505678901', parentEmail: 'faisal@example.com', status: 'active' },
+  ];
+  write(DB_KEYS.STUDENTS, students);
+
+  const payments = [];
+  const months = ['2024-10', '2024-11', '2024-12', '2025-01', '2025-02', '2025-03'];
+  students.forEach(student => {
+    const cls = classes.find(c => c.id === student.classId);
+    months.forEach((month, i) => {
+      const isPaid = i < months.length - 1;
+      payments.push({
+        id: uid(),
+        studentId: student.id,
+        month,
+        amount: cls.monthlyFee,
+        status: isPaid ? 'paid' : 'pending',
+        paidDate: isPaid ? `${month}-05` : null,
+        dueDate: `${month}-01`,
+        method: isPaid ? (Math.random() > 0.5 ? 'bank_transfer' : 'cash') : null,
+        notes: '',
+      });
+    });
+  });
+  write(DB_KEYS.PAYMENTS, payments);
+
+  const teachers = [
+    { id: uid(), name: 'Noura Al-Saud', email: 'noura@montessori.com', phone: '+966506789012', specialization: 'Montessori Primary', classId: classes[1].id, status: 'active', joinDate: '2024-08-15' },
+    { id: uid(), name: 'Sarah Al-Otaibi', email: 'sarah@montessori.com', phone: '+966507890123', specialization: 'Infant & Toddler', classId: classes[0].id, status: 'active', joinDate: '2024-09-01' },
+  ];
+  write(DB_KEYS.TEACHERS, teachers);
+
+  const gallery = [
+    { id: uid(), title: 'First Day of School', description: 'Our little ones on their first day at Bada\'a', image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&q=80', date: '2025-09-01', tags: ['toddlers', 'primary'] },
+    { id: uid(), title: 'Art Day', description: 'Creative masterpieces from our young artists', image: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=600&q=80', date: '2025-10-15', tags: ['primary', 'elementary'] },
+    { id: uid(), title: 'Outdoor Play', description: 'Exploring nature in our garden', image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600&q=80', date: '2025-11-05', tags: ['toddlers'] },
+    { id: uid(), title: 'Montessori Workshop', description: 'Hands-on learning activities with Montessori materials', image: 'https://images.unsplash.com/photo-1574482620811-1a4ed3f35c7f?w=600&q=80', date: '2025-12-10', tags: ['elementary'] },
+    { id: uid(), title: 'Sports Day', description: 'Fun and games for everyone at our annual event', image: 'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?w=600&q=80', date: '2026-01-20', tags: ['all'] },
+  ];
+  write(DB_KEYS.GALLERY, gallery);
+
+  localStorage.setItem('montessori_seeded', '1');
+};
+
+// ─── Students ──────────────────────────────────────────────────────────────
+export const getStudents = () => read(DB_KEYS.STUDENTS);
+export const getStudent = (id) => read(DB_KEYS.STUDENTS).find(s => s.id === id);
+export const addStudent = (student) => {
+  const students = read(DB_KEYS.STUDENTS);
+  const newStudent = { ...student, id: uid() };
+  write(DB_KEYS.STUDENTS, [...students, newStudent]);
+  return newStudent;
+};
+export const updateStudent = (id, updates) => {
+  const students = read(DB_KEYS.STUDENTS).map(s => s.id === id ? { ...s, ...updates } : s);
+  write(DB_KEYS.STUDENTS, students);
+};
+export const deleteStudent = (id) => {
+  write(DB_KEYS.STUDENTS, read(DB_KEYS.STUDENTS).filter(s => s.id !== id));
+  write(DB_KEYS.PAYMENTS, read(DB_KEYS.PAYMENTS).filter(p => p.studentId !== id));
+};
+
+// ─── Classes ───────────────────────────────────────────────────────────────
+export const getClasses = () => read(DB_KEYS.CLASSES);
+export const addClass = (cls) => {
+  const classes = read(DB_KEYS.CLASSES);
+  const newClass = { ...cls, id: uid() };
+  write(DB_KEYS.CLASSES, [...classes, newClass]);
+  return newClass;
+};
+export const updateClass = (id, updates) => {
+  write(DB_KEYS.CLASSES, read(DB_KEYS.CLASSES).map(c => c.id === id ? { ...c, ...updates } : c));
+};
+export const deleteClass = (id) => {
+  write(DB_KEYS.CLASSES, read(DB_KEYS.CLASSES).filter(c => c.id !== id));
+};
+
+// ─── Payments ──────────────────────────────────────────────────────────────
+export const getPayments = () => read(DB_KEYS.PAYMENTS);
+export const getStudentPayments = (studentId) => read(DB_KEYS.PAYMENTS).filter(p => p.studentId === studentId);
+export const addPayment = (payment) => {
+  const payments = read(DB_KEYS.PAYMENTS);
+  const newPayment = { ...payment, id: uid() };
+  write(DB_KEYS.PAYMENTS, [...payments, newPayment]);
+  return newPayment;
+};
+export const updatePayment = (id, updates) => {
+  write(DB_KEYS.PAYMENTS, read(DB_KEYS.PAYMENTS).map(p => p.id === id ? { ...p, ...updates } : p));
+};
+export const markPaymentPaid = (id, method = 'cash') => {
+  const today = new Date().toISOString().slice(0, 10);
+  updatePayment(id, { status: 'paid', paidDate: today, method });
+};
+
+// ─── Stats for Dashboard ───────────────────────────────────────────────────
+export const getDashboardStats = () => {
+  const students = getStudents();
+  const payments = getPayments();
+  const classes = getClasses();
+
+  const activeStudents = students.filter(s => s.status === 'active').length;
+  const totalRevenue = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
+  const pendingAmount = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
+  const overdueStudents = [...new Set(payments.filter(p => p.status === 'pending').map(p => p.studentId))].length;
+
+  // Monthly revenue for chart
+  const monthlyRevenue = {};
+  payments.filter(p => p.status === 'paid').forEach(p => {
+    monthlyRevenue[p.month] = (monthlyRevenue[p.month] || 0) + p.amount;
+  });
+  const monthlyData = Object.entries(monthlyRevenue).sort().map(([month, revenue]) => ({
+    month: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+    revenue,
+  }));
+
+  // Class distribution
+  const classData = classes.map(cls => ({
+    name: cls.name,
+    students: students.filter(s => s.classId === cls.id && s.status === 'active').length,
+    color: cls.color,
+  }));
+
+  // Collection rate by month
+  const allMonths = [...new Set(payments.map(p => p.month))].sort();
+  const collectionData = allMonths.map(month => {
+    const monthPayments = payments.filter(p => p.month === month);
+    const paid = monthPayments.filter(p => p.status === 'paid').length;
+    const total = monthPayments.length;
+    return {
+      month: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+      rate: total ? Math.round((paid / total) * 100) : 0,
+    };
+  });
+
+  return { activeStudents, totalRevenue, pendingAmount, overdueStudents, monthlyData, classData, collectionData };
+};
+
+// ─── Teachers ──────────────────────────────────────────────────────────────
+export const getTeachers = () => read(DB_KEYS.TEACHERS);
+export const getTeacher = (id) => read(DB_KEYS.TEACHERS).find(t => t.id === id);
+export const addTeacher = (teacher) => {
+  const teachers = read(DB_KEYS.TEACHERS);
+  const newTeacher = { ...teacher, id: uid() };
+  write(DB_KEYS.TEACHERS, [...teachers, newTeacher]);
+  return newTeacher;
+};
+export const updateTeacher = (id, updates) => {
+  write(DB_KEYS.TEACHERS, read(DB_KEYS.TEACHERS).map(t => t.id === id ? { ...t, ...updates } : t));
+};
+export const deleteTeacher = (id) => {
+  write(DB_KEYS.TEACHERS, read(DB_KEYS.TEACHERS).filter(t => t.id !== id));
+};
+
+// ─── Public Registrations (Uncategorized Students) ─────────────────────────
+export const getRegistrations = () => read(DB_KEYS.REGISTRATIONS);
+export const addRegistration = (reg) => {
+  const registrations = read(DB_KEYS.REGISTRATIONS);
+  const newReg = {
+    ...reg,
+    id: uid(),
+    status: 'uncategorized',
+    registeredAt: new Date().toISOString(),
+  };
+  write(DB_KEYS.REGISTRATIONS, [...registrations, newReg]);
+  return newReg;
+};
+export const deleteRegistration = (id) => {
+  write(DB_KEYS.REGISTRATIONS, read(DB_KEYS.REGISTRATIONS).filter(r => r.id !== id));
+};
+
+// Approve registration → move to students
+export const approveRegistration = (regId, classId, monthlyFee) => {
+  const reg = read(DB_KEYS.REGISTRATIONS).find(r => r.id === regId);
+  if (!reg) return null;
+  const newStudent = addStudent({
+    name: reg.childName,
+    classId,
+    enrollDate: new Date().toISOString().slice(0, 10),
+    parentName: reg.parentName,
+    parentPhone: reg.parentPhone,
+    parentEmail: reg.parentEmail,
+    status: 'active',
+  });
+  const month = new Date().toISOString().slice(0, 7);
+  addPayment({
+    studentId: newStudent.id,
+    month,
+    amount: monthlyFee || 0,
+    status: 'pending',
+    paidDate: null,
+    dueDate: `${month}-01`,
+    method: null,
+    notes: 'From public registration',
+  });
+  deleteRegistration(regId);
+  return newStudent;
+};
+
+// ─── Gallery ───────────────────────────────────────────────────────────────
+export const getGalleryItems = () => read(DB_KEYS.GALLERY);
+export const getGalleryItem = (id) => read(DB_KEYS.GALLERY).find(i => i.id === id);
+export const addGalleryItem = (item) => {
+  const items = read(DB_KEYS.GALLERY);
+  const newItem = { ...item, id: uid() };
+  write(DB_KEYS.GALLERY, [...items, newItem]);
+  return newItem;
+};
+export const updateGalleryItem = (id, updates) => {
+  write(DB_KEYS.GALLERY, read(DB_KEYS.GALLERY).map(i => i.id === id ? { ...i, ...updates } : i));
+};
+export const deleteGalleryItem = (id) => {
+  write(DB_KEYS.GALLERY, read(DB_KEYS.GALLERY).filter(i => i.id !== id));
+};
+
+export const generateMonthlyInvoices = () => {
+  const students = getStudents().filter(s => s.status === 'active');
+  const classes = getClasses();
+  const payments = getPayments();
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  students.forEach(student => {
+    const exists = payments.find(p => p.studentId === student.id && p.month === currentMonth);
+    if (!exists) {
+      const cls = classes.find(c => c.id === student.classId);
+      addPayment({
+        studentId: student.id,
+        month: currentMonth,
+        amount: cls ? cls.monthlyFee : 0,
+        status: 'pending',
+        paidDate: null,
+        dueDate: `${currentMonth}-01`,
+        method: null,
+        notes: '',
+      });
+    }
+  });
+};

@@ -1,0 +1,5 @@
+Contact: mailto:info@montessori-ksa.com
+Canonical: https://montessori-ksa.com/.well-known/security.txt
+Preferred-Languages: ar, en
+Policy: https://montessori-ksa.com/privacy/
+Expires: 2027-08-28T00:00:00.000Z
