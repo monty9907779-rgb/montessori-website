@@ -1,0 +1,26 @@
+🚀 الخطوات التالية
+==================
+
+1. أضف Resend API Key (5 دقائق)
+   ✓ سجّل في: https://resend.com
+   ✓ احصل على API Key
+   ✓ أضفه في .env.local
+   ✓ اختبر: npm run dev
+
+2. Deploy على Vercel (10 دقائق)
+   ✓ Push للـ GitHub
+   ✓ Import في Vercel
+   ✓ أضف Environment Variables
+   ✓ Deploy!
+
+3. بعد النشر
+   ✓ اختبر الموقع المباشر
+   ✓ اختبر Contact Form
+   ✓ شارك الرابط
+
+📞 للمساعدة:
+   info@montessori-ksa.com
+   +966 541558173
+
+📚 للتوثيق:
+   اقرأ: START-HERE.md

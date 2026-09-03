@@ -1,0 +1,28 @@
+{
+  "name": "روضة كوكب الطفل الحر",
+  "short_name": "كوكب الطفل",
+  "description": "Montessori nursery in Jeddah - روضة منتسوري في جدة",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a3009",
+  "theme_color": "#2d5016",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "kids", "montessori"],
+  "screenshots": []
+}

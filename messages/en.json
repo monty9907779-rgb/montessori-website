@@ -1,0 +1,436 @@
+{
+  "meta": {
+    "title": "Planet of the Free Child Nursery | Montessori Nursery Jeddah",
+    "description": "Planet of the Free Child Nursery — a complete Montessori nursery in Jeddah, KSA. Smart nursery management and early education platform."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "programs": "Programs",
+    "gallery": "Gallery",
+    "roles": "Our Team",
+    "contact": "Contact",
+    "followUs": "Follow Us",
+    "curriculum": "Curriculum",
+    "methodology": "How We Teach",
+    "dailyLife": "A Day With Us",
+    "parentPortal": "Parent Portal"
+  },
+  "hero": {
+    "badge": "Certified Montessori Nursery",
+    "headline": "Igniting the Love of Learning from Day One",
+    "subheadline": "At Planet of the Free Child, we believe every child carries the seed of genius. Our Montessori approach nurtures it with freedom, creativity, and love.",
+    "cta": "Discover Our World",
+    "ctaSecondary": "Contact Us",
+    "stats": {
+      "years": "Years of Experience",
+      "children": "Happy Children",
+      "programs": "Diverse Programs",
+      "teachers": "Specialist Teachers"
+    }
+  },
+  "about": {
+    "badge": "Our Philosophy",
+    "title": "About Us",
+    "headline": "We believe early childhood is the foundation of the future",
+    "body1": "Planet of the Free Child Nursery is a complete Montessori educational environment in Jeddah, founded with a clear vision: to give every child the opportunity to discover themselves and build their skills naturally and joyfully.",
+    "body2": "We follow the globally trusted Maria Montessori methodology, where the child is at the center of the educational process, learning through free exploration, the senses, and interaction with a specially prepared environment.",
+    "features": {
+      "montessori": "Montessori AMI/AMS Aligned",
+      "bilingual": "Bilingual AR/EN",
+      "ages": "Ages 3m – 6yr",
+      "established": "Since 2014"
+    },
+    "values": {
+      "title": "Our Values",
+      "respect": {
+        "title": "Respect",
+        "desc": "We respect each child's unique rhythm and way of learning."
+      },
+      "freedom": {
+        "title": "Freedom",
+        "desc": "We give children freedom to explore within a safe, structured environment."
+      },
+      "love": {
+        "title": "Love",
+        "desc": "Love and warmth are the foundation of every interaction."
+      },
+      "excellence": {
+        "title": "Excellence",
+        "desc": "We always strive to deliver the highest standards in early education."
+      }
+    }
+  },
+  "programs": {
+    "badge": "Educational Programs",
+    "title": "Programs Designed for Every Stage",
+    "subtitle": "We offer comprehensive programs that respect the developmental stages of each child, from infancy through kindergarten.",
+    "cta": "Enrol Now",
+    "learnMore": "Learn More",
+    "items": {
+      "infants": {
+        "title": "Infant Care",
+        "age": "3 months – 18 months",
+        "desc": "A nurturing, safe environment that stimulates the senses and builds healthy emotional bonds during the first months of a child's life."
+      },
+      "toddlers": {
+        "title": "Toddlers World",
+        "age": "18 months – 3 years",
+        "desc": "Activities that develop language, movement, and early independence through purposeful play and free exploration."
+      },
+      "casa": {
+        "title": "Children's House (Casa)",
+        "age": "3 – 6 years",
+        "desc": "The classic Montessori classroom: practical life, language, mathematics, science, and arts in a multi-age environment."
+      },
+      "prep": {
+        "title": "Kindergarten Prep",
+        "age": "5 – 6 years",
+        "desc": "Comprehensive preparation for primary school: reading, writing, and numeracy skills in an interactive, joyful approach."
+      }
+    },
+    "curriculum": {
+      "infants": {
+        "outcomes": [
+          "Strengthened sensory awareness and body coordination",
+          "Secure emotional attachment and trust in caregivers",
+          "Early communication through babbling, gestures, and gaze"
+        ],
+        "materials": [
+          "Montessori mobile series (Munari, Gobbi, Dancers)",
+          "Treasure baskets with natural texture objects",
+          "Simple wooden grasping and rattling toys"
+        ]
+      },
+      "toddlers": {
+        "outcomes": [
+          "Growing vocabulary and two-word sentence formation",
+          "Increased gross and fine motor coordination",
+          "Emerging self-help skills such as dressing and tidying"
+        ],
+        "materials": [
+          "Practical life trays for pouring, scooping, and sorting",
+          "Shape puzzles and stacking cylinders",
+          "Picture-word cards for early language development"
+        ]
+      },
+      "casa": {
+        "outcomes": [
+          "Independent reading readiness and phonemic awareness",
+          "Concrete understanding of numbers, quantities, and operations",
+          "Strong sense of personal responsibility and community respect"
+        ],
+        "materials": [
+          "Sandpaper letters and moveable alphabet",
+          "Golden bead material and number rods",
+          "Binomial and trinomial cubes for spatial reasoning"
+        ]
+      },
+      "prep": {
+        "outcomes": [
+          "Confident reading and writing in at least one language",
+          "Abstract mathematical thinking using symbolic notation",
+          "Academic and social readiness for primary school transition"
+        ],
+        "materials": [
+          "Command cards, sentence analysis and grammar boxes",
+          "Checkerboard and stamp game for multiplication",
+          "Research folders, maps, and cultural study materials"
+        ]
+      }
+    },
+    "features": {
+      "smallClasses": "Small Classes",
+      "certifiedTeachers": "Certified Teachers",
+      "bilingualAR": "Bilingual",
+      "outdoorPlay": "Outdoor Activities"
+    }
+  },
+  "gallery": {
+    "badge": "Gallery",
+    "title": "Moments That Light Up Memories",
+    "subtitle": "A window into our days, filled with creativity, joy, and discovery.",
+    "categories": {
+      "all": "All",
+      "activities": "Activities",
+      "environment": "Environment",
+      "events": "Events",
+      "learning": "Learning"
+    },
+    "tiles": {
+      "artCraft": "Art & Craft",
+      "classroom": "Our Classroom",
+      "reading": "Reading Time",
+      "celebration": "Celebration Day",
+      "garden": "Garden Exploration",
+      "maths": "Maths Materials",
+      "nature": "Nature Corner",
+      "yearEnd": "End-of-Year Show"
+    },
+    "empty": "No items to display."
+  },
+  "roles": {
+    "badge": "Our Team",
+    "title": "Behind Every Happy Child Is an Exceptional Team",
+    "subtitle": "Our team of professional teachers and specialists places the child at the center of everything.",
+    "hiring": {
+      "title": "Join Our Team",
+      "headline": "We're Hiring Passionate Educators 🌱",
+      "description": "Do you believe in the power of early education? We're looking for certified Montessori teachers and teaching assistants who love children and seek to make a real difference in their lives. Join the Planet of the Free Child family!",
+      "cta": "Apply Now →"
+    },
+    "items": {
+      "director": {
+        "title": "Center Director",
+        "desc": "Ensures the educational process runs according to the highest Montessori standards and continuously develops the curriculum."
+      },
+      "lead_teacher": {
+        "title": "Lead Teacher",
+        "desc": "A certified Montessori teacher who leads the classroom and guides children on their journey of discovery."
+      },
+      "assistant": {
+        "title": "Teaching Assistant",
+        "desc": "Supports daily activities and ensures personal attention for every child inside the classroom."
+      },
+      "specialist": {
+        "title": "Educational Specialist",
+        "desc": "Monitors each child's individual development and provides necessary support for families and teaching staff."
+      },
+      "coordinator": {
+        "title": "Activities Coordinator",
+        "desc": "Plans and executes events, trips, and school occasions to enrich the educational experience."
+      },
+      "admin": {
+        "title": "Finance & Enrollment Manager",
+        "desc": "Facilitates enrollment procedures and ensures a smooth experience for families from the very first contact."
+      }
+    }
+  },
+  "contact": {
+    "badge": "Contact Us",
+    "title": "We Are Here to Answer Your Questions",
+    "subtitle": "Reach out today to learn more about our programs or to book a tour of the center.",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "childAge": "Child's Age",
+      "program": "Suitable Program",
+      "message": "Your Message",
+      "messagePlaceholder": "Tell us about your child or any enquiry you have...",
+      "submit": "Send Message",
+      "success": "Your message was sent successfully! We will get back to you soon.",
+      "errorMessage": "Failed to send message. Please try again or contact us directly."
+    },
+    "info": {
+      "address": "Planet of the Free Child Nursery (formerly Bedaya Montessori), Al Shati District, Jeddah, Kingdom of Saudi Arabia",
+      "phone": "+966 541558173",
+      "email": "info@montessori-ksa.com",
+      "hours": "Sun – Thu: 7:30 AM – 3:00 PM"
+    },
+    "mapLink": "Open in Google Maps ↗"
+  },
+  "followUs": {
+    "badge": "Follow Us",
+    "title": "Stay Connected With Us",
+    "subtitle": "Follow our social media accounts for the latest news and activities.",
+    "platforms": {
+      "instagram": "Instagram",
+      "twitter": "Twitter / X",
+      "snapchat": "Snapchat",
+      "whatsapp": "WhatsApp"
+    },
+    "cta": "Follow Now",
+    "copyright": "All rights reserved."
+  },
+  "footer": {
+    "tagline": "Igniting the Love of Learning from Day One",
+    "rights": "All rights reserved",
+    "parentPortal": "Parent Portal",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions"
+    }
+  },
+  "curriculum": {
+    "badge": "The Montessori Curriculum",
+    "title": "Five Areas of Learning",
+    "subtitle": "The Montessori curriculum is organised into five interconnected areas, each carefully designed to meet the natural developmental needs of the child. Together, they nurture the whole child — intellectually, physically, socially, and creatively.",
+    "areas": {
+      "practicalLife": {
+        "title": "Practical Life",
+        "icon": "🏠",
+        "color": "#2d5016",
+        "desc": "Practical Life activities encompass care of self, care of the environment, grace and courtesy, and control of movement — giving children the tools to act purposefully and independently in their everyday world. Through tasks such as pouring, buttoning, sweeping, and flower arranging, children develop deep concentration, fine motor precision, and a profound sense of order and belonging.",
+        "outcomes": [
+          "Enhanced fine motor coordination and hand-eye precision",
+          "Growing independence in dressing, hygiene, and self-care routines",
+          "Internalised sense of order, sequence, and logical thinking",
+          "Respectful, courteous interactions with peers and adults"
+        ]
+      },
+      "sensorial": {
+        "title": "Sensorial",
+        "icon": "🎨",
+        "color": "#5aa01e",
+        "desc": "Through a rich collection of specially designed Montessori materials, children systematically refine all five senses — sight, sound, touch, taste, and smell — and develop their capacity to observe, compare, and classify the world around them. The sensorial curriculum lays the cognitive groundwork for later abstract learning in mathematics, language, and the sciences by teaching children to notice subtle differences in dimension, colour, texture, pitch, and weight.",
+        "outcomes": [
+          "Sharpened ability to observe and distinguish fine differences in the environment",
+          "Enriched vocabulary for describing qualities such as texture, weight, and pitch",
+          "Strengthened visual discrimination essential for reading and writing readiness",
+          "Foundation for abstract mathematical and scientific reasoning"
+        ]
+      },
+      "language": {
+        "title": "Language & Literacy",
+        "icon": "📖",
+        "color": "#1565c0",
+        "desc": "Language development at Planet of the Free Child begins long before pencil meets paper — through rich spoken language experiences, storytelling, poetry, and conversation that expand vocabulary and listening comprehension. Children then progress through Montessori's phonics-based approach to reading readiness, exploring sandpaper letters, the moveable alphabet, and phonetic reading materials, while simultaneous writing readiness is supported through metal insets and sandpaper letter tracing.",
+        "outcomes": [
+          "Wide expressive and receptive vocabulary in Arabic and English",
+          "Confident phonemic awareness and phonics decoding skills",
+          "Early independent reading using phonetic and sight-word strategies",
+          "Clear, purposeful written expression through structured composition activities"
+        ]
+      },
+      "mathematics": {
+        "title": "Mathematics",
+        "icon": "🔢",
+        "color": "#e65100",
+        "desc": "Montessori mathematics follows a concrete-to-abstract progression that allows children to physically feel quantity before ever encountering a symbol. Beginning with number rods and sandpaper numerals, children advance to the golden bead material for the decimal system, the stamp game, the bead chains, and ultimately abstract operations with large numbers — building genuine mathematical understanding rather than rote memorisation.",
+        "outcomes": [
+          "Intuitive understanding of quantity, place value, and the decimal system",
+          "Confident performance of all four operations with concrete and symbolic materials",
+          "Strong number sense and early algebraic patterning awareness",
+          "Love of mathematical exploration and problem-solving confidence"
+        ]
+      },
+      "cultural": {
+        "title": "Cultural Studies",
+        "icon": "🌍",
+        "color": "#6a1b9a",
+        "desc": "The Cultural area spans geography, botany, zoology, history, music, and art — inspiring children with a sense of wonder about the planet they inhabit and the living things they share it with. Through puzzle maps, timelines, nature specimens, and hands-on science experiments, children develop a global perspective, an appreciation for biodiversity, and a foundation in the arts that nourishes creativity and self-expression throughout life.",
+        "outcomes": [
+          "Awareness of world continents, countries, and diverse human cultures",
+          "Foundational knowledge of plant and animal kingdoms through hands-on study",
+          "Understanding of historical time and the story of humanity",
+          "Creative expression through music, visual art, and movement"
+        ]
+      }
+    },
+    "principles": {
+      "preparedEnvironment": {
+        "title": "The Prepared Environment",
+        "desc": "Every element of the Planet of the Free Child classroom is deliberately arranged to invite exploration and support independence. Materials are presented in a logical sequence on accessible, low shelves, allowing children to choose their own work and return it with care — building agency and responsibility alongside academic skills.",
+        "icon": "🏛️"
+      },
+      "workCycle": {
+        "title": "The Uninterrupted Work Cycle",
+        "desc": "Children benefit from a three-hour uninterrupted work cycle each morning — a cornerstone of authentic Montessori practice. This extended period allows deep concentration to develop naturally, enabling children to enter a state of focused absorption known as 'normalisation', which Dr. Montessori identified as the hallmark of healthy development.",
+        "icon": "⏳"
+      },
+      "mixedAges": {
+        "title": "Mixed-Age Groupings",
+        "desc": "Our classrooms bring together children across a three-year age span, mirroring the natural social structure of families and communities. Younger children learn by observing older peers, while older children deepen their own understanding through teaching — fostering empathy, leadership, and a collaborative community spirit.",
+        "icon": "👧🧒"
+      },
+      "autoeducation": {
+        "title": "Auto-Education",
+        "desc": "Montessori believed that children possess within themselves an innate drive to learn. Our role is not to fill an empty vessel, but to prepare an environment rich enough to spark that inner teacher. Materials are self-correcting, so children receive immediate, non-judgmental feedback and develop the resilience to try again independently.",
+        "icon": "💡"
+      }
+    },
+    "principlesTitle": "4 Core Principles of Montessori"
+  },
+  "methodology": {
+    "badge": "How We Teach",
+    "title": "The Montessori Method in Practice",
+    "subtitle": "Learning at Planet of the Free Child is never passive. Our educators act as guides, carefully observing each child and introducing new challenges at precisely the right moment — honouring every child's individual pace and learning style.",
+    "steps": [
+      {
+        "step": "01",
+        "title": "Observation",
+        "desc": "Before any lesson is given, the Montessori guide observes each child closely — noting interests, readiness signals, and concentration patterns. This careful observation ensures that every presentation is offered at the ideal developmental window, making learning feel natural and effortless rather than forced."
+      },
+      {
+        "step": "02",
+        "title": "Presentation",
+        "desc": "The guide introduces a new material or concept through a precise, minimal three-period lesson. Movements are slow and deliberate, language is simple and purposeful, and the focus remains entirely on the material — inviting the child's curiosity without overwhelming it with unnecessary words or explanation."
+      },
+      {
+        "step": "03",
+        "title": "Independent Practice",
+        "desc": "After the presentation, the child freely chooses to work with the material as many times as they wish, at their own pace and on their own terms. Repetition is honoured as a sign of deep concentration, not boredom — it is through this self-directed repetition that true mastery is built from within."
+      },
+      {
+        "step": "04",
+        "title": "Mastery",
+        "desc": "Mastery is demonstrated not by a test, but by the child's calm, confident, and purposeful engagement with the material. The guide observes this readiness and records the achievement, then gently withdraws to allow consolidation before introducing the next extension in the sequence."
+      },
+      {
+        "step": "05",
+        "title": "Extension",
+        "desc": "Once mastery is achieved, the guide presents an extension activity that introduces greater complexity, abstraction, or a new application of the concept. Extensions keep the child in a state of productive challenge — neither bored by work that is too easy nor anxious about work that is too hard."
+      }
+    ],
+    "quote": {
+      "text": "The greatest sign of success for a teacher is to be able to say, 'The children are now working as if I did not exist.'",
+      "author": "Maria Montessori"
+    }
+  },
+  "dailyLife": {
+    "badge": "A Day at Planet of the Free Child",
+    "title": "What a Day Looks Like",
+    "subtitle": "Every day at Planet of the Free Child follows a warm, predictable rhythm that gives children a sense of security and belonging. Within this gentle structure, each child's day unfolds uniquely — guided by their own curiosity, energy, and readiness.",
+    "schedule": [
+      {
+        "time": "7:30 – 8:00 AM",
+        "activity": "Morning Arrival & Welcome",
+        "emoji": "🌅",
+        "desc": "Children arrive and are greeted individually by their guide. Morning routines such as hanging up bags, signing in at the attendance board, and choosing their first work of the day help children transition smoothly into the school environment and build a sense of ownership over their space."
+      },
+      {
+        "time": "8:00 – 11:00 AM",
+        "activity": "Uninterrupted Work Cycle",
+        "emoji": "📚",
+        "desc": "The heart of the Montessori morning: a three-hour period of child-directed activity. Children move freely through the prepared environment, selecting materials from the five curriculum areas, working individually or in small groups, and engaging in lessons offered by the guide. Concentration deepens, and the classroom hums with purposeful, peaceful activity."
+      },
+      {
+        "time": "11:00 – 11:45 AM",
+        "activity": "Outdoor Exploration & Gross Motor Play",
+        "emoji": "🌿",
+        "desc": "Children move to the outdoor environment for fresh air, physical exercise, and nature-based exploration. The outdoor space is an extension of the classroom — children may tend the garden, observe insects, participate in group games, or engage in imaginative play, all of which support physical development, risk assessment, and social negotiation skills."
+      },
+      {
+        "time": "11:45 AM – 12:30 PM",
+        "activity": "Lunch & Community Mealtime",
+        "emoji": "🍱",
+        "desc": "Lunch is a social and practical life experience. Children set their own places, serve themselves where appropriate, practise mealtime conversation, and learn table manners within a warm, unhurried atmosphere. Cleaning up after eating reinforces responsibility and care for the shared environment."
+      },
+      {
+        "time": "12:30 – 1:30 PM",
+        "activity": "Rest, Story & Quiet Work",
+        "emoji": "🌙",
+        "desc": "Younger children rest in a cosy, darkened sleep area, while older children engage in quiet work, guided reading, journaling, or sensorial activities. Story time and music weave through this period, nurturing a love of literature, language, and calm self-regulation before the afternoon."
+      },
+      {
+        "time": "1:30 – 3:00 PM",
+        "activity": "Afternoon Enrichment & Dismissal",
+        "emoji": "🎨",
+        "desc": "The afternoon is enriched with art, music, movement, cultural projects, and language sessions. Children reflect on their day, tidy their materials, and prepare for dismissal. Guides share brief observations with families at pick-up, keeping parents connected to their child's daily journey and achievements."
+      }
+    ],
+    "environment": {
+      "title": "Our Prepared Environment",
+      "desc": "The Planet of the Free Child classroom is designed to be a third teacher — every surface, shelf, and corner thoughtfully arranged to support independence, beauty, and purposeful work. We draw on principles of calm aesthetics, natural materials, and child-proportioned furniture to create a space where children feel genuinely at home and intrinsically motivated to explore.",
+      "features": [
+        "Low, open shelves that place every material within a child's reach and field of vision",
+        "Abundant natural light and carefully chosen neutral tones that promote calm and focus",
+        "Child-sized furniture — tables, chairs, and trolleys — scaled precisely to each age group",
+        "Uncluttered, orderly spaces where each material has a defined home and purpose",
+        "Materials arranged in sequential order from simple to complex, left to right on each shelf"
+      ]
+    },
+    "scheduleTitle": "Our Daily Schedule"
+  }
+}

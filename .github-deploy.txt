@@ -1,0 +1,30 @@
+🚀 READY TO DEPLOY
+
+Quick Vercel Deploy Steps:
+==========================
+
+1. Create GitHub Repo:
+   https://github.com/new
+   Name: montessori-website
+
+2. Push Code:
+   git init
+   git add .
+   git commit -m "Production ready"
+   git remote add origin https://github.com/YOUR_USERNAME/montessori-website.git
+   git push -u origin main
+
+3. Deploy on Vercel:
+   https://vercel.com/new
+   → Import from GitHub
+   → Select montessori-website
+   
+4. Add Environment Variables:
+   RESEND_API_KEY=re_your_key
+   CONTACT_EMAIL_FROM=noreply@montessori-ksa.com
+   CONTACT_EMAIL_TO=info@montessori-ksa.com
+   NEXT_PUBLIC_SITE_URL=https://montessori-ksa.com
+
+5. Deploy! ✅
+
+Done in 10 minutes!

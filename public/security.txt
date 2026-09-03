@@ -1,0 +1,8 @@
+Contact: info@montessori-ksa.com
+Expires: 2027-08-19T23:59:59.000Z
+Preferred-Languages: ar, en
+Canonical: https://montessori-ksa.com/.well-known/security.txt
+
+# Security Policy
+# If you discover a security vulnerability, please report it to us at info@montessori-ksa.com
+# We appreciate your responsible disclosure and will respond within 48 hours.

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block Next.js internal paths
+Disallow: /_next/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://montessori-ksa.com/sitemap.xml

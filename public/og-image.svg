@@ -1,0 +1,53 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a3009;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d5016;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4ade80;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Decorative Elements -->
+  <circle cx="100" cy="100" r="80" fill="url(#accentGradient)" opacity="0.3"/>
+  <circle cx="1100" cy="530" r="100" fill="url(#accentGradient)" opacity="0.2"/>
+  <circle cx="950" cy="80" r="60" fill="url(#accentGradient)" opacity="0.25"/>
+
+  <!-- Main Content Container -->
+  <rect x="80" y="120" width="1040" height="390" rx="24" fill="#ffffff" opacity="0.05"/>
+
+  <!-- Logo/Icon -->
+  <text x="600" y="200" font-size="80" text-anchor="middle" fill="#4ade80">🌿</text>
+
+  <!-- Title (Arabic) -->
+  <text x="600" y="300" font-family="Arial, sans-serif" font-size="56" font-weight="bold" text-anchor="middle" fill="#ffffff">
+    روضة كوكب الطفل الحر
+  </text>
+
+  <!-- Subtitle (Arabic) -->
+  <text x="600" y="350" font-family="Arial, sans-serif" font-size="28" text-anchor="middle" fill="#d1fae5">
+    (بداية منتسوري سابقاً)
+  </text>
+
+  <!-- English Title -->
+  <text x="600" y="410" font-family="Arial, sans-serif" font-size="32" font-weight="600" text-anchor="middle" fill="#e5f7ed">
+    Planet of the Free Child Nursery
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="460" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#86efac">
+    Montessori Education • Jeddah, KSA
+  </text>
+
+  <!-- Bottom Badge -->
+  <rect x="480" y="510" width="240" height="50" rx="25" fill="#4ade80" opacity="0.9"/>
+  <text x="600" y="545" font-family="Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#1a3009">
+    Since 2014
+  </text>
+</svg>

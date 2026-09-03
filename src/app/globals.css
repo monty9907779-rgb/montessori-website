@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #2d5016;
+  --color-primary-light: #5aa01e;
+  --color-accent: #f5a623;
+  --color-earth: #f3d9a4;
+}
+
+/* RTL support */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #2d5016;
+  border-radius: 3px;
+}
+
+/* Section padding utility */
+.section-padding {
+  @apply py-16 md:py-24 px-4 md:px-8 lg:px-16;
+}
+
+/* Gradient backgrounds */
+.bg-montessori {
+  background: linear-gradient(135deg, #2d5016 0%, #5aa01e 100%);
+}
+
+.bg-warm {
+  background: linear-gradient(135deg, #fdf8f0 0%, #faefd8 100%);
+}
+
+/* Card hover */
+.card-hover {
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+}
+
+/* Text gradient */
+.text-gradient {
+  background: linear-gradient(135deg, #2d5016, #5aa01e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium;
+}
+
+/* Leaf decoration */
+.leaf-decoration::before {
+  content: "🌿";
+  margin-inline-end: 0.5rem;
+}
+
+/* Section title */
+.section-title {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #2d5016;
+  outline-offset: 2px;
+}
+
+/* Animation delay utilities */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Opacity for animations */
+.animate-fade-in,
+.animate-slide-up,
+.animate-slide-in-r,
+.animate-slide-in-l {
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
