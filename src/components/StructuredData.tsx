@@ -2,16 +2,16 @@ import Script from "next/script";
 
 export function StructuredData({ locale }: { locale: string }) {
   const isArabic = locale === 'ar';
-  const localizedUrl = `https://montessori-ksa.com/${locale}`;
 
   const business = {
-    "@type": ["ChildCare", "LocalBusiness"],
+    "@context": "https://schema.org",
     "@id": "https://montessori-ksa.com/#childcare",
+    "@type": ["ChildCare", "LocalBusiness"],
     "name": isArabic ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery",
     "alternateName": isArabic ? "Planet of the Free Child Nursery" : "روضة كوكب الطفل الحر",
     "description": isArabic
-      ? "روضة منتسوري معتمدة في جدة، المملكة العربية السعودية. نتبع منهج مونتيسوري الأصيل المعتمد من AMI/AMS لتعليم الأطفال من عمر 3 أشهر إلى 6 سنوات."
-      : "Certified Montessori nursery in Jeddah, Saudi Arabia. We follow the authentic AMI/AMS-aligned Montessori method for children aged 3 months to 6 years.",
+      ? "حضانة وروضة مونتيسوري في جدة للأطفال من عمر 3 أشهر إلى 6 سنوات، مع برامج للرضع والأطفال الصغار وبيت الأطفال والتهيئة المدرسية."
+      : "Montessori nursery in Jeddah for children aged 3 months to 6 years, with infant, toddler, Children's House, and school-preparation programs.",
     "url": "https://montessori-ksa.com",
     "logo": "https://montessori-ksa.com/og-image.png",
     "image": "https://montessori-ksa.com/og-image.png",
@@ -30,15 +30,21 @@ export function StructuredData({ locale }: { locale: string }) {
     },
     "telephone": "+966541558173",
     "email": "info@montessori-ksa.com",
-    "priceRange": "$$",
+    "hasMap": "https://www.google.com/maps/place/%D8%B1%D9%88%D8%B6%D8%A9+%D9%83%D9%88%D9%83%D8%A8+%D8%A7%D9%84%D8%B7%D9%81%D9%84+%D8%A7%D9%84%D8%AD%D8%B1%E2%80%AD/@21.5795281,39.194829,673m/data=!3m2!1e3!4b1!4m6!3m5!1s0x15c3d18ac84c1d4d:0xaee1671b468377fb!8m2!3d21.5795281!4d39.194829!16s%2Fg%2F11s619kg25",
     "openingHoursSpecification": [
       {
         "@type": "OpeningHoursSpecification",
         "dayOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
-        "opens": "07:00",
-        "closes": "16:00"
+        "opens": "07:30",
+        "closes": "15:00"
       }
     ],
+    "serviceType": isArabic
+      ? ["حضانة أطفال", "روضة مونتيسوري", "تعليم مبكر"]
+      : ["Child daycare", "Montessori nursery", "Early childhood education"],
+    "knowsAbout": isArabic
+      ? ["منهج مونتيسوري", "التعليم المبكر", "رعاية الرضع", "التهيئة المدرسية"]
+      : ["Montessori method", "Early childhood education", "Infant care", "School preparation"],
     "areaServed": {
       "@type": "City",
       "name": isArabic ? "جدة" : "Jeddah",
@@ -90,80 +96,11 @@ export function StructuredData({ locale }: { locale: string }) {
     "availableLanguage": ["ar", "en"]
   };
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      business,
-      {
-        "@type": "WebSite",
-        "@id": "https://montessori-ksa.com/#website",
-        "url": "https://montessori-ksa.com",
-        "name": isArabic ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery",
-        "description": isArabic
-          ? "موقع روضة كوكب الطفل الحر في جدة، يقدم معلومات عن برامج مونتيسوري والرعاية المبكرة والتواصل مع الحضانة."
-          : "The official website for Planet of the Free Child Nursery in Jeddah, with Montessori programs, early childcare information, and contact details.",
-        "publisher": { "@id": "https://montessori-ksa.com/#childcare" },
-        "inLanguage": ["ar", "en"]
-      },
-      {
-        "@type": "WebPage",
-        "@id": `${localizedUrl}#webpage`,
-        "url": localizedUrl,
-        "name": isArabic ? "روضة كوكب الطفل الحر في جدة" : "Planet of the Free Child Nursery in Jeddah",
-        "description": isArabic
-          ? "روضة مونتيسوري ثنائية اللغة في جدة للأطفال من 3 أشهر إلى 6 سنوات."
-          : "A bilingual Montessori nursery in Jeddah for children from 3 months to 6 years.",
-        "isPartOf": { "@id": "https://montessori-ksa.com/#website" },
-        "about": { "@id": "https://montessori-ksa.com/#childcare" },
-        "primaryImageOfPage": {
-          "@type": "ImageObject",
-          "url": "https://montessori-ksa.com/og-image.png",
-          "width": 1200,
-          "height": 630
-        },
-        "inLanguage": locale,
-        "dateModified": "2026-09-05"
-      },
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${localizedUrl}#breadcrumb`,
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": isArabic ? "الرئيسية" : "Home",
-            "item": localizedUrl
-          }
-        ]
-      },
-      {
-        "@type": "EducationalOrganization",
-        "@id": "https://montessori-ksa.com/#organization",
-        "name": isArabic ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery",
-        "alternateName": isArabic ? "Planet of the Free Child Nursery" : "روضة كوكب الطفل الحر",
-        "url": "https://montessori-ksa.com",
-        "logo": "https://montessori-ksa.com/og-image.png",
-        "address": business.address,
-        "telephone": business.telephone,
-        "email": business.email,
-        "knowsAbout": [
-          "Montessori Education",
-          "Early Childhood Education",
-          "Bilingual Education",
-          "Child Development",
-          "Preschool Education",
-          "Nursery Care"
-        ],
-        "sameAs": business.sameAs
-      }
-    ]
-  };
-
   return (
     <Script
       id="structured-data"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(business) }}
     />
   );
 }

@@ -178,6 +178,24 @@
   font-family:inherit;font-size:.85rem;color:var(--ink,#22302a);background:#fff}
 @media(max-width:640px){.pbar{padding:10px 12px;gap:9px}.pbar .seg button{font-size:.8rem;padding:6px 11px}
   .pbar .custom{width:100%;justify-content:space-between}.pbar input[type=month]{flex:1;min-width:0}}
+
+.wa-reply-card{border-inline-start:4px solid #25d366}
+.wa-reply-card .card__head{margin-bottom:10px}
+.wa-reply-card .card__title{color:#128c4b}
+.wa-reply-card__body{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.wa-reply-card__copy{display:flex;align-items:flex-start;gap:11px;min-width:230px;flex:1}
+.wa-reply-card__icon{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;background:#dcfce7;color:#128c4b}
+.wa-reply-card__icon svg{width:21px;height:21px}
+.wa-reply-card__status{font-size:1rem;font-weight:800;color:var(--ink)}
+.wa-reply-card__hint{font-size:.82rem;color:var(--muted);margin-top:3px;line-height:1.6}
+.wa-reply-card__state{display:inline-flex;align-items:center;gap:6px;margin-inline-start:7px;padding:4px 9px;border-radius:999px;font-size:.75rem;font-weight:800;vertical-align:2px}
+.wa-reply-card__state.on{background:#dcfce7;color:#15803d}
+.wa-reply-card__state.off{background:#fee2e2;color:#b91c1c}
+.wa-reply-card__state.pending{background:var(--sand);color:#a16207}
+.wa-reply-card__toggle{min-width:190px;justify-content:center}
+.wa-reply-card__toggle.is-off{background:#c2503f}
+.wa-reply-card__toggle[disabled]{cursor:progress;opacity:.65}
+@media(max-width:560px){.wa-reply-card__body{align-items:stretch}.wa-reply-card__toggle{width:100%}}
 </style>
 </head>
 <body>
@@ -188,6 +206,7 @@
 (function(){
 var I=NS.icon, TOKEN=NS.token('mt'), D=null, timer=null, mounted=false;
 var app=document.getElementById('app');
+var WA={loading:true,available:true,enabled:false,error:'',updatedAt:null};
 
 /* ---------- period (calendar) state — persisted ---------- */
 var P={mode:'all',from:null,to:null};
@@ -288,19 +307,33 @@ function boot(){
   if(!mounted) firstSkeleton();
   fetchData().then(function(d){
     if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
-    D=d; render(); startTimer();
+    D=d; render(); loadWhatsAppReply(); startTimer();
   }).catch(function(err){
     if(err.type==='auth'){ NS.clearToken('mt'); gate(); }
     else { netError(); }   /* net / app / 5xx -> retry, keep session */
   });
 }
 function fetchData(){ return NS.api('/api/dashboard',{mt:TOKEN}); }
+function loadWhatsAppReply(){
+  WA.loading=true; WA.error='';
+  return NS.api('/api/manager/whatsapp_autoreply',{mt:TOKEN,action:'status'}).then(function(r){
+    if(!r||r.ok===false) throw new Error((r&&r.error)||'تعذّر قراءة حالة الرد الآلي');
+    WA={loading:false,available:true,enabled:!!(r.enabled!==undefined?r.enabled:r.on),
+      error:'',updatedAt:r.updated_at||r.updatedAt||null};
+    render();
+    return r;
+  }).catch(function(err){
+    WA={loading:false,available:false,enabled:false,error:err.message||'تعذّر الاتصال بخدمة الرد الآلي',updatedAt:null};
+    render();
+    return null;
+  });
+}
 
 function startTimer(){
   if(timer) clearInterval(timer);
   timer=setInterval(function(){
     fetchData().then(function(d){
-      if(d&&d.ok){ D=d; render(); clearStale(); }
+      if(d&&d.ok){ D=d; render(); loadWhatsAppReply(); clearStale(); }
       else { clearInterval(timer); timer=null; NS.clearToken('mt'); gate(); }
     }).catch(function(err){
       if(err.type==='auth'){ clearInterval(timer); timer=null; NS.clearToken('mt'); gate(); }
@@ -347,6 +380,7 @@ function render(){
       '</div>'+
       '<div id="stale"></div>'+
       periodBar()+
+      whatsappAutoReplyCard()+
 
       /* ---- KPI row (financial KPIs follow the selected period) ---- */
       '<div class="kpis">'+
@@ -402,6 +436,7 @@ function render(){
   app.innerHTML=h;
   NS.wireLogout('mt');
   wirePeriod();
+  wireWhatsAppReply();
 }
 
 /* ---------- small builders ---------- */
@@ -414,6 +449,69 @@ function stat(accent,icon,label,value,sub,href){
     (sub?'<div class="sub">'+NS.esc(sub)+'</div>':'')+close;
 }
 /* note: 'is-forest' is the default .stat accent (no override class needed); harmless if unstyled */
+
+/* ================= الرد الآلي في واتساب ================= */
+function whatsappAutoReplyCard(){
+  var state='', title='جارٍ قراءة حالة الرد الآلي…', hint='لحظات من فضلك';
+  var buttonText='جارٍ التحميل…', buttonClass='';
+  var disabled=true, icon='refresh';
+  if(!WA.loading&&WA.available){
+    var on=WA.enabled;
+    state='<span class="wa-reply-card__state '+(on?'on':'off')+'">'+(on?'يعمل الآن':'متوقف')+'</span>';
+    title='الرد الآلي في واتساب'+state;
+    hint=on?'يتم الرد تلقائياً على الرسائل الجديدة.':'لن يرسل النظام ردوداً تلقائية حتى تعيدي تشغيله.';
+    buttonText=on?'إيقاف الرد الآلي':'تشغيل الرد الآلي';
+    buttonClass=on?'':'is-off';
+    disabled=false; icon=on?'x':'check';
+  }else if(!WA.loading){
+    title='الرد الآلي في واتساب';
+    hint=WA.error||'تعذّر الاتصال بخدمة الرد الآلي. حاولي مرة أخرى بعد قليل.';
+    buttonText='غير متاح حالياً';
+  }
+  return '<section class="card card--pad col-2 wa-reply-card">'+
+    '<div class="card__head"><span class="card__title">'+I('whatsapp')+' تحكم الردود</span>'+
+    '<span class="tag tag--soft">للمديرة وصاحبة الحضانة</span></div>'+
+    '<div class="wa-reply-card__body">'+
+      '<div class="wa-reply-card__copy">'+
+        '<span class="wa-reply-card__icon">'+I('whatsapp')+'</span>'+
+        '<div><div class="wa-reply-card__status">'+title+'</div>'+
+        '<div class="wa-reply-card__hint">'+NS.esc(hint)+'</div></div>'+
+      '</div>'+
+      '<button type="button" id="wa-auto-reply-toggle" class="btn btn--primary wa-reply-card__toggle '+buttonClass+'"'+
+        (disabled?' disabled':'')+'>'+I(icon)+' '+buttonText+'</button>'+
+    '</div></section>';
+}
+
+function wireWhatsAppReply(){
+  var button=document.getElementById('wa-auto-reply-toggle');
+  if(!button||button.disabled) return;
+  button.addEventListener('click',function(){
+    if(WA.loading||!WA.available) return;
+    var next=!WA.enabled;
+    NS.confirm({
+      icon:'whatsapp',
+      title:next?'تشغيل الرد الآلي؟':'إيقاف الرد الآلي؟',
+      body:next?'سيبدأ النظام بالرد تلقائياً على رسائل واتساب الجديدة.':
+        'سيتوقف النظام عن إرسال الردود التلقائية، ويمكن للفريق متابعة المحادثات يدوياً.',
+      okText:next?'تشغيل الرد الآلي':'إيقاف الرد الآلي'
+    }).then(function(ok){
+      if(!ok) return;
+      button.disabled=true;
+      button.innerHTML=I('refresh')+' جاري الحفظ…';
+      NS.api('/api/manager/whatsapp_autoreply',{mt:TOKEN,action:'set',enabled:next?1:0}).then(function(r){
+        if(!r||r.ok===false) throw new Error((r&&r.error)||'تعذّر حفظ الحالة');
+        WA={loading:false,available:true,enabled:!!(r.enabled!==undefined?r.enabled:r.on),
+          error:'',updatedAt:r.updated_at||r.updatedAt||null};
+        render();
+        NS.toast(WA.enabled?'تم تشغيل الرد الآلي في واتساب':'تم إيقاف الرد الآلي في واتساب');
+      }).catch(function(err){
+        button.disabled=false;
+        button.innerHTML=I(next?'check':'x')+' '+(next?'تشغيل الرد الآلي':'إيقاف الرد الآلي');
+        NS.toast(err.message||'تعذّر حفظ الحالة، حاولي مرة أخرى','err');
+      });
+    });
+  });
+}
 
 
 /* ================= إعلانات جوجل ================= */

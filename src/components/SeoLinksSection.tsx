@@ -5,6 +5,7 @@ const links = {
   ar: [
     ["/ar/hadana-qariba-minni", "حضانة قريبة مني في جدة"],
     ["/ar/kayfa-akhtar-hadana", "كيف أختار حضانة لطفلي؟"],
+    ["/ar/rsum-alhadanat-fi-jeddah", "رسوم الحضانات في جدة"],
     ["/ar/what-is-montessori-method", "ما هو منهج مونتيسوري؟"],
   ],
   en: [
