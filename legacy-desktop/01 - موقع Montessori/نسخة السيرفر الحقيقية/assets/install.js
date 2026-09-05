@@ -1,5 +1,7 @@
 /* روضة كوكب الطفل الحر — مثبت PWA موحد للاندرويد والآيفون */
 (function () {
+  return;
+
   var ua = navigator.userAgent || '';
   var isIOS = /iPad|iPhone|iPod/.test(ua) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
