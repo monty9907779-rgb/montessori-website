@@ -95,3 +95,65 @@ html {
   opacity: 0;
   animation-fill-mode: forwards;
 }
+
+.seo-article {
+  @apply mt-10 text-lg leading-8 text-gray-700;
+}
+
+.seo-article h2 {
+  @apply mt-12 mb-5 text-3xl font-black leading-tight text-gray-900;
+}
+
+.seo-article h3 {
+  @apply mt-8 mb-3 text-2xl font-bold leading-tight text-[#2d5016];
+}
+
+.seo-article p {
+  @apply my-5;
+}
+
+.seo-article ul,
+.seo-article ol {
+  @apply my-5 space-y-2 ps-6;
+}
+
+.seo-article ul {
+  @apply list-disc;
+}
+
+.seo-article ol {
+  @apply list-decimal;
+}
+
+.seo-article a {
+  @apply font-semibold text-[#2d5016] underline underline-offset-4;
+}
+
+.seo-article blockquote {
+  @apply my-6 border-s-4 border-[#8bc34a] bg-[#f7faf3] px-5 py-4 text-gray-700;
+}
+
+.seo-article .table-wrap {
+  @apply my-7 overflow-x-auto rounded-lg border border-gray-200;
+}
+
+.seo-article table {
+  @apply min-w-full divide-y divide-gray-200 text-sm;
+}
+
+.seo-article thead {
+  @apply bg-[#f7faf3];
+}
+
+.seo-article th,
+.seo-article td {
+  @apply px-4 py-3 text-start;
+}
+
+.seo-article th {
+  @apply font-bold text-gray-900;
+}
+
+.seo-article tbody {
+  @apply divide-y divide-gray-100 bg-white;
+}
