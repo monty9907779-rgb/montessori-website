@@ -55,7 +55,7 @@ export default function AboutSection() {
                 Bada&apos;a Early Childhood Center
               </h3>
               <p className="text-green-100 text-sm leading-relaxed">
-                21°29&apos;9"N, 39°11&apos;33"E · Jeddah, KSA
+                21°29&apos;9&quot;N, 39°11&apos;33&quot;E · Jeddah, KSA
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-3">

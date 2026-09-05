@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
+import { getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import "@/app/globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -25,7 +25,7 @@ export default async function LocaleLayout({
   children,
   params,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
@@ -44,16 +44,11 @@ export default async function LocaleLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
       </head>
       <body
         className={`min-h-screen bg-white text-gray-900 ${
           locale === "ar" ? "font-arabic" : "font-sans"
         }`}
-        style={{ fontFamily: locale === "ar" ? "'Tajawal', sans-serif" : "'Inter', sans-serif" }}
       >
         <NextIntlClientProvider messages={messages}>
           <StructuredData locale={locale} />

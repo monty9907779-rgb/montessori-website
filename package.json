@@ -4,11 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint . --max-warnings=0",
-    "type-check": "tsc --noEmit",
-    "security-audit": "npm audit --production",
+    "lint": "eslint src next.config.mjs tailwind.config.ts postcss.config.mjs scripts --max-warnings=0",
+    "type-check": "tsc --noEmit --incremental false",
+    "verify:i18n": "node scripts/verify-i18n.js",
+    "verify:css": "node scripts/verify-css.js",
+    "verify:assets": "node scripts/verify-public-assets.js",
+    "test:ci": "npm run lint && npm run type-check && npm run verify:i18n && npm run verify:css && npm run verify:assets && npm run build",
+    "security-audit": "npm audit --omit=dev",
     "update-deps": "npm update"
   },
   "engines": {
