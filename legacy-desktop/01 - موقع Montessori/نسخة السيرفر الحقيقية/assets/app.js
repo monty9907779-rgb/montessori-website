@@ -525,6 +525,8 @@ NS.wireLogout = function(kind){
 
 /* ---- 🔔 جرس التنبيهات الموحّد: عدّاد لكل ما يهم المدير/الأونر (يظهر فقط مع توكن mt صالح) ---- */
 NS.notifBell = function(){
+  return;
+
   var mt=null; try{ mt=localStorage.getItem('nursery_mt'); }catch(e){}
   if(!mt || document.getElementById('ns-bell')) return;
   // يظهر فقط في صفحات الإدارة — لا يظهر إطلاقاً على الصفحات العامة أو المدوّنة
