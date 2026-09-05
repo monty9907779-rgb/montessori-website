@@ -14,7 +14,6 @@ Disallow: /receivables/
 Disallow: /login/
 Disallow: /funnel/
 Disallow: /social/
-Disallow: /google/
 Disallow: /meta/
 Disallow: /visits/
 Allow: /blog/
