@@ -31,12 +31,12 @@ export default function middleware(request: NextRequest) {
   // Content Security Policy
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ''} https://www.googletagmanager.com;
+    script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ''} https://www.googletagmanager.com https://crm.montessori-ksa.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' data: https: blob:;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://www.google-analytics.com;
-    frame-src 'self' https://www.google.com;
+    connect-src 'self' https://www.google-analytics.com https://odoo.montessori-ksa.com https://crm.montessori-ksa.com wss://crm.montessori-ksa.com;
+    frame-src 'self' https://www.google.com https://crm.montessori-ksa.com;
     object-src 'none';
     frame-ancestors 'none';
     base-uri 'self';

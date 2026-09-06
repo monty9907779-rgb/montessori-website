@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+
+<title>روضة كوكب الطفل الحر | لوحة التحكم</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/Iurf6YBj_oCad4k1l5anHrRpiZtK6GwN9w.woff2" as="font" type="font/woff2" crossorigin><style>/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5qjHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5qjHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/assets/fonts/Iura6YBj_oCad4k1nzGBC5xLhLE.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l8KiHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l8KiHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l4qkHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5anHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l5anHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l7KmHrRpiZtK6GwN9w.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* latin */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url(/assets/fonts/Iurf6YBj_oCad4k1l7KmHrFpiZtK6Gw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<link rel="stylesheet" href="/assets/app-admin.css?v=1"/>
+<style>
+/* ---- dashboard-specific polish (light, brand-coherent) ---- */
+.head-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;align-self:center}
+@media(max-width:560px){.head-actions{width:100%}.head-actions .btn{flex:1 1 100%;justify-content:center}}
+	.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:var(--s5)}
+	.kpis a.stat{text-decoration:none;color:inherit}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.dash-grid .col-2{grid-column:span 2}
+@media(max-width:720px){.dash-grid .col-2{grid-column:span 1}}
+
+.live{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:var(--pill);
+  background:var(--ok-bg);color:var(--ok);font-weight:700;font-size:.82rem;white-space:nowrap}
+.live .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);position:relative;flex:none}
+.live .dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:var(--ok);opacity:.35;animation:livePulse 1.8s var(--ease) infinite}
+@keyframes livePulse{0%{transform:scale(.6);opacity:.5}70%{transform:scale(2.1);opacity:0}100%{opacity:0}}
+@media(max-width:600px){.live span.live-txt{display:none}.live{padding:6px 9px}}
+
+.chart-cap{font-size:.82rem;color:var(--muted);margin-top:10px;text-align:center;line-height:1.5}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:10px;font-size:.82rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.legend i{width:11px;height:11px;border-radius:4px;display:inline-block}
+.chart-svg{width:100%;height:auto;display:block;overflow:visible}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+
+.absent-list{display:flex;flex-direction:column;gap:9px}
+.absent-list .row-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:var(--r-sm);
+  background:var(--sand);font-weight:600;font-size:.95rem;color:var(--ink)}
+.absent-list .row-item .av{width:32px;height:32px;font-size:.85rem}
+
+.od-name{font-weight:700;color:var(--ink)}
+.card-scroll{max-height:none}
+.stat .v small{font-size:1rem;font-weight:700;color:var(--muted)}
+.mini-note{font-size:.82rem;color:var(--muted);margin-top:2px}
+
+/* ---- period calendar bar ---- */
+.pbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--paper,#fff);
+  border:1px solid var(--line-2,#e9e0cf);border-radius:var(--r-md,14px);padding:11px 15px;
+  margin-bottom:var(--s4,16px);box-shadow:var(--sh-1,0 2px 8px rgba(24,78,62,.06))}
+.pbar__t{font-weight:800;color:var(--forest,#184e3e);display:inline-flex;align-items:center;gap:7px;font-size:.92rem}
+.pbar__t svg{width:18px;height:18px}
+.pbar .seg{display:flex;gap:6px;flex-wrap:wrap}
+.pbar .seg button{border:1px solid var(--line,#e9e0cf);background:var(--sand,#f4ecdd);color:var(--ink-2,#3c4a42);
+  font-family:inherit;font-weight:700;font-size:.85rem;padding:7px 14px;border-radius:999px;cursor:pointer;
+  transition:background .15s,color .15s}
+.pbar .seg button.on{background:var(--forest,#184e3e);border-color:var(--forest,#184e3e);color:#fff}
+.pbar .custom{display:inline-flex;align-items:center;gap:7px;font-size:.85rem;color:var(--muted,#79857c);font-weight:600}
+.pbar .custom[hidden]{display:none}
+.pbar input[type=month]{border:1px solid var(--line,#e9e0cf);border-radius:10px;padding:6px 9px;
+  font-family:inherit;font-size:.85rem;color:var(--ink,#22302a);background:#fff}
+@media(max-width:640px){.pbar{padding:10px 12px;gap:9px}.pbar .seg button{font-size:.8rem;padding:6px 11px}
+  .pbar .custom{width:100%;justify-content:space-between}.pbar input[type=month]{flex:1;min-width:0}}
+
+.wa-reply-card{border-inline-start:4px solid #25d366}
+.wa-reply-card .card__head{margin-bottom:10px}
+.wa-reply-card .card__title{color:#128c4b}
+.wa-reply-card__body{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.wa-reply-card__copy{display:flex;align-items:flex-start;gap:11px;min-width:230px;flex:1}
+.wa-reply-card__icon{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;background:#dcfce7;color:#128c4b}
+.wa-reply-card__icon svg{width:21px;height:21px}
+.wa-reply-card__status{font-size:1rem;font-weight:800;color:var(--ink)}
+.wa-reply-card__hint{font-size:.82rem;color:var(--muted);margin-top:3px;line-height:1.6}
+.wa-reply-card__state{display:inline-flex;align-items:center;gap:6px;margin-inline-start:7px;padding:4px 9px;border-radius:999px;font-size:.75rem;font-weight:800;vertical-align:2px}
+.wa-reply-card__state.on{background:#dcfce7;color:#15803d}
+.wa-reply-card__state.off{background:#fee2e2;color:#b91c1c}
+.wa-reply-card__state.pending{background:var(--sand);color:#a16207}
+.wa-reply-card__toggle{min-width:190px;justify-content:center}
+.wa-reply-card__toggle.is-off{background:#c2503f}
+.wa-reply-card__toggle[disabled]{cursor:progress;opacity:.65}
+@media(max-width:560px){.wa-reply-card__body{align-items:stretch}.wa-reply-card__toggle{width:100%}}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+
+<script src="/assets/app.js?v=48"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), D=null, timer=null, mounted=false;
+var app=document.getElementById('app');
+var WA={loading:true,available:true,enabled:false,error:'',updatedAt:null};
+
+/* ---------- period (calendar) state — persisted ---------- */
+var P={mode:'all',from:null,to:null};
+try{ var _p=JSON.parse(localStorage.getItem('ns.dash.period')||'null'); if(_p&&_p.mode) P=_p; }catch(e){}
+function savePeriod(){ try{ localStorage.setItem('ns.dash.period',JSON.stringify(P)); }catch(e){} }
+
+var AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function mLabel(k){ var p=String(k||'').split('-'); if(p.length<2) return k;
+  return (AR_MONTHS[(+p[1])-1]||k)+' '+p[0]; }
+function mShort(k){ var p=String(k||'').split('-'); if(p.length<2) return k;
+  return AR_MONTHS[(+p[1])-1]||k; }
+
+/* filtered by_month rows according to P */
+function fRows(){
+  var rows=((D&&D.money)||{}).by_month||[];
+  if(P.mode==='last3') return rows.slice(-3);
+  if(P.mode==='cur')   return rows.slice(-1);
+  if(P.mode==='custom'&&(P.from||P.to))
+    return rows.filter(function(r){ return (!P.from||r.label>=P.from)&&(!P.to||r.label<=P.to); });
+  return rows;
+}
+function finSums(rows){
+  var s={income:0,student_income:0,extra_income:0,salaries:0,other:0,net:0};
+  rows.forEach(function(r){
+    var inc=Number(r.income)||0, stu=(r.student_income!=null?Number(r.student_income):inc)||0;
+    s.income+=inc; s.student_income+=stu; s.extra_income+=(r.extra_income!=null?Number(r.extra_income):(inc-stu))||0;
+    s.salaries+=(r.salaries||0); s.other+=(r.other||0);
+  });
+  s.net=s.income-s.salaries-s.other;
+  return s;
+}
+function periodShort(rows){
+  if(P.mode==='last3') return 'آخر ٣ أشهر';
+  if(P.mode==='cur')   return rows.length?mLabel(rows[rows.length-1].label):'هذا الشهر';
+  if(P.mode==='custom'&&(P.from||P.to)){
+    if(!rows.length) return 'لا بيانات في الفترة';
+    var a=mLabel(rows[0].label), b=mLabel(rows[rows.length-1].label);
+    return a===b?a:(a+' — '+b);
+  }
+  return 'من البداية';
+}
+function periodBar(){
+  var rows=((D&&D.money)||{}).by_month||[];
+  var lo=rows.length?rows[0].label:'', hi=rows.length?rows[rows.length-1].label:'';
+  function seg(m,txt){ return '<button type="button" data-m="'+m+'" class="'+(P.mode===m?'on':'')+'">'+txt+'</button>'; }
+  return '<div class="pbar" id="pbar">'+
+    '<span class="pbar__t">'+I('calendar')+' الفترة</span>'+
+    '<span class="seg">'+seg('all','من البداية')+seg('last3','آخر ٣ أشهر')+seg('cur','هذا الشهر')+seg('custom','مخصّص')+'</span>'+
+    '<span class="custom" '+(P.mode==='custom'?'':'hidden')+'>من '+
+      '<input type="month" id="p-from" min="'+NS.attr(lo)+'" max="'+NS.attr(hi)+'" value="'+NS.attr(P.from||lo)+'"/> إلى '+
+      '<input type="month" id="p-to" min="'+NS.attr(lo)+'" max="'+NS.attr(hi)+'" value="'+NS.attr(P.to||hi)+'"/></span>'+
+    '</div>';
+}
+function wirePeriod(){
+  var bar=document.getElementById('pbar'); if(!bar) return;
+  Array.prototype.forEach.call(bar.querySelectorAll('button[data-m]'),function(b){
+    b.addEventListener('click',function(){
+      P.mode=b.getAttribute('data-m');
+      if(P.mode==='custom'){ var f=document.getElementById('p-from'),t=document.getElementById('p-to');
+        P.from=P.from||(f&&f.value)||null; P.to=P.to||(t&&t.value)||null; }
+      savePeriod(); render();
+    });
+  });
+  var f=document.getElementById('p-from'), t=document.getElementById('p-to');
+  function upd(){ P.from=(f&&f.value)||null; P.to=(t&&t.value)||null; P.mode='custom'; savePeriod(); render(); }
+  if(f) f.addEventListener('change',upd);
+  if(t) t.addEventListener('change',upd);
+}
+
+/* colors pulled from the design system (light theme) */
+var C_FOREST='#184e3e', C_FOREST6='#2a7d61', C_CLAY='#c67c54', C_AMBER='#e0a458',
+    C_DANGER='#c2503f', C_INFO='#3b7ea1', C_SAGE='#5b8a72', C_LINE='#e9e0cf', C_SAND='#f4ecdd';
+
+/* ---------- entry ---------- */
+if(!TOKEN){ gate(); } else { boot(); }
+
+/* ---------- logged-out / expired: on-site gate (points to /login/) ---------- */
+function gate(){
+  app.innerHTML='';
+  var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'لوحة التحكم',body:'سجّلي دخولك كصاحبة الحضانة أو المديرة لمتابعة الأداء المالي والحضور.'});
+}
+
+/* ---------- net error: retry screen (NOT the gate) ---------- */
+function netError(){
+  var _bar=NS.ensureShell(app); app.innerHTML=''; if(_bar){ app.appendChild(_bar); NS.wireLogout('mt'); }
+  var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
+  m.innerHTML='<div class="card card--pad u-center">'+
+    '<div class="modal__icon u-block-c">'+I('wifi')+'</div>'+
+    '<h3 class="u-mb8">تعذّر الاتصال</h3>'+
+    '<p class="muted u-mb20">تحقّقي من اتصالك بالإنترنت ثم أعيدي المحاولة.</p>'+
+    '<button class="btn btn--primary btn--block btn--lg" id="retry">'+I('refresh')+' إعادة المحاولة</button></div>';
+  m.querySelector('#retry').addEventListener('click',boot);
+}
+
+/* ---------- boot (skeleton -> first load) ---------- */
+function boot(){
+  if(!mounted) firstSkeleton();
+  fetchData().then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    D=d; render(); loadWhatsAppReply(); startTimer();
+  }).catch(function(err){
+    if(err.type==='auth'){ NS.clearToken('mt'); gate(); }
+    else { netError(); }   /* net / app / 5xx -> retry, keep session */
+  });
+}
+function fetchData(){ return NS.api('/api/dashboard',{mt:TOKEN}); }
+function loadLocalWhatsAppReply(){
+  return fetch('/api/whatsapp-auto-reply',{cache:'no-store'}).then(function(r){
+    if(!r.ok) throw new Error('تعذّر قراءة حالة الرد الآلي');
+    return r.json();
+  }).then(function(r){
+    if(!r || typeof r.enabled !== 'boolean') throw new Error('رد غير صالح من الخادم');
+    return {
+      enabled: r.enabled,
+      updatedAt: r.updatedAt || r.updated_at || null
+    };
+  });
+}
+function saveLocalWhatsAppReply(enabled){
+  return fetch('/api/whatsapp-auto-reply',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    cache:'no-store',
+    body: JSON.stringify({ enabled: !!enabled })
+  }).then(function(r){
+    if(!r.ok) throw new Error('تعذّر حفظ الحالة');
+    return r.json();
+  }).then(function(r){
+    if(!r || typeof r.enabled !== 'boolean') throw new Error('رد غير صالح من الخادم');
+    return {
+      enabled: r.enabled,
+      updatedAt: r.updatedAt || r.updated_at || null
+    };
+  });
+}
+function loadWhatsAppReply(){
+  WA.loading=true; WA.error='';
+  return loadLocalWhatsAppReply().catch(function(){
+    return NS.api('/api/manager/whatsapp_autoreply',{mt:TOKEN,action:'status'});
+  }).then(function(r){
+    if(!r||r.ok===false) throw new Error((r&&r.error)||'تعذّر قراءة حالة الرد الآلي');
+    WA={loading:false,available:true,enabled:!!(r.enabled!==undefined?r.enabled:r.on),
+      error:'',updatedAt:r.updatedAt||r.updated_at||null};
+    render();
+    return r;
+  }).catch(function(err){
+    WA={loading:false,available:false,enabled:false,error:err.message||'تعذّر الاتصال بخدمة الرد الآلي',updatedAt:null};
+    render();
+    return null;
+  });
+}
+
+function startTimer(){
+  if(timer) clearInterval(timer);
+  timer=setInterval(function(){
+    fetchData().then(function(d){
+      if(d&&d.ok){ D=d; render(); loadWhatsAppReply(); clearStale(); }
+      else { clearInterval(timer); timer=null; NS.clearToken('mt'); gate(); }
+    }).catch(function(err){
+      if(err.type==='auth'){ clearInterval(timer); timer=null; NS.clearToken('mt'); gate(); }
+      else { showStale(); }   /* net/app during refresh -> stale banner, keep numbers */
+    });
+  },60000);
+}
+
+/* ---------- first-load skeleton ---------- */
+function firstSkeleton(){
+  var kp=''; for(var i=0;i<8;i++){ kp+='<div class="stat"><div class="skel skel-line" style="width:55%"></div>'+
+    '<div class="skel skel-line" style="width:70%;height:26px;margin-top:8px"></div></div>'; }
+  document.getElementById('boot').innerHTML=
+    '<div class="kpis">'+kp+'</div>'+
+    '<div class="dash-grid">'+NS.skelCard()+NS.skelCard()+NS.skelCard()+NS.skelCard()+'</div>';
+}
+
+/* ---------- stale banner (refresh failure) ---------- */
+function showStale(){
+  var host=document.getElementById('stale'); if(!host) return;
+  host.innerHTML='<div class="banner banner--warn">'+I('alert')+
+    '<span>قد تكون البيانات غير محدّثة — تعذّر التحديث التلقائي. سنحاول مجدداً بعد قليل.</span></div>';
+}
+function clearStale(){ var host=document.getElementById('stale'); if(host) host.innerHTML=''; }
+
+/* ---------- render ---------- */
+function render(){
+  mounted=true;
+  var m=D.money||{}, st=D.students||{}, at=D.att_today||{}, sf=D.staff||{};
+  var FR=fRows(), F=finSums(FR), ptxt=periodShort(FR);
+
+  var right='<span class="live" title="تُحدَّث تلقائياً كل دقيقة"><span class="dot"></span>'+
+            '<span class="live-txt">تُحدَّث تلقائياً</span></span>';
+
+  var absent=(at.absent_names||[]).length;
+  var markedTxt=at.marked?'مُسجَّل':'لم يُسجَّل بعد';
+
+  var h=NS.appbar({sub:'لوحة التحكم', nav:NS.adminNav('dashboard'), right:right})+
+    '<main class="app-main">'+
+      '<div class="page-head between u-wrap">'+
+        '<div><h1>مرحباً '+NS.esc(D.name||'')+'</h1>'+
+        '<div class="sub">نظرة عامة على أداء الحضانة اليوم</div></div>'+
+        '<div class="head-actions">'+'<a class="btn btn--primary" href="/ai/">'+I('sparkle')+' ذكاء الحضانة</a>'+'<a class="btn btn--soft" href="https://crm.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDCAC صندوق الرسائل (CRM)</a>'+'<a class="btn btn--soft" data-owner="1" data-sso-api="/api/manager/beszel_sso" href="https://mon.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDDA5\uFE0F حالة السيرفر</a>'+'</div>'+ 
+      '</div>'+
+      '<div id="stale"></div>'+
+      periodBar()+
+      whatsappAutoReplyCard()+
+
+      /* ---- KPI row (financial KPIs follow the selected period) ---- */
+      '<div class="kpis">'+
+        stat('is-forest','wallet','إجمالي الإيرادات',NS.riyal(F.income),'الطلبة: '+NS.riyal(F.student_income)+' · دخل آخر: '+NS.riyal(F.extra_income),'/accounts/#source-income')+
+        stat('is-clay','users','المرتبات',NS.riyal(F.salaries),ptxt,'/accounts/#source-salary')+
+        stat('is-danger','wallet','مصاريف أخرى',NS.riyal(F.other),ptxt,'/accounts/#source-expense')+
+        stat(F.net>=0?'is-forest':'is-danger','chart','صافي الفترة',NS.riyal(F.net),ptxt,'/accounts/#source-income')+
+        stat('is-forest','sparkle','دخل اليوم',NS.riyal(m.income_today),(Number(m.count_today)||0)+' دفعة اليوم','/accounts/#source-fees')+
+        stat('is-forest','users','الطلاب',NS.fmtMoney(st.total),(Number(st.paid)||0)+' سدّدوا الرسوم','/students/')+
+        stat(st.overdue_count?'is-amber':'is-forest','alert','متأخرو السداد',NS.fmtMoney(st.overdue_count),st.overdue_count?'بحاجة لمتابعة':'لا يوجد متأخرون','/receivables/')+
+        stat('is-clay','pin','حضور اليوم',(Number(at.present)||0)+' <small>/ '+(Number(st.total)||0)+'</small>',absent?(absent+' غائب · '+markedTxt):markedTxt,'/classes/')+
+        stat(sf.late_today?'is-amber':'is-forest','clock','تأخّر الموظفين',NS.fmtMoney(sf.late_today),sf.late_today?'اليوم':'الجميع في الموعد','/salaries/')+
+        stat('is-forest','calendar','تسجيل السنة الجديدة',NS.fmtMoney(st.new_year_count||0),'طلب/طالب','/enrollments/')+
+      '</div>'+
+
+      /* ---- charts + tables ---- */
+      '<div class="dash-grid">'+
+
+        card('col-2','chart','الملخّص المالي الشهري',ptxt,
+          incomeExpenseChart(FR)+
+          '<div class="legend"><span><i style="background:'+C_FOREST6+'"></i>الإيرادات</span>'+
+          '<span><i style="background:'+C_CLAY+'"></i>المرتبات + المصاريف</span></div>'+
+          finTable(FR))+
+
+        card('','pin','حضور آخر ١٤ يوماً','',
+          attendanceChart(D.att_14||[]))+
+
+        card('','wallet','نسبة السداد','',
+          donutChart(Number(st.paid)||0, Math.max(0,(Number(st.total)||0)-(Number(st.paid)||0)))+
+          '<div class="legend"><span><i style="background:'+C_FOREST6+'"></i>سدّدوا '+(Number(st.paid)||0)+'</span>'+
+          '<span><i style="background:'+C_LINE+'"></i>متبقّي '+Math.max(0,(Number(st.total)||0)-(Number(st.paid)||0))+'</span></div>')+
+
+        card('col-2','chart','إعلانات جوجل',
+          ((D.ads&&D.ads.configured)?((D.ads.problems||[]).length?'يحتاج انتباه':(D.ads.partial?'أرقام فقط':'سليم')):'غير مربوط'),
+          adsCard(D.ads))+
+
+        card('col-2','alert','متأخرو السداد','',
+          overdueTable(st.overdue||[]))+
+
+        card('','user','غياب اليوم','',
+          absentList(at))+
+
+        card('','users','الموظفون اليوم','',
+          staffTable(sf.today||[]))+
+
+        card('col-2','clock','خصومات الموظفين','هذا الشهر',
+          deductionsTable(sf.deductions||[]))+
+
+      '</div>'+
+    '</main>'+
+    '<footer style="text-align:center;color:var(--muted);font-size:.82rem;padding:18px">روضة كوكب الطفل الحر · جدة</footer>';
+
+  app.innerHTML=h;
+  NS.wireLogout('mt');
+  wirePeriod();
+  wireWhatsAppReply();
+}
+
+/* ---------- small builders ---------- */
+function stat(accent,icon,label,value,sub,href){
+  var open = href ? '<a class="stat '+accent+'" href="'+NS.attr(href)+'" title="عرض مصدر الرقم">' : '<div class="stat '+accent+'">';
+  var close = href ? '</a>' : '</div>';
+  return open+
+    '<div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span></div>'+
+    '<div class="v tabnum">'+value+'</div>'+
+    (sub?'<div class="sub">'+NS.esc(sub)+'</div>':'')+close;
+}
+/* note: 'is-forest' is the default .stat accent (no override class needed); harmless if unstyled */
+
+/* ================= الرد الآلي في واتساب ================= */
+function whatsappAutoReplyCard(){
+  var state='', title='جارٍ قراءة حالة الرد الآلي…', hint='لحظات من فضلك';
+  var buttonText='جارٍ التحميل…', buttonClass='';
+  var disabled=true, icon='refresh';
+  if(!WA.loading&&WA.available){
+    var on=WA.enabled;
+    state='<span class="wa-reply-card__state '+(on?'on':'off')+'">'+(on?'يعمل الآن':'متوقف')+'</span>';
+    title='الرد الآلي في واتساب'+state;
+    hint=on?'يتم الرد تلقائياً على الرسائل الجديدة.':'لن يرسل النظام ردوداً تلقائية حتى تعيدي تشغيله.';
+    buttonText=on?'إيقاف الرد الآلي':'تشغيل الرد الآلي';
+    buttonClass=on?'':'is-off';
+    disabled=false; icon=on?'x':'check';
+  }else if(!WA.loading){
+    title='الرد الآلي في واتساب';
+    hint=WA.error||'تعذّر الاتصال بخدمة الرد الآلي. حاولي مرة أخرى بعد قليل.';
+    buttonText='غير متاح حالياً';
+  }
+  return '<section class="card card--pad col-2 wa-reply-card">'+
+    '<div class="card__head"><span class="card__title">'+I('whatsapp')+' تحكم الردود</span>'+
+    '<span class="tag tag--soft">للمديرة وصاحبة الحضانة</span></div>'+
+    '<div class="wa-reply-card__body">'+
+      '<div class="wa-reply-card__copy">'+
+        '<span class="wa-reply-card__icon">'+I('whatsapp')+'</span>'+
+        '<div><div class="wa-reply-card__status">'+title+'</div>'+
+        '<div class="wa-reply-card__hint">'+NS.esc(hint)+'</div></div>'+
+      '</div>'+
+      '<button type="button" id="wa-auto-reply-toggle" class="btn btn--primary wa-reply-card__toggle '+buttonClass+'"'+
+        (disabled?' disabled':'')+'>'+I(icon)+' '+buttonText+'</button>'+
+    '</div></section>';
+}
+
+function wireWhatsAppReply(){
+  var button=document.getElementById('wa-auto-reply-toggle');
+  if(!button||button.disabled) return;
+  button.addEventListener('click',function(){
+    if(WA.loading||!WA.available) return;
+    var next=!WA.enabled;
+    NS.confirm({
+      icon:'whatsapp',
+      title:next?'تشغيل الرد الآلي؟':'إيقاف الرد الآلي؟',
+      body:next?'سيبدأ النظام بالرد تلقائياً على رسائل واتساب الجديدة.':
+        'سيتوقف النظام عن إرسال الردود التلقائية، ويمكن للفريق متابعة المحادثات يدوياً.',
+      okText:next?'تشغيل الرد الآلي':'إيقاف الرد الآلي'
+    }).then(function(ok){
+      if(!ok) return;
+      button.disabled=true;
+      button.innerHTML=I('refresh')+' جاري الحفظ…';
+      saveLocalWhatsAppReply(next).catch(function(){
+        return NS.api('/api/manager/whatsapp_autoreply',{mt:TOKEN,action:'set',enabled:next?1:0});
+      }).then(function(r){
+        if(!r||r.ok===false) throw new Error((r&&r.error)||'تعذّر حفظ الحالة');
+        WA={loading:false,available:true,enabled:!!(r.enabled!==undefined?r.enabled:r.on),
+          error:'',updatedAt:r.updatedAt||r.updated_at||null};
+        render();
+        NS.toast(WA.enabled?'تم تشغيل الرد الآلي في واتساب':'تم إيقاف الرد الآلي في واتساب');
+      }).catch(function(err){
+        button.disabled=false;
+        button.innerHTML=I(next?'check':'x')+' '+(next?'تشغيل الرد الآلي':'إيقاف الرد الآلي');
+        NS.toast(err.message||'تعذّر حفظ الحالة، حاولي مرة أخرى','err');
+      });
+    });
+  });
+}
+
+
+/* ================= إعلانات جوجل ================= */
+function adsCard(a){
+  a = a || {};
+  if(!a.configured){
+    return '<div class="muted" style="padding:6px 2px;line-height:1.9">'+
+      'لم يُربط حساب الإعلانات بعد.<br/><small>شغّلي سكربت الفحص داخل Google Ads مرة واحدة، '+
+      'وستظهر الحالة هنا تلقائياً كل ساعة.</small></div>';
+  }
+  var probs = a.problems || [];
+  var cams  = a.campaigns || [];
+  var cur   = a.currency || '';
+  var h = '';
+
+  if(a.stale){
+    h += '<div style="background:#fef3c7;color:#b45309;border-radius:9px;padding:8px 12px;'+
+         'font-size:12.5px;font-weight:700;margin-bottom:10px">⚠️ آخر تحديث '+
+         NS.esc(a.received_at||'—')+' — لم يصل تحديث جديد منذ أكثر من ٣ ساعات</div>';
+  }
+
+  if(probs.length){
+    h += '<div style="background:#fdecea;border-radius:9px;padding:10px 14px;margin-bottom:10px">'+
+         '<b style="color:#c0392b">'+probs.length+' بند يحتاج انتباه</b><ul style="margin:6px 0 0;padding-inline-start:18px">';
+    for(var i=0;i<probs.length && i<5;i++) h += '<li style="font-size:12.5px">'+NS.esc(probs[i])+'</li>';
+    h += '</ul></div>';
+  } else if(a.partial){
+    /* مراقبة جزئية: الأرقام موجودة لكن صحة الحملات مش مقروءة —
+       فممنوع نقول «كل الحملات سليمة»، دي طمأنة مش مبنية على حاجة. */
+    var notes = a.notes || [];
+    h += '<div style="background:var(--sand);border-radius:9px;padding:9px 13px;'+
+         'margin-bottom:10px;font-size:12.5px;line-height:1.85">'+
+         '<b style="color:var(--ink-2)">مراقبة جزئية</b>'+
+         (notes.length?'<ul style="margin:5px 0 0;padding-inline-start:18px">'+
+           notes.map(function(n){ return '<li>'+NS.esc(n)+'</li>'; }).join('')+'</ul>':'')+
+         '</div>';
+  } else {
+    h += '<div style="background:#eaf5ef;color:#15803d;border-radius:9px;padding:8px 12px;'+
+         'font-size:12.5px;font-weight:700;margin-bottom:10px">✅ كل الحملات سليمة</div>';
+  }
+
+  if(cams.length){
+    h += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'+
+         '<tr style="color:#79857c;font-size:11.5px"><th style="text-align:right;padding:0 6px 8px">الحملة</th>'+
+         '<th>الحالة</th><th>الصرف</th><th>نقرات</th><th>تحويلات</th></tr>';
+    cams.forEach(function(c){
+      var on = c.state === 'شغّالة';
+      h += '<tr><td style="padding:7px 6px;border-top:1px solid var(--line-2)">'+NS.esc(c.name||'')+'</td>'+
+        '<td style="text-align:center;border-top:1px solid var(--line-2);color:'+(on?'#15803d':'#b45309')+'">'+NS.esc(c.state||'')+'</td>'+
+        '<td style="text-align:center;border-top:1px solid var(--line-2)" class="tabnum">'+(Number(c.cost)||0).toFixed(0)+'</td>'+
+        '<td style="text-align:center;border-top:1px solid var(--line-2)" class="tabnum">'+(c.clicks||0)+'</td>'+
+        '<td style="text-align:center;border-top:1px solid var(--line-2)" class="tabnum">'+(c.conv||0)+'</td></tr>';
+    });
+    h += '</table></div>';
+    h += '<div class="muted" style="font-size:11px;margin-top:8px">آخر ٧ أيام · '+NS.esc(cur)+
+         ' · تحديث '+NS.esc(a.received_at||'—')+'</div>';
+  }
+  return h;
+}
+
+
+function card(extra,icon,title,pill,body){
+  return '<section class="card card--pad '+(extra||'')+'">'+
+    '<div class="card__head"><span class="card__title">'+I(icon)+' '+NS.esc(title)+'</span>'+
+    (pill?'<span class="tag tag--soft">'+NS.esc(pill)+'</span>':'')+'</div>'+
+    body+'</section>';
+}
+
+/* ================= CHARTS (inline SVG, CSP-safe) ================= */
+
+/* grouped bars: income vs total cost (salaries + other) per month */
+function cost(r){ return (r.salaries||0)+(r.other||0); }
+function incomeExpenseChart(rows){
+  if(!rows.length) return NS.empty('chart','لا توجد حركة مالية بعد','ستظهر هنا الإيرادات مقابل المرتبات والمصاريف شهرياً — تبدأ من يونيو.');
+  var w=560,h=210,pad={l:14,r:14,t:16,b:28};
+  var iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  var mx=1; rows.forEach(function(r){ mx=Math.max(mx, r.income||0, cost(r)); });
+  var n=rows.length, group=iw/n, bw=Math.min(20, group*0.30), gap=4;
+  var y=function(v){ return pad.t+ih-(v/mx)*ih; };
+  var s='<svg class="chart-svg" viewBox="0 0 '+w+' '+h+'" role="img" '+
+    'aria-label="رسم بياني بالأعمدة يقارن الإيرادات بالمرتبات والمصاريف على مدى '+n+' أشهر">'+
+    '<title>الإيرادات مقابل التكاليف</title>';
+  for(var g=0;g<=3;g++){ var yy=pad.t+ih*g/3;
+    s+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(w-pad.r)+'" y2="'+yy+'" stroke="'+C_LINE+'" stroke-width="1"/>'; }
+  rows.forEach(function(r,i){
+    var cx=pad.l+group*(i+0.5);
+    var inc=r.income||0, cst=cost(r);
+    var incH=Math.max(1,(inc/mx)*ih), cstH=Math.max(1,(cst/mx)*ih);
+    s+='<rect x="'+(cx-bw-gap/2)+'" y="'+y(inc)+'" width="'+bw+'" height="'+incH+'" rx="3" fill="'+C_FOREST6+'"/>';
+    s+='<rect x="'+(cx+gap/2)+'" y="'+y(cst)+'" width="'+bw+'" height="'+cstH+'" rx="3" fill="'+C_CLAY+'"/>';
+    s+='<text x="'+cx+'" y="'+(h-8)+'" fill="#79857c" font-size="10" font-family="Tajawal,sans-serif" text-anchor="middle">'+NS.esc(mShort(r.label))+'</text>';
+  });
+  s+='</svg>';
+  return s;
+}
+
+/* monthly breakdown table (accounts-app style): إيرادات − مرتبات − مصاريف = صافي */
+function finTable(rows){
+  if(!rows.length) return '';
+  var h='<div class="table-wrap" style="margin-top:14px"><table class="table"><thead><tr>'+
+    '<th>الشهر</th><th>الإيرادات</th><th>من الطلبة</th><th>دخل آخر</th><th>المرتبات</th><th>مصاريف أخرى</th><th>صافي الشهر</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var net=(r.income||0)-(r.salaries||0)-(r.other||0);
+    var studentIncome=(r.student_income!=null?r.student_income:r.income)||0;
+    var extraIncome=(r.extra_income!=null?r.extra_income:((r.income||0)-studentIncome))||0;
+    h+='<tr><td><b>'+NS.esc(mLabel(r.label))+'</b></td>'+
+      '<td class="tabnum">'+NS.riyal(r.income||0)+'</td>'+
+      '<td class="tabnum">'+NS.riyal(studentIncome)+'</td>'+
+      '<td class="tabnum">'+NS.riyal(extraIncome)+'</td>'+
+      '<td class="tabnum">'+NS.riyal(r.salaries||0)+'</td>'+
+      '<td class="tabnum">'+NS.riyal(r.other||0)+'</td>'+
+      '<td class="tabnum"><b style="color:'+(net>=0?'var(--ok)':'var(--danger)')+'">'+NS.riyal(net)+'</b></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  return h;
+}
+
+/* area/line: attendance last 14 days */
+function attendanceChart(rows){
+  if(!rows.length) return NS.empty('pin','لا توجد بيانات حضور بعد','ستظهر هنا نسبة الحضور خلال آخر أسبوعين.');
+  var w=560,h=200,pad={l:14,r:14,t:16,b:26};
+  var iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  var mx=1; rows.forEach(function(r){ mx=Math.max(mx, r.value||0); });
+  var n=rows.length;
+  var x=function(i){ return pad.l+(n===1?iw/2:iw*i/(n-1)); };
+  var y=function(v){ return pad.t+ih-(v/mx)*ih; };
+  var s='<svg class="chart-svg" viewBox="0 0 '+w+' '+h+'" role="img" '+
+    'aria-label="رسم بياني خطّي يوضّح حضور الأطفال خلال آخر '+n+' يوماً">'+
+    '<title>حضور آخر ١٤ يوماً</title>'+
+    '<defs><linearGradient id="attFill" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0" stop-color="'+C_SAGE+'" stop-opacity="0.28"/>'+
+      '<stop offset="1" stop-color="'+C_SAGE+'" stop-opacity="0"/>'+
+    '</linearGradient></defs>';
+  for(var g=0;g<=3;g++){ var yy=pad.t+ih*g/3;
+    s+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(w-pad.r)+'" y2="'+yy+'" stroke="'+C_LINE+'" stroke-width="1"/>'; }
+  var line='',area='';
+  rows.forEach(function(r,i){ var px=x(i),py=y(r.value||0); line+=(i?'L':'M')+px+' '+py+' '; area+=(i?'L':'M')+px+' '+py+' '; });
+  area='M'+x(0)+' '+(pad.t+ih)+' '+area.replace(/^M/,'L')+'L'+x(n-1)+' '+(pad.t+ih)+' Z';
+  s+='<path d="'+area+'" fill="url(#attFill)"/>';
+  s+='<path d="'+line+'" fill="none" stroke="'+C_FOREST6+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';
+  rows.forEach(function(r,i){ s+='<circle cx="'+x(i)+'" cy="'+y(r.value||0)+'" r="2.6" fill="'+C_FOREST+'"/>'; });
+  /* label first, middle, last to avoid clutter */
+  [0, Math.floor((n-1)/2), n-1].filter(function(v,idx,arr){return arr.indexOf(v)===idx;}).forEach(function(i){
+    s+='<text x="'+x(i)+'" y="'+(h-6)+'" fill="#79857c" font-size="10" font-family="Tajawal,sans-serif" text-anchor="middle">'+NS.esc(rows[i].label)+'</text>';
+  });
+  s+='</svg>';
+  var avg=Math.round(rows.reduce(function(a,r){return a+(r.value||0);},0)/n);
+  s+='<div class="chart-cap">متوسّط الحضور اليومي نحو '+avg+' طفلاً خلال آخر '+n+' يوماً.</div>';
+  return s;
+}
+
+/* donut: paid vs overdue/remaining */
+function donutChart(paid, remaining){
+  var total=paid+remaining;
+  var pct=total>0?paid/total:0;
+  var r=52,c=2*Math.PI*r, cx=70,cy=70, dash=c*pct;
+  var pctTxt=Math.round(pct*100)+'%';
+  var s='<div class="donut-wrap"><svg viewBox="0 0 140 140" style="max-width:180px" role="img" '+
+    'aria-label="نسبة السداد '+pctTxt+' من إجمالي الطلاب">'+
+    '<title>نسبة السداد</title>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+C_LINE+'" stroke-width="15"/>'+
+    (total>0?'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+C_FOREST6+'" stroke-width="15" '+
+      'stroke-linecap="round" stroke-dasharray="'+dash+' '+(c-dash)+'" transform="rotate(-90 '+cx+' '+cy+')"/>':'')+
+    '<text x="70" y="66" fill="'+C_FOREST+'" font-size="26" font-weight="800" font-family="Tajawal,sans-serif" text-anchor="middle">'+pctTxt+'</text>'+
+    '<text x="70" y="86" fill="#79857c" font-size="11" font-family="Tajawal,sans-serif" text-anchor="middle">سدّدوا الرسوم</text></svg></div>';
+  s+='<div class="chart-cap">'+(total>0?(paid+' من '+total+' من الطلاب سدّدوا رسومهم.'):'لا يوجد طلاب مسجّلون بعد.')+'</div>';
+  return s;
+}
+
+/* ================= TABLES / LISTS ================= */
+
+function overdueTable(rows){
+  if(!rows.length) return NS.empty('checkCircle','لا يوجد متأخرون في السداد','جميع الأسر محدّثة في رسومها — عمل رائع.');
+  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+    '<th>الطالب</th><th>الرسوم</th><th>التأخّر</th><th></th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var phone=r.parent_phone||r.phone||r.whatsapp||r.parent_whatsapp||'';
+    var msg='السلام عليكم، نودّ تذكيركم بأن رسوم الطالب '+(r.name||'')+' مستحقّة ('+NS.riyal(r.fees)+'). '+
+            'يسعدنا استقبال السداد أو الإجابة عن أي استفسار. شكراً لتعاونكم.';
+    var reminder=phone?('<a class="btn btn--soft btn--sm" target="_blank" rel="noopener" href="'+NS.wa(phone,msg)+'">'+I('whatsapp')+' تذكير</a>'):'';
+    h+='<tr><td class="od-name">'+NS.esc(r.name)+'</td>'+
+       '<td class="tabnum">'+NS.riyal(r.fees)+'</td>'+
+       '<td><span class="tag tag--none">'+NS.esc(r.days)+' يوم</span></td>'+
+       '<td style="text-align:left">'+reminder+'</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+function absentList(at){
+  if(!at.marked) return NS.empty('clock','لم يُسجَّل الحضور بعد','سيظهر الغياب فور تسجيل حضور اليوم.');
+  var names=at.absent_names||[];
+  if(!names.length) return NS.empty('checkCircle','جميع الأطفال حاضرون','لا يوجد غياب اليوم.');
+  var h='<div class="absent-list">';
+  names.forEach(function(nm){
+    h+='<div class="row-item"><span class="avatar avatar--sm av">'+NS.esc((nm||'؟').trim().charAt(0))+'</span>'+
+       '<span>'+NS.esc(nm)+'</span></div>';
+  });
+  return h+'</div>';
+}
+
+function staffTable(rows){
+  if(!rows.length) return NS.empty('users','لا يوجد موظفون اليوم','ستظهر هنا سجلّات حضور فريق العمل.');
+  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+    '<th>الموظف</th><th>حضور</th><th>انصراف</th><th>الحالة</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var status = r.exempt ? '<span class="tag tag--soft">معفى</span>'
+      : !r.check_in ? '<span class="tag tag--none">لم يحضر</span>'
+      : r.late_min>0 ? '<span class="tag tag--warn">متأخّر '+NS.esc(r.late_min)+' د</span>'
+      : '<span class="tag tag--ok">في الموعد</span>';
+    h+='<tr><td class="od-name">'+NS.esc(r.name)+'</td>'+
+       '<td class="tabnum">'+NS.esc(r.check_in||'—')+'</td>'+
+       '<td class="tabnum">'+NS.esc(r.check_out||'—')+'</td>'+
+       '<td>'+status+'</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+function deductionsTable(rows){
+  if(!rows.length) return NS.empty('checkCircle','لا توجد خصومات هذا الشهر','لا غياب ولا تأخير يستوجب خصماً.');
+  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+    '<th>الموظف</th><th>غياب</th><th>تأخير</th><th>أيام الخصم</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    h+='<tr><td class="od-name">'+NS.esc(r.name)+'</td>'+
+       '<td class="tabnum">'+NS.esc(r.absences)+'</td>'+
+       '<td class="tabnum">'+NS.esc(r.lates)+'</td>'+
+       '<td><span class="tag tag--warn">'+NS.esc(r.days)+'</span></td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script src="/assets/install.js?v=3" defer></script>
+</body>
+</html>
