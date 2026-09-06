@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { Power } from "lucide-react";
 
 const stats = [
   { key: "years", value: "+١٠", valueEn: "10+" },
@@ -11,9 +15,75 @@ export default function HeroSection() {
   const t = useTranslations("hero");
   const locale = useLocale();
   const isAr = locale === "ar";
+  const secondaryHref = isAr ? "/wa/" : "#contact";
+  const [autoReplyEnabled, setAutoReplyEnabled] = useState<boolean | null>(null);
+  const [autoReplyError, setAutoReplyError] = useState(false);
+  const [autoReplySaving, setAutoReplySaving] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadAutoReplyState = async () => {
+      try {
+        const response = await fetch("/api/whatsapp-auto-reply", {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load auto reply state: ${response.status}`);
+        }
+
+        const data = (await response.json()) as { enabled?: boolean };
+        setAutoReplyEnabled(Boolean(data.enabled));
+        setAutoReplyError(false);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Failed to load WhatsApp auto reply state:", error);
+          setAutoReplyEnabled(null);
+          setAutoReplyError(true);
+        }
+      }
+    };
+
+    void loadAutoReplyState();
+
+    return () => controller.abort();
+  }, []);
+
+  const handleAutoReplyToggle = async () => {
+    if (autoReplySaving || autoReplyEnabled === null) {
+      return;
+    }
+
+    setAutoReplySaving(true);
+
+    try {
+      const response = await fetch("/api/whatsapp-auto-reply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ enabled: !autoReplyEnabled }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update auto reply state: ${response.status}`);
+      }
+
+      const data = (await response.json()) as { enabled?: boolean };
+      setAutoReplyEnabled(Boolean(data.enabled));
+      setAutoReplyError(false);
+    } catch (error) {
+      console.error("Failed to update WhatsApp auto reply state:", error);
+      setAutoReplyError(true);
+    } finally {
+      setAutoReplySaving(false);
+    }
+  };
 
   return (
-    <section
+      <section
       id="home"
       className="relative min-h-screen flex items-center overflow-hidden"
       style={{
@@ -78,12 +148,46 @@ export default function HeroSection() {
               {t("cta")}
             </a>
             <a
-              href={`#contact`}
+              href={secondaryHref}
               className="px-8 py-4 rounded-2xl text-base font-bold text-white border-2 border-white/30 hover:bg-white/10 transition-all"
             >
               {t("ctaSecondary")}
             </a>
+            <button
+              type="button"
+              onClick={handleAutoReplyToggle}
+              disabled={autoReplySaving || autoReplyEnabled === null}
+              className="inline-flex min-w-48 items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-bold border-2 border-white/30 transition-all hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
+              style={
+                autoReplyEnabled
+                  ? { background: "rgba(255, 255, 255, 0.12)", color: "#fff" }
+                  : autoReplyEnabled === null
+                    ? { background: "rgba(255, 255, 255, 0.08)", color: "#fff" }
+                    : { background: "#fff", color: "#184e3e" }
+              }
+              aria-pressed={autoReplyEnabled ?? false}
+            >
+              <Power size={18} />
+              {autoReplyEnabled === null
+                ? t("autoReply.loading")
+                : autoReplyEnabled
+                  ? t("autoReply.stop")
+                  : t("autoReply.start")}
+            </button>
           </div>
+
+          <p className="mb-8 text-sm text-white/90 animate-slide-up delay-300">
+            {autoReplyEnabled === null
+              ? t("autoReply.loading")
+              : autoReplyEnabled
+                ? t("autoReply.on")
+                : t("autoReply.off")}
+          </p>
+          {autoReplyError && (
+            <p className="mb-8 text-sm text-amber-100 animate-slide-up delay-300">
+              {t("autoReply.error")}
+            </p>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 animate-slide-up delay-400">

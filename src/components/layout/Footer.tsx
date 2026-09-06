@@ -1,4 +1,5 @@
 import { useTranslations, useLocale } from "next-intl";
+import Link from "next/link";
 import { LogIn } from "lucide-react";
 import { parentPortalUrl } from "@/lib/legacy-platform";
 
@@ -68,6 +69,14 @@ export default function Footer() {
                 {t("parentPortal")}
               </a>
             </li>
+            <li>
+              <Link
+                href="/wa/"
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                {locale === "ar" ? "صفحة التواصل" : "Contact page"}
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -93,7 +102,6 @@ export default function Footer() {
                 href={href}
                 aria-label={label}
                 className="w-9 h-9 rounded-lg bg-gray-800 hover:bg-primary-600 flex items-center justify-center text-sm transition-colors"
-                style={undefined}
               >
                 {icon}
               </a>

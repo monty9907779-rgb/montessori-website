@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { ArrowUpRight, Clock, Mail, MapPin, Phone } from "lucide-react";
 
 type FormState = {
   name: string;
@@ -226,6 +227,14 @@ export default function ContactSection() {
               >
                 {t("mapLink")}
               </a>
+              <Link
+                href="/wa/"
+                className="mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all hover:scale-105"
+                style={{ borderColor: "#2d5016", color: "#2d5016", background: "#fff" }}
+              >
+                {isAr ? "صفحة التواصل الكاملة" : "Full contact page"}
+                <ArrowUpRight size={14} />
+              </Link>
             </div>
           </div>
 
@@ -399,7 +408,7 @@ export default function ContactSection() {
                       : t("form.submit")}
                   </button>
 
-                  <p className="text-center text-xs text-gray-400">
+                <p className="text-center text-xs text-gray-400">
                     {isAr
                       ? "سنرد عليك خلال 24 ساعة."
                       : "We'll respond within 24 hours."}

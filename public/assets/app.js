@@ -326,7 +326,7 @@ NS.icon = function(name, attrs){
 (function(){
   var css = ''+
 'html.ns-admin-shell body{padding-inline-start:0}'+
-'html.ns-admin-shell .appbar{position:sticky;top:0;z-index:80;background:rgba(250,246,238,.82);border-bottom:1px solid var(--line-2);box-shadow:none;backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}'+
+'html.ns-admin-shell .appbar{position:sticky;top:0;z-index:80;background:rgba(251,248,242,.96);border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(31,54,42,.06);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}'+
 'html.ns-admin-shell .appbar__in{max-width:var(--maxw);margin-inline:auto;padding:11px clamp(14px,3vw,26px);display:flex;flex-direction:row;align-items:center;gap:14px}'+
 'html.ns-admin-shell .brand{justify-content:flex-start;color:var(--forest);text-align:start;padding:0;border-bottom:0}'+
 'html.ns-admin-shell .brand img{width:40px;height:40px;border-radius:11px;background:#fff;padding:3px;box-shadow:var(--sh-1)}'+

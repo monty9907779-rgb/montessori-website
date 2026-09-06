@@ -7,8 +7,16 @@ import { routing } from './i18n/routing';
 const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const standaloneRoutes = ["/wa", "/app", "/login", "/dashboard"];
+  const isStandaloneRoute = standaloneRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+
   // Apply security headers
-  const response = intlMiddleware(request) || NextResponse.next();
+  const response = isStandaloneRoute
+    ? NextResponse.next()
+    : intlMiddleware(request) || NextResponse.next();
 
   // Security headers
   const headers = response.headers;

@@ -21,12 +21,12 @@
   /* neutrals */
   --ink:#22302a;
   --ink-2:#3c4a42;
-  --muted:#79857c;
-  --line:#e9e0cf;
-  --line-2:#f0e8d9;
-  --cream:#faf6ee;         /* page background */
-  --sand:#f4ecdd;          /* subtle panels */
-  --sand-2:#efe6d4;
+  --muted:#59665d;
+  --line:#ddd4c3;
+  --line-2:#e7dece;
+  --cream:#fbf8f2;         /* page background */
+  --sand:#f1e7d6;          /* subtle panels */
+  --sand-2:#e6dac5;
   --paper:#ffffff;         /* cards */
 
   /* status */
@@ -340,7 +340,7 @@ body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:
      وهما مكوّنات مضغوطة — عدّاد الإشعارات رقم جوّه دايرة 20px، تكبير الخط يطفحه. */
 }
 .app-main{max-width:var(--maxw);margin-inline:auto;padding:clamp(18px,3vw,30px) clamp(14px,3vw,26px) 80px}
-.app-narrow{max-width:560px}
+.app-narrow{max-width:760px}
 .page-head{margin-bottom:var(--s5)}
 .page-head h1{font-size:var(--fs-h2)}
 .page-head .sub{color:var(--muted);margin-top:2px}
@@ -495,7 +495,7 @@ html,body{max-width:100%;overflow-x:clip;}
 
 /* montessori-admin-side-nav-fix-v1 */
 html.ns-admin-shell body{padding-inline-start:0}
-html.ns-admin-shell .appbar{position:sticky;top:0;z-index:80;background:rgba(250,246,238,.82);border-bottom:1px solid var(--line-2);box-shadow:none;backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}
+html.ns-admin-shell .appbar{position:sticky;top:0;z-index:80;background:rgba(251,248,242,.96);border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(31,54,42,.06);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}
 html.ns-admin-shell .appbar__in{max-width:var(--maxw);margin-inline:auto;padding:11px clamp(14px,3vw,26px);display:flex;flex-direction:row;align-items:center;gap:14px}
 html.ns-admin-shell .brand{justify-content:flex-start;color:var(--forest);text-align:start;padding:0;border-bottom:0}
 html.ns-admin-shell .brand img{width:40px;height:40px;border-radius:11px;background:#fff;padding:3px;box-shadow:var(--sh-1)}

@@ -22,6 +22,14 @@
     "subheadline": "At Planet of the Free Child, we believe every child carries the seed of genius. Our Montessori approach nurtures it with freedom, creativity, and love.",
     "cta": "Discover Our World",
     "ctaSecondary": "Contact Us",
+    "autoReply": {
+      "loading": "Loading status...",
+      "start": "Enable Auto Reply",
+      "stop": "Disable Auto Reply",
+      "on": "Auto reply is on",
+      "off": "Auto reply is off",
+      "error": "Could not refresh the shared status"
+    },
     "stats": {
       "years": "Years of Experience",
       "children": "Happy Children",
