@@ -117,7 +117,7 @@
   var hero=document.getElementById('mk-install-hero'), deferred=null;
   window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;hero.style.display='block';});
   hero.onclick=function(){ if(deferred){deferred.prompt();deferred.userChoice.finally(function(){deferred=null;hero.style.display='none';});} };
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'}).then(function(reg){return reg.update();}).catch(function(){});}
 })();
 </script>
 <script src="/assets/install.js?v=4" defer></script>
