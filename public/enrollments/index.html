@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="icon" href="/logo.png"/>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=5"/>
+<title>طلبات السنة الجديدة | روضة كوكب الطفل الحر</title>
+<style>
+.en-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.en-toolbar .search{flex:1;min-width:220px}
+.en-filter{display:flex;gap:6px;flex-wrap:wrap}.en-filter button{border:1px solid var(--line-2);background:var(--paper);color:var(--muted);border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}.en-filter button.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+.en-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:-2px 0 12px}
+.en-tabs button{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;border:1px solid var(--line-2);background:var(--paper);color:var(--ink);font-weight:900;cursor:pointer;box-shadow:var(--sh-1)}
+.en-tabs button.is-on{background:var(--forest);border-color:var(--forest);color:#fff}
+.en-tabs .count{font-size:.78rem;font-weight:900;min-width:24px;text-align:center;padding:2px 7px;border-radius:999px;background:var(--sand);color:var(--muted)}
+.en-tabs button.is-on .count{background:rgba(255,255,255,.18);color:#fff}
+.en-selection{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 16px;padding:10px 12px;border:1px solid var(--line-2);border-radius:var(--r-md);background:rgba(255,255,255,.78);box-shadow:var(--sh-1)}
+.en-selection b{color:var(--forest);font-variant-numeric:tabular-nums}.en-selection span{color:var(--muted);font-size:.88rem;margin-inline-end:auto}.en-selection .btn{min-height:36px;padding:7px 12px}
+.en-bulk-grade{display:flex;align-items:center;gap:8px;min-width:260px}.en-bulk-grade label{color:var(--forest);font-size:.86rem;font-weight:900;white-space:nowrap}.en-bulk-grade select{flex:1;min-width:0;height:38px;font-weight:900}
+.en-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:16px}
+.en-summary button.stat{border:0;width:100%;text-align:inherit;font-family:inherit;cursor:pointer}
+.en-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.en-card{background:var(--paper);border:1px solid var(--line-2);border-radius:30px;padding:24px 30px 28px;box-shadow:var(--sh-1);overflow:hidden}
+.en-card.is-selected{border-color:var(--forest);box-shadow:0 16px 38px rgba(24,78,62,.16)}
+.en-card .top{display:flex;align-items:flex-start;gap:14px;min-height:112px;margin-bottom:14px;overflow:visible;flex-wrap:wrap}
+.en-card .avatar{width:64px;height:64px;min-width:64px;border:6px solid #d9e5dc;background:#2d6b55;color:#fff;font-size:1.5rem;box-shadow:inset 0 -8px 14px rgba(0,0,0,.12)}
+.en-card .who{flex:1;min-width:0}
+.en-card .who b{color:var(--forest);font-size:1.18rem;display:-webkit-box;height:52px;line-height:1.18;font-weight:900;overflow:hidden;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.en-card .who b.is-long{font-size:1.05rem}.en-card .who b.is-xl{font-size:.95rem}.en-card .who b.is-xxl{font-size:.86rem}
+.en-card .who span{color:var(--muted);font-size:.95rem;line-height:1.7}
+.en-family{display:grid;grid-template-rows:repeat(2,38px);gap:6px;height:104px;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line-2);border-radius:18px;background:rgba(24,78,62,.035);overflow:hidden}
+.en-family .fr{display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:10px;height:38px;overflow:hidden}
+.en-family .fl{color:var(--muted);font-size:.86rem;font-weight:900;white-space:nowrap}
+.en-family .fv{min-width:0;max-height:38px;color:var(--ink);font-size:.95rem;font-weight:850;line-height:1.22;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.en-family .fv.is-long{font-size:.86rem}.en-family .fv.is-xl{font-size:.78rem}.en-family .fv.is-xxl{font-size:.7rem}
+.en-family .fv.is-empty{color:var(--muted);font-weight:700}
+.en-pick{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.78rem;font-weight:900;cursor:pointer;user-select:none}.en-pick input{width:18px;height:18px;accent-color:var(--forest)}
+.en-select-row{display:flex;align-items:center;justify-content:space-between;gap:8px;height:52px;margin:0 0 8px;overflow:hidden;flex-wrap:wrap}
+.en-rows .r{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:12px 0;font-size:1.02rem;border-bottom:1px solid var(--line-2)}
+.en-rows .r:last-child{border-bottom:0}
+.en-rows .r .l{color:var(--muted)}
+.en-rows .r b{font-size:1.06rem;color:var(--ink);white-space:nowrap}
+.en-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.en-actions .btn{min-width:0;min-height:50px;border-radius:999px;font-size:1rem}.en-actions .is-empty{visibility:hidden;pointer-events:none}
+.en-badge{font-size:.9rem;font-weight:900;padding:8px 17px;border-radius:999px;white-space:nowrap;align-self:flex-start}
+.en-card .top>.en-badge{flex:0 0 100%;width:max-content;max-width:100%;margin-inline-start:auto;text-align:center}
+.en-ready{background:var(--ok-bg);color:var(--ok)}
+.en-needs{background:var(--warn-bg);color:#a86f27}
+.en-linked{background:var(--ok-bg);color:var(--ok)}
+.en-pending{background:var(--warn-bg);color:#a86f27}
+.en-none{background:var(--sand);color:var(--muted)}
+@media(max-width:520px){.en-card{padding:20px 18px;border-radius:24px}.en-grid{grid-template-columns:1fr}.en-actions{grid-template-columns:1fr}.en-badge{font-size:.82rem;padding:7px 12px}.en-card .avatar{width:56px;height:56px;min-width:56px}.en-family .fr{grid-template-columns:68px minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=50"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null, Q='', LINK='all', GRADE='all', STATUS='all', SELECTED={};
+var app=document.getElementById('app');
+var TARGET='2026-09-01';
+var LEVELS=[['','بدون جريد'],['prekg','Pre-KG'],['kg1','KG1'],['kg2','KG2'],['kg3','KG3']];
+
+function gate(){
+  app.innerHTML=NS.appbar({sub:'طلبات السنة الجديدة',nav:NS.adminNav('enrollments')})+
+    '<main class="app-main app-narrow" id="gate"></main>';
+  NS.gate(document.getElementById('gate'),{title:'طلبات السنة الجديدة',
+    body:'سجّلي دخولك كمديرة أو صاحبة الحضانة لإدارة حجوزات سبتمبر.'});
+}
+function boot(){
+  if(!TOKEN){gate();return;}
+  app.innerHTML=NS.appbar({sub:'طلبات السنة الجديدة',nav:NS.adminNav('enrollments')})+
+    '<main class="app-main"><div class="page-head"><h1>طلبات السنة الجديدة</h1><div class="sub">حجوزات سبتمبر 2026 مرتبطة بسجل الطالب وولي الأمر</div></div>'+
+    NS.skelCard()+NS.skelCard()+'</main>';
+  NS.api('/api/manager/enrollments',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){NS.clearToken('mt');gate();return;}
+    DATA=d;render();
+  }).catch(function(err){if(err&&err.type==='auth'){NS.clearToken('mt');gate();}else error();});
+}
+function error(){
+  app.innerHTML=NS.appbar({sub:'طلبات السنة الجديدة',nav:NS.adminNav('enrollments')})+
+    '<main class="app-main app-narrow"><div class="card card--pad" style="text-align:center">'+
+    '<div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+    '<h3>تعذّر الاتصال</h3><p class="muted" style="margin:8px 0 18px">حاولي مرة أخرى.</p>'+
+    '<button class="btn btn--primary" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div></main>';
+}
+function stat(accent,icon,label,value,key){
+  return '<button type="button" data-stat="'+NS.attr(key||'all')+'" class="stat '+accent+'" title="عرض مصدر الرقم">'+
+    '<div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span></div>'+
+    '<div class="v tabnum">'+value+'</div></button>';
+}
+function render(){
+  var st=DATA.students||[];
+  var ready=st.filter(function(s){return s.reservation_status==='ready';}).length;
+  var linked=st.filter(isLinked).length;
+  var pending=st.filter(function(s){return s.link_state==='pending';}).length;
+  app.innerHTML=NS.appbar({sub:'طلبات السنة الجديدة',nav:NS.adminNav('enrollments')})+
+    '<main class="app-main">'+
+    '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+      '<div><h1>طلبات السنة الجديدة</h1><div class="sub">حجوزات سبتمبر 2026 · لا يوجد نقل يدوي عند إغلاق أغسطس</div></div>'+
+      '<button class="btn btn--primary" id="add">'+I('plus')+' طلب جديد</button>'+
+    '</div>'+
+    '<div class="en-summary">'+
+      stat('is-forest','calendar','إجمالي الحجوزات',st.length,'all')+
+      stat('is-forest','checkCircle','جاهزة للترحيل',ready,'ready')+
+      stat(linked?'is-forest':'is-amber','users','مرتبطة بولي أمر',linked,'linked')+
+      stat(pending?'is-amber':'is-forest','bell','بانتظار الربط',pending,'pending')+
+    '</div>'+
+    '<div class="en-toolbar"><div class="search"><input class="input" id="q" type="search" placeholder="ابحثي باسم الطالب أو ولي الأمر…" value="'+NS.attr(Q)+'"/></div><div class="en-filter" id="link-filter">'+linkSeg('all','كل الربط')+linkSeg('linked','مرتبط بولي الأمر')+linkSeg('unlinked','غير مرتبط')+'</div></div>'+
+    '<div id="grade-tabs"></div><div id="selection-bar"></div>'+
+    '<div id="list"></div></main>';
+  NS.wireLogout('mt');
+  document.getElementById('add').onclick=function(){edit(null);};
+  document.getElementById('q').oninput=function(){Q=this.value;renderList();};
+  [].forEach.call(document.querySelectorAll('.en-summary [data-stat]'),function(b){b.onclick=function(){summaryStat(b.dataset.stat);};});
+  [].forEach.call(document.querySelectorAll('#link-filter button'),function(b){b.onclick=function(){LINK=b.dataset.link;GRADE='all';STATUS='all';render();};});
+  renderList();
+}
+function linkSeg(v,label){return '<button type="button" data-link="'+v+'" class="'+(LINK===v?'on':'')+'">'+NS.esc(label)+'</button>';}
+function isLinked(s){return s.link_state==='linked'||!!s.linked;}
+function linkOk(s){return LINK==='all'||(LINK==='linked'&&isLinked(s))||(LINK==='pending'&&s.link_state==='pending')||(LINK==='unlinked'&&!isLinked(s));}
+function statusOk(s){return STATUS==='all'||(STATUS==='ready'&&s.reservation_status==='ready');}
+function summaryStat(key){
+  STATUS=(key==='ready')?'ready':'all';
+  if(key==='linked'||key==='pending'||key==='unlinked') LINK=key; else LINK='all';
+  GRADE='all'; Q='';
+  render();
+  setTimeout(function(){var el=document.getElementById('list');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80);
+}
+function gradeKey(s){return s.level||'__none';}
+function gradeLabel(s){return s.level_label||s.level||'بدون جريد';}
+function levelLabel(v){
+  for(var i=0;i<LEVELS.length;i++){if(LEVELS[i][0]===v)return LEVELS[i][1];}
+  return v||'بدون جريد';
+}
+function levelOptions(v){
+  return LEVELS.map(function(x){return '<option value="'+NS.attr(x[0])+'"'+(x[0]===(v||'')?' selected':'')+'>'+NS.esc(x[1])+'</option>';}).join('');
+}
+function searched(){
+  var q=Q.trim();
+  return (DATA.students||[]).filter(function(s){
+    return statusOk(s) && linkOk(s) && (!q || (s.name+' '+(s.parent_name||'')+' '+(s.father_name||'')+' '+(s.mother_name||'')+' '+(s.parent_email||'')+' '+(s.guardian_phone||'')).indexOf(q)>=0);
+  }).sort(function(a,b){return (a.joining_date||'').localeCompare(b.joining_date||'')||a.name.localeCompare(b.name,'ar');});
+}
+function filtered(){
+  var list=searched();
+  if(GRADE!=='all')list=list.filter(function(s){return gradeKey(s)===GRADE;});
+  return list;
+}
+function pruneSelected(){
+  var ids={};(DATA.students||[]).forEach(function(s){ids[String(s.id)]=1;});
+  Object.keys(SELECTED).forEach(function(id){if(!ids[id])delete SELECTED[id];});
+}
+function selectMany(list,on){
+  list.forEach(function(s){if(on===false)delete SELECTED[String(s.id)];else SELECTED[String(s.id)]=1;});
+}
+function gradeTabs(base){
+  var map={}, order=[];
+  base.forEach(function(s){var k=gradeKey(s);if(!map[k]){map[k]={key:k,label:gradeLabel(s),count:0};order.push(map[k]);}map[k].count++;});
+  order.sort(function(a,b){return a.label.localeCompare(b.label,'ar');});
+  var tabs=[{key:'all',label:'كل الجريدات',count:base.length}].concat(order);
+  return '<div class="en-tabs">'+tabs.map(function(t){
+    return '<button type="button" data-grade="'+NS.attr(t.key)+'" class="'+(t.key===GRADE?'is-on':'')+'">'+
+      '<span>'+NS.esc(t.label)+'</span><span class="count tabnum">'+t.count+'</span></button>';
+  }).join('')+'</div>';
+}
+function selectionBar(current){
+  pruneSelected();
+  var total=Object.keys(SELECTED).length;
+  var cur=current.filter(function(s){return SELECTED[String(s.id)];}).length;
+  return '<div class="en-selection"><b>المحدد: <span class="tabnum">'+total+'</span></b>'+ 
+    '<span>الجريد الحالي: <span class="tabnum">'+cur+'</span> / <span class="tabnum">'+current.length+'</span></span>'+ 
+    '<div class="en-bulk-grade"><label for="bulk-grade">تعيين الجريد</label><select class="input" id="bulk-grade"'+(total?'':' disabled')+'><option value="">اختاري للطلبات المحددة</option><option value="__none">بدون جريد</option>'+LEVELS.filter(function(x){return x[0]!=='';}).map(function(x){return '<option value="'+NS.attr(x[0])+'">'+NS.esc(x[1])+'</option>';}).join('')+'</select></div>'+ 
+    '<button class="btn btn--soft btn--sm" id="select-visible">'+I('checkCircle')+' اختيار الظاهر</button>'+ 
+    '<button class="btn btn--ghost btn--sm" id="clear-grade">إلغاء الجريد الحالي</button>'+ 
+    '<button class="btn btn--ghost btn--sm" id="clear-all">مسح الكل</button></div>';
+}
+function linkBadge(s){
+  if(isLinked(s))return '<span class="en-badge en-linked">مرتبط بولي الأمر</span>';
+  if(s.link_state==='pending')return '<span class="en-badge en-pending">بانتظار الربط</span>';
+  return '<span class="en-badge en-none">لم يُحدَّد ولي الأمر</span>';
+}
+function personName(s,keys){
+  for(var i=0;i<keys.length;i++){var v=(s[keys[i]]||'').trim();if(v)return v;}
+  return '';
+}
+function fitClass(value){
+  var n=(value||'').trim().length;
+  return n>34?' is-xxl':(n>25?' is-xl':(n>17?' is-long':''));
+}
+function studentName(name){
+  return '<b class="name-fit'+fitClass(name)+'" title="'+NS.attr(name||'')+'">'+NS.esc(name||'—')+'</b>';
+}
+function familyRow(label,value){
+  var shown=value||'—';
+  return '<div class="fr"><span class="fl">'+NS.esc(label)+'</span><b class="fv'+fitClass(value)+(value?'':' is-empty')+'" title="'+NS.attr(shown)+'">'+NS.esc(shown)+'</b></div>';
+}
+function familyRows(s){
+  var father=personName(s,['father_name','father','dad_name','parent_father_name']);
+  var mother=personName(s,['mother_name','mother','mom_name','parent_mother_name']);
+  return '<div class="en-family">'+familyRow('اسم الأب',father)+familyRow('اسم الأم',mother)+'</div>';
+}
+function savePayload(s,extra){
+  var p={mt:TOKEN,id:s.id,name:s.name||'',
+    parent_name:s.parent_name||s.guardian_name||'',
+    father_name:s.father_name||'',
+    mother_name:s.mother_name||'',
+    parent_email:s.parent_email||'',
+    parent_phone:s.guardian_phone||s.parent_phone||'',
+    joining_date:s.joining_date||TARGET,
+    level:s.level||'',
+    fees:s.fees||0,
+    remark:s.remark||''};
+  Object.keys(extra||{}).forEach(function(k){p[k]=extra[k];});
+  return p;
+}
+function saveSelectedLevel(value,select){
+  var rows=(DATA.students||[]).filter(function(s){return SELECTED[String(s.id)];});
+  if(!rows.length){select.value='';NS.toast('حددي طلباً واحداً على الأقل','err');return;}
+  select.disabled=true;
+  Promise.all(rows.map(function(s){return NS.api('/api/manager/enrollment/save',savePayload(s,{level:value}));})).then(function(results){
+    select.disabled=false;select.value='';
+    var failed=results.filter(function(r){return !r||!r.ok;}).length;
+    results.forEach(function(r,i){if(r&&r.ok){rows[i].level=value;rows[i].level_label=levelLabel(value);}});
+    if(failed){NS.toast('تم تحديث '+(rows.length-failed)+' طلب وتعذّر تحديث '+failed,'err');}
+    else{NS.toast('تم تحديث الجريد لـ '+rows.length+' طلب','ok');}
+    renderList();
+  }).catch(function(){
+    select.disabled=false;select.value='';NS.toast('تعذّر حفظ الجريد للطلبات المحددة','err');
+  });
+}
+function renderList(){
+  var L=document.getElementById('list');if(!L)return;
+  var base=searched();
+  var list=filtered();
+  var T=document.getElementById('grade-tabs'), S=document.getElementById('selection-bar');
+  if(T){T.innerHTML=gradeTabs(base);T.querySelectorAll('[data-grade]').forEach(function(b){b.onclick=function(){GRADE=b.dataset.grade;var picked=searched().filter(function(s){return GRADE==='all'||gradeKey(s)===GRADE;});selectMany(picked,true);renderList();};});}
+  if(S){S.innerHTML=selectionBar(list);S.querySelector('#bulk-grade').onchange=function(){if(this.value)saveSelectedLevel(this.value==='__none'?'':this.value,this);};S.querySelector('#select-visible').onclick=function(){selectMany(filtered(),true);renderList();};S.querySelector('#clear-grade').onclick=function(){selectMany(filtered(),false);renderList();};S.querySelector('#clear-all').onclick=function(){SELECTED={};renderList();};}
+  if(!list.length){L.innerHTML=NS.empty('calendar','لا توجد حجوزات','اضغطي «طلب جديد» لإضافة أول حجز لسبتمبر.');return;}
+  L.innerHTML='<div class="en-grid">'+list.map(function(s){
+    var initial=(s.name||'؟').trim().charAt(0);
+    var picked=!!SELECTED[String(s.id)];
+    var date=s.joining_date?NS.fmtShort(s.joining_date):'غير محدد';
+    var start=s.reservation_status==='ready'
+      ? '<span class="en-badge en-ready">يظهر تلقائياً في سبتمبر</span>'
+      : '<span class="en-badge en-needs">يحتاج تاريخ بداية</span>';
+    return '<div class="en-card '+(picked?'is-selected':'')+'"><div class="top"><span class="avatar avatar--sm">'+NS.esc(initial)+'</span>'+ 
+      '<div class="who">'+studentName(s.name)+'<span>'+NS.esc(s.level_label||s.level||'بدون مرحلة')+'</span></div>'+ 
+      linkBadge(s)+'</div>'+familyRows(s)+'<div class="en-select-row"><label class="en-pick"><input type="checkbox" data-pick="'+s.id+'"'+(picked?' checked':'')+'/><span>اختيار</span></label>'+start+'</div>'+ 
+      '<div class="en-rows">'+
+      '<div class="r"><span class="l">بداية الالتحاق</span><b>'+NS.esc(date)+'</b></div>'+
+      '<div class="r"><span class="l">الرسوم الشهرية</span><b class="tabnum">'+NS.riyal(s.fees)+'</b></div>'+
+      '<div class="r"><span class="l">البريد</span><b dir="ltr">'+NS.esc(s.parent_email||'—')+'</b></div>'+
+      '<div class="r"><span class="l">الجوال</span><b dir="ltr">'+NS.esc(s.guardian_phone||'—')+'</b></div>'+
+      '</div><div class="en-actions"><button class="btn btn--primary btn--sm" data-edit="'+s.id+'">'+I('user')+' تعديل</button>'+
+      (s.guardian_phone?'<button class="btn btn--soft btn--sm" data-wa="'+s.id+'">'+I('whatsapp')+' تواصل</button>':'<button class="btn btn--soft btn--sm is-empty" type="button" tabindex="-1">'+I('whatsapp')+' تواصل</button>')+
+      '</div></div>';
+  }).join('')+'</div>';
+  L.querySelectorAll('[data-pick]').forEach(function(b){b.onchange=function(){if(b.checked)SELECTED[String(b.dataset.pick)]=1;else delete SELECTED[String(b.dataset.pick)];renderList();};});
+  L.querySelectorAll('[data-edit]').forEach(function(b){b.onclick=function(){edit(get(b.dataset.edit));};});
+  L.querySelectorAll('[data-wa]').forEach(function(b){b.onclick=function(){var s=get(b.dataset.wa);window.open(NS.wa(s.guardian_phone,'مرحباً، نؤكد حجز '+s.name+' للسنة الجديدة من 1 سبتمبر 2026.'),'_blank','noopener');};});
+}
+function get(id){return (DATA.students||[]).filter(function(s){return String(s.id)===String(id);})[0];}
+function edit(s){
+  var m=NS.modal('<div class="modal__icon">'+I(s?'user':'plus')+'</div>'+
+    '<h3>'+(s?'تعديل حجز '+NS.esc(s.name):'طلب سنة جديدة')+'</h3>'+
+    '<div class="field"><label>اسم الطالب *</label><input class="input" id="f-name" value="'+NS.attr(s?s.name:'')+'"/></div>'+
+    '<div class="field"><label>اسم الأب</label><input class="input" id="f-father" value="'+NS.attr(s?(s.father_name||''):'')+'"/></div>'+
+    '<div class="field"><label>اسم الأم</label><input class="input" id="f-mother" value="'+NS.attr(s?(s.mother_name||''):'')+'"/></div>'+
+    '<div class="field"><label>اسم ولي الأمر</label><input class="input" id="f-parent" value="'+NS.attr(s?(s.parent_name||s.guardian_name):'')+'"/></div>'+
+    '<div class="field"><label>البريد الإلكتروني لولي الأمر</label><input class="input" type="email" id="f-email" value="'+NS.attr(s?s.parent_email:'')+'"/></div>'+
+    '<div class="field"><label>جوال ولي الأمر</label><input class="input" type="tel" id="f-phone" value="'+NS.attr(s?s.guardian_phone:'')+'" placeholder="05xxxxxxxx"/></div>'+
+    '<div class="field"><label>تاريخ بداية الالتحاق</label><input class="input" type="date" id="f-date" value="'+NS.attr(s?(s.joining_date||TARGET):TARGET)+'"/></div>'+
+    '<div class="field"><label>الجريد</label><select class="input" id="f-level">'+levelOptions(s?s.level:'')+'</select></div>'+
+    '<div class="field"><label>الرسوم الشهرية (ر.س)</label><input class="input" type="number" min="0" id="f-fees" value="'+NS.attr(s?s.fees:'')+'"/></div>'+
+    '<div class="field"><label>ملاحظة</label><textarea class="input" id="f-note" rows="2">'+NS.esc(s?s.remark:'')+'</textarea></div>'+
+    '<p class="muted" style="font-size:.82rem;margin-top:8px">بعد الحفظ سيظهر الطالب في كشف سبتمبر تلقائياً عند فتح الشهر، ولن يظهر في كشف أغسطس قبل تاريخ البداية.</p>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').onclick=m.close;
+  m.el.querySelector('[data-ok]').onclick=function(){
+    var b=this;if(b.classList.contains('is-loading'))return;
+    var name=m.el.querySelector('#f-name').value.trim();
+    if(!name){NS.toast('اكتبي اسم الطالب','err');return;}
+    b.classList.add('is-loading');
+    NS.api('/api/manager/enrollment/save',{mt:TOKEN,id:s?s.id:'',name:name,
+      parent_name:m.el.querySelector('#f-parent').value,
+      father_name:m.el.querySelector('#f-father').value,
+      mother_name:m.el.querySelector('#f-mother').value,
+      parent_email:m.el.querySelector('#f-email').value,
+      parent_phone:m.el.querySelector('#f-phone').value,
+      joining_date:m.el.querySelector('#f-date').value,
+      level:m.el.querySelector('#f-level').value,
+      fees:m.el.querySelector('#f-fees').value,
+      remark:m.el.querySelector('#f-note').value}).then(function(r){
+        if(r&&r.ok){m.close();NS.toast(r.link_state==='linked'?'تم الحفظ والربط':'تم حفظ الحجز','ok');boot();}
+        else{b.classList.remove('is-loading');NS.toast((r&&r.error)||'تعذّر الحفظ','err');}
+      }).catch(function(){b.classList.remove('is-loading');NS.toast('تعذّر الحفظ','err');});
+  };
+}
+boot();
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script src="/assets/install.js?v=4" defer></script>
+</body>
+</html>

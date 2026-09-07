@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#184e3e"/>
+<link rel="manifest" href="/manifest-manage.webmanifest"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="الإدارة"/>
+
+<title>الطلاب | روضة كوكب الطفل الحر</title>
+<link rel="icon" href="/logo.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=5"/>
+<style>
+.st-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.st-toolbar .search{flex:1;min-width:180px;position:relative}
+.st-toolbar .search input{width:100%}
+.st-filter{display:flex;gap:6px;flex-wrap:wrap}.st-filter button{border:1px solid var(--line-2);background:var(--paper);color:var(--muted);border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}.st-filter button.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+.st-grade-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:-2px 0 12px}
+.st-grade-tabs button{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;border:1px solid var(--line-2);background:var(--paper);color:var(--ink);font-weight:900;cursor:pointer;box-shadow:var(--sh-1)}
+.st-grade-tabs button.is-on{background:var(--forest);border-color:var(--forest);color:#fff}
+.st-grade-tabs .count{font-size:.78rem;font-weight:900;min-width:24px;text-align:center;padding:2px 7px;border-radius:999px;background:var(--sand);color:var(--muted)}
+.st-grade-tabs button.is-on .count{background:rgba(255,255,255,.18);color:#fff}
+.st-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+button.stat{appearance:none;text-align:inherit;width:100%;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+button.stat:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(24,78,62,.12)}
+button.stat.is-on{border-color:var(--forest);box-shadow:0 16px 36px rgba(24,78,62,.18)}
+.st-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-2px 0 12px;color:var(--muted);font-weight:800;flex-wrap:wrap}
+.st-list-head b{color:var(--forest);font-size:1.05rem}.st-list-head span{font-size:.88rem}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.st-card{background:var(--paper);border:1px solid var(--line-2);border-radius:30px;padding:24px 30px 28px;box-shadow:var(--sh-1);position:relative;overflow:hidden}
+.st-card .top{display:flex;align-items:flex-start;gap:14px;height:88px;margin-bottom:18px;overflow:hidden}
+.st-card .avatar{width:64px;height:64px;min-width:64px;border:6px solid #d9e5dc;background:#2d6b55;color:#fff;font-size:1.5rem;box-shadow:inset 0 -8px 14px rgba(0,0,0,.12)}
+.st-card .who{flex:1;min-width:0}
+.st-card .who b{color:var(--forest);font-size:1.18rem;display:block;height:28px;line-height:1.18;font-weight:900;overflow:hidden;white-space:nowrap;text-overflow:clip}
+.st-card .who b.is-long{font-size:1.05rem}.st-card .who b.is-xl{font-size:.92rem}.st-card .who b.is-xxl{font-size:.78rem}
+.st-card .who span{color:var(--muted);font-size:.95rem;line-height:1.7}
+.st-card .who .is-linked{color:var(--ok)}.st-card .who .is-unlinked{color:#c47a16}
+.st-family{display:grid;grid-template-rows:repeat(2,38px);gap:6px;height:104px;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line-2);border-radius:18px;background:rgba(24,78,62,.035);overflow:hidden}
+.st-family .fr{display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:10px;height:38px;overflow:hidden}
+.st-family .fl{color:var(--muted);font-size:.86rem;font-weight:900;white-space:nowrap}
+.st-family .fv{min-width:0;max-height:38px;color:var(--ink);font-size:.95rem;font-weight:850;line-height:1.22;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.st-family .fv.is-long{font-size:.86rem}.st-family .fv.is-xl{font-size:.78rem}.st-family .fv.is-xxl{font-size:.7rem}
+.st-family .fv.is-empty{color:var(--muted);font-weight:700}
+.st-grade-field{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:10px;margin:0 0 14px;padding:9px 11px;border:1px solid var(--line-2);border-radius:18px;background:rgba(250,246,238,.8)}
+.st-grade-field label{color:var(--muted);font-size:.86rem;font-weight:900;white-space:nowrap}
+.st-grade-field select{min-width:0;height:42px;font-weight:900}
+.st-grade-field.is-saving{opacity:.72}
+.st-rows{margin-top:4px}.st-rows .r{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:12px 0;font-size:1.02rem;border-bottom:1px solid var(--line-2)}
+.st-rows .r:last-child{border-bottom:0}
+.st-rows .r .l{color:var(--muted)}
+.st-rows .r b{font-size:1.06rem;color:var(--ink);white-space:nowrap}
+.st-actions{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:12px;margin-top:18px}
+.st-actions .btn{min-width:0;min-height:50px;border-radius:999px;font-size:1rem}
+.st-wa{height:62px;margin-top:14px;overflow:hidden}.st-wa .btn{min-height:48px;border-radius:999px}.st-wa.is-empty{visibility:hidden;pointer-events:none}
+.pay-badge{font-size:.9rem;font-weight:900;padding:8px 17px;border-radius:999px;white-space:nowrap;align-self:flex-start}
+.pay-paid{background:var(--ok-bg);color:var(--ok)}
+.pay-soon{background:#fbf1dd;color:#a86f27}
+.pay-over{background:#fdece9;color:var(--danger)}
+.pay-none{background:var(--sand);color:var(--muted)}
+@media(max-width:520px){.st-card{padding:20px 18px;border-radius:24px}.st-grid{grid-template-columns:1fr}.st-actions{grid-template-columns:1fr}.pay-badge{font-size:.82rem;padding:7px 12px}.st-card .avatar{width:56px;height:56px;min-width:56px}.st-family .fr{grid-template-columns:68px minmax(0,1fr)}.st-grade-field{grid-template-columns:74px minmax(0,1fr)}}
+/* payments history */
+.ph{display:flex;flex-direction:column;gap:0;max-height:44vh;overflow:auto;margin:6px 0}
+.ph .p{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line-2)}
+.ph .p:last-child{border-bottom:0}
+.ph .p .amt{font-weight:800;color:var(--forest);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ph .p .meta{flex:1;min-width:0}
+.ph .p .meta b{font-size:.92rem}
+.ph .p .meta span{display:block;color:var(--muted);font-size:.8rem}
+.ph .p .del{color:var(--danger);background:none;border:none;cursor:pointer;padding:6px;border-radius:8px}
+</style>
+</head>
+<body>
+<div id="app"><div class="app-main" id="boot"></div></div>
+<script src="/assets/app.js?v=50"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null, Q='', LINK='all', GRADE='all', QUICK='all';
+var app=document.getElementById('app');
+var LEVELS=[['','بدون جريد'],['prekg','Pre-KG'],['kg1','KG1'],['kg2','KG2'],['kg3','KG3']];
+
+var AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+/* تاريخ اليوم من السيرفر (توقيت الرياض) — لا نعتمد على ساعة الجهاز (قد تكون غلط) */
+var SERVER_TODAY=null;
+try{ NS.api('/api/today',{}).then(function(d){ if(d&&d.date) SERVER_TODAY=d.date; }).catch(function(){}); }catch(e){}
+function todayISO(){ if(SERVER_TODAY) return SERVER_TODAY; var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function plusMonthISO(iso){ var base=iso||todayISO(); var d=new Date(base); d.setMonth(d.getMonth()+1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtD(iso){ return NS.fmtShort?NS.fmtShort(iso):iso; }
+
+if(!TOKEN){ gate(); } else { boot(); }
+function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'الطلاب',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة لإدارة الطلاب والرسوم.'}); }
+function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
+  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+  '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+
+function boot(){
+  document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
+  NS.api('/api/manager/students',{mt:TOKEN}).then(function(d){
+    if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
+    DATA=d; render();
+  }).catch(function(err){ if(err.type==='auth'){ NS.clearToken('mt'); gate(); } else netError(); });
+}
+
+function statusBadge(s){
+  if(s.status==='overdue') return '<span class="pay-badge pay-over">متأخّر '+Math.abs(s.days)+' يوم</span>';
+  if(s.status==='due_soon') return '<span class="pay-badge pay-soon">'+(s.days<=0?'مستحقّ اليوم':('باقٍ '+s.days+' يوم')) +'</span>';
+  if(s.status==='paid') return '<span class="pay-badge pay-paid">مُسدَّد'+(s.paid_until?(' حتى '+fmtD(s.paid_until)):'')+'</span>';
+  return '<span class="pay-badge pay-none">لم يُسجَّل دفع</span>';
+}
+
+function render(){
+  var st=DATA.students||[];
+  var overdue=st.filter(function(s){return s.status==='overdue';}).length;
+  var soon=st.filter(function(s){return s.status==='due_soon';}).length;
+  var linked=st.filter(function(s){return !!s.linked;}).length;
+  var h=NS.appbar({sub:'الطلاب', nav:NS.adminNav('students')})+
+    '<main class="app-main">'+
+      '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+        '<div><h1>الطلاب</h1><div class="sub">أضيفي الطلاب، وسجّلي رسومهم ومتى دفعوا.</div></div>'+
+        '<button class="btn btn--primary" id="add">'+I('plus')+' طالب جديد</button>'+
+      '</div>'+
+      '<div class="st-summary">'+
+        stat('is-forest','users','إجمالي الطلاب',st.length,'all')+
+        stat(linked?'is-forest':'is-amber','user','مرتبط بولي الأمر',linked,'linked')+
+        stat(st.length-linked?'is-amber':'is-forest','alert','غير مرتبط',st.length-linked,'unlinked')+
+        stat(overdue?'is-danger':'is-forest','alert','متأخرو السداد',overdue,'overdue')+
+        stat(soon?'is-amber':'is-forest','clock','قرب موعدهم',soon,'due_soon')+
+      '</div>'+
+      '<div class="st-toolbar">'+
+        '<div class="search"><input class="input" id="q" type="search" placeholder="ابحثي باسم الطالب أو ولي الأمر…" value="'+NS.attr(Q)+'"/></div>'+
+        '<div class="st-filter" id="link-filter">'+linkSeg('all','كل الربط')+linkSeg('linked','مرتبط بولي الأمر')+linkSeg('unlinked','غير مرتبط')+'</div>'+
+      '</div>'+
+      '<div id="grade-tabs"></div>'+
+      '<div class="st-list-head" id="list-head"></div>'+
+      '<div id="list"></div>'+
+    '</main>';
+  app.innerHTML=h; NS.wireLogout('mt');
+  document.getElementById('add').addEventListener('click',function(){ edit(null); });
+  [].forEach.call(document.querySelectorAll('[data-stat]'),function(b){b.addEventListener('click',function(){applyStat(b.getAttribute('data-stat'));});});
+  var q=document.getElementById('q');
+  q.addEventListener('input',function(){ Q=q.value; renderList(); });
+  [].forEach.call(document.querySelectorAll('#link-filter button'),function(b){b.addEventListener('click',function(){LINK=b.dataset.link;GRADE='all';QUICK='all';render();});});
+  renderList();
+}
+function linkSeg(v,label){return '<button type="button" data-link="'+v+'" class="'+(LINK===v?'on':'')+'">'+NS.esc(label)+'</button>';}
+function linkOk(s){return LINK==='all'||(LINK==='linked'&&!!s.linked)||(LINK==='unlinked'&&!s.linked);}
+function quickOk(s){return QUICK==='all'||s.status===QUICK;}
+function statOn(key){
+  if(key==='all') return QUICK==='all'&&LINK==='all';
+  if(key==='linked') return QUICK==='all'&&LINK==='linked';
+  if(key==='unlinked') return QUICK==='all'&&LINK==='unlinked';
+  return QUICK===key;
+}
+function applyStat(key){
+  if(key==='linked'||key==='unlinked'){LINK=key;QUICK='all';}
+  else {QUICK=key||'all';LINK='all';}
+  GRADE='all';
+  render();
+}
+function filterTitle(){
+  var title;
+  if(QUICK==='overdue') return 'متأخرو السداد';
+  if(QUICK==='due_soon') return 'قرب موعدهم';
+  if(LINK==='linked') title='الطلاب المرتبطون بولي الأمر';
+  else if(LINK==='unlinked') title='الطلاب غير المرتبطين';
+  else title='كل الطلاب';
+  return GRADE==='all'?title:(title+' · '+levelLabel(GRADE));
+}
+function stat(accent,icon,label,value,key){
+  return '<button type="button" data-stat="'+NS.attr(key)+'" class="stat '+accent+(statOn(key)?' is-on':'')+'"><div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span></div>'+ 
+    '<div class="v tabnum">'+value+'</div></button>';
+}
+
+function gradeKey(s){return s.level||'__none';}
+function gradeLabel(s){return s.level_label||levelLabel(s.level||'__none');}
+function levelLabel(v){
+  if(v==='__none')return 'بدون جريد';
+  for(var i=0;i<LEVELS.length;i++){if(LEVELS[i][0]===v)return LEVELS[i][1];}
+  return v||'بدون جريد';
+}
+function levelOptions(v){
+  return LEVELS.map(function(x){return '<option value="'+NS.attr(x[0])+'"'+(x[0]===(v||'')?' selected':'')+'>'+NS.esc(x[1])+'</option>';}).join('');
+}
+function gradeTabs(base){
+  var map={}, order=[];
+  base.forEach(function(s){var k=gradeKey(s);if(!map[k]){map[k]={key:k,label:gradeLabel(s),count:0};order.push(map[k]);}map[k].count++;});
+  order.sort(function(a,b){return a.label.localeCompare(b.label,'ar');});
+  var tabs=[{key:'all',label:'كل الجريدات',count:base.length}].concat(order);
+  return '<div class="st-grade-tabs">'+tabs.map(function(t){
+    return '<button type="button" data-grade="'+NS.attr(t.key)+'" class="'+(t.key===GRADE?'is-on':'')+'">'+
+      '<span>'+NS.esc(t.label)+'</span><span class="count tabnum">'+t.count+'</span></button>';
+  }).join('')+'</div>';
+}
+function saveLevel(s,value,select){
+  if(!s||!select)return;
+  var prev=s.level||'';
+  var box=select.closest('.st-grade-field');
+  select.disabled=true;if(box)box.classList.add('is-saving');
+  NS.api('/api/manager/student/save',{mt:TOKEN,id:s.id,name:s.name||'',
+    class_id:s.class_id||'',guardian_name:s.guardian_name||'',guardian_phone:s.guardian_phone||'',
+    parent_email:s.parent_email||'',father_name:s.father_name||'',mother_name:s.mother_name||'',
+    fees:s.fees||0,joining_date:s.joining_date||'',level:value}).then(function(r){
+      select.disabled=false;if(box)box.classList.remove('is-saving');
+      if(r&&r.ok){s.level=value;s.level_label=value?levelLabel(value):'';NS.toast('تم تحديث الجريد','ok');renderList();}
+      else{select.value=prev;NS.toast((r&&r.error)||'تعذّر حفظ الجريد','err');}
+    }).catch(function(){
+      select.disabled=false;if(box)box.classList.remove('is-saving');select.value=prev;
+      NS.toast('تعذّر حفظ الجريد','err');
+    });
+}
+
+function searchOk(s,q){
+  return ([s.name,s.guardian_name,s.father_name,s.mother_name,s.guardian_phone,s.parent_name,s.parent_email].join(' ')).indexOf(q)>=0;
+}
+function baseFiltered(){
+  var q=Q.trim();
+  var list=(DATA.students||[]).slice().sort(function(a,b){
+    var rank={overdue:0,due_soon:1,none:2,paid:3};
+    return (rank[a.status]-rank[b.status]) || a.name.localeCompare(b.name,'ar');
+  });
+  list=list.filter(linkOk);
+  list=list.filter(quickOk);
+  if(q) list=list.filter(function(s){return searchOk(s,q);});
+  return list;
+}
+function filtered(){
+  var list=baseFiltered();
+  if(GRADE!=='all') list=list.filter(function(s){return gradeKey(s)===GRADE;});
+  return list;
+}
+function personName(s,keys){
+  for(var i=0;i<keys.length;i++){var v=(s[keys[i]]||'').trim();if(v)return v;}
+  return '';
+}
+function fitClass(value){
+  var n=(value||'').trim().length;
+  return n>34?' is-xxl':(n>25?' is-xl':(n>17?' is-long':''));
+}
+function fitStudentNames(){
+  [].forEach.call(document.querySelectorAll('.name-fit'),function(el){
+    el.style.fontSize='';
+    var size=parseFloat(getComputedStyle(el).fontSize)||18;
+    while(el.scrollWidth>el.clientWidth && size>9){
+      size-=.5;
+      el.style.fontSize=size+'px';
+    }
+  });
+}
+function studentName(name){
+  return '<b class="name-fit'+fitClass(name)+'" title="'+NS.attr(name||'')+'">'+NS.esc(name||'—')+'</b>';
+}
+function familyRow(label,value){
+  var shown=value||'—';
+  return '<div class="fr"><span class="fl">'+NS.esc(label)+'</span><b class="fv'+fitClass(value)+(value?'':' is-empty')+'" title="'+NS.attr(shown)+'">'+NS.esc(shown)+'</b></div>';
+}
+function familyRows(s){
+  var father=personName(s,['father_name','father','dad_name','parent_father_name']);
+  var mother=personName(s,['mother_name','mother','mom_name','parent_mother_name']);
+  return '<div class="st-family">'+familyRow('اسم الأب',father)+familyRow('اسم الأم',mother)+'</div>';
+}
+
+function renderList(){
+  var L=document.getElementById('list'); if(!L) return;
+  var base=baseFiltered();
+  var list=filtered();
+  var H=document.getElementById('list-head');
+  var T=document.getElementById('grade-tabs');
+  if(T){T.innerHTML=gradeTabs(base);T.querySelectorAll('[data-grade]').forEach(function(b){b.onclick=function(){GRADE=b.dataset.grade;renderList();};});}
+  if(H) H.innerHTML='<b>'+NS.esc(filterTitle())+'</b><span><span class="tabnum">'+list.length+'</span> طالب مطابق</span>';
+  if(!(DATA.students||[]).length){ L.innerHTML=NS.empty('users','لا يوجد طلاب بعد','اضغطي «طالب جديد» لإضافة أول طالب.'); return; }
+  if(!list.length){ L.innerHTML=NS.empty('search','لا نتائج','جرّبي بحثاً آخر.'); return; }
+  var h='<div class="st-grid">';
+  list.forEach(function(s){
+    var initial=(s.name||'؟').trim().charAt(0);
+    var linkTxt=s.linked?'مرتبط بولي أمر':(s.link_state==='pending'?'بانتظار الربط':'غير مرتبط');
+    h+='<div class="st-card">'+
+      '<div class="top"><span class="avatar avatar--sm">'+NS.esc(initial)+'</span>'+
+        '<div class="who">'+studentName(s.name)+'<span>'+(s.class_name?NS.esc(s.class_name):'بدون فصل')+
+          (s.level_label?' · '+NS.esc(s.level_label):'')+
+          ' · <span class="'+(s.linked?'is-linked':'is-unlinked')+'">'+NS.esc(linkTxt)+'</span></span></div>'+ 
+        statusBadge(s)+'</div>'+familyRows(s)+
+      '<div class="st-grade-field"><label for="student-grade-'+s.id+'">الجريد</label><select class="input" id="student-grade-'+s.id+'" data-level-select="'+s.id+'">'+levelOptions(s.level)+'</select></div>'+ 
+      '<div class="st-rows">'+
+        '<div class="r"><span class="l">الرسوم الشهرية</span><b class="tabnum">'+NS.riyal(s.fees)+'</b></div>'+ 
+        '<div class="r"><span class="l">رسوم الكتب</span><b class="tabnum">'+NS.riyal(s.books_due||1000)+'</b></div>'+
+        '<div class="r"><span class="l">مدفوع الكتب</span><b class="tabnum">'+NS.riyal(s.books_paid||0)+'</b></div>'+
+        '<div class="r"><span class="l">المتبقي من الكتب</span><b class="tabnum '+(s.books_remaining>0?'is-unlinked':'is-linked')+'">'+NS.riyal(s.books_remaining||0)+'</b></div>'+
+        '<div class="r"><span class="l">آخر دفعة</span><b class="tabnum">'+(s.last_date?(NS.riyal(s.last_amount)+' · '+fmtD(s.last_date)):'—')+'</b></div>'+ 
+        '<div class="r"><span class="l">إجمالي المدفوع</span><b class="tabnum">'+NS.riyal(s.total_paid)+'</b></div>'+ 
+      '</div>'+ 
+      '<div class="st-actions">'+
+        '<button class="btn btn--primary btn--sm" data-pay="'+NS.attr(s.id)+'">'+I('wallet')+' تسجيل دفعة</button>'+ 
+        (s.books_remaining>0.01?'<button class="btn btn--soft btn--sm" data-book-pay="'+NS.attr(s.id)+'">'+I('book')+' دفع الكتب</button>':'')+
+        '<button class="btn btn--soft btn--sm" data-hist="'+NS.attr(s.id)+'">'+I('clock')+' الدفعات</button>'+ 
+        '<button class="btn btn--soft btn--sm" data-book-hist="'+NS.attr(s.id)+'">'+I('book')+' دفعات الكتب</button>'+ 
+        '<button class="btn btn--soft btn--sm" data-edit="'+NS.attr(s.id)+'">'+I('user')+' تعديل</button>'+ 
+      '</div>'+ 
+      '<div class="st-wa'+(s.guardian_phone?'':' is-empty')+'">'+
+        (s.guardian_phone?('<button class="btn btn--soft btn--block" data-wa="'+NS.attr(s.id)+'">'+I('whatsapp')+'</button>'):'<button class="btn btn--soft btn--block" type="button" tabindex="-1">'+I('whatsapp')+'</button>')+
+      '</div></div>';
+  });
+  h+='</div>'; L.innerHTML=h;
+  bind(L,'data-pay',function(id){ pay(get(id)); });
+  bind(L,'data-book-pay',function(id){ payBooks(get(id)); });
+  bind(L,'data-hist',function(id){ history(get(id)); });
+  bind(L,'data-book-hist',function(id){ history(get(id),'books'); });
+  bind(L,'data-edit',function(id){ edit(get(id)); });
+  bind(L,'data-wa',function(id){ remind(get(id)); });
+  L.querySelectorAll('[data-level-select]').forEach(function(select){select.onchange=function(){saveLevel(get(select.dataset.levelSelect),select.value,select);};});
+  fitStudentNames();
+}
+function bind(root,attr,fn){ [].forEach.call(root.querySelectorAll('['+attr+']'),function(b){ b.addEventListener('click',function(){ fn(b.getAttribute(attr)); }); }); }
+function get(id){ return (DATA.students||[]).filter(function(s){return String(s.id)===String(id);})[0]; }
+function refreshRow(row){ if(!row) return boot(); var i=DATA.students.findIndex(function(s){return s.id===row.id;}); if(i>=0) DATA.students[i]=row; renderList(); }
+
+/* ---- add / edit student ---- */
+function edit(s){
+  var opts='<option value="">— بدون فصل —</option>';
+  (DATA.classes||[]).forEach(function(c){ opts+='<option value="'+c.id+'"'+(s&&s.class_id===c.id?' selected':'')+'>'+NS.esc(c.name)+'</option>'; });
+  var levels=levelOptions(s?s.level:'');
+  var m=NS.modal(
+    '<div class="modal__icon">'+I(s?'user':'plus')+'</div>'+
+    '<h3>'+(s?'تعديل بيانات '+NS.esc(s.name):'طالب جديد')+'</h3>'+
+    '<div class="field"><label>اسم الطالب *</label><input class="input" id="f-name" value="'+NS.attr(s?s.name:'')+'" placeholder="الاسم الكامل"/></div>'+
+    '<div class="field"><label>الفصل</label><select class="input" id="f-class">'+opts+'</select></div>'+
+    '<div class="field"><label>الجريد</label><select class="input" id="f-level">'+levels+'</select></div>'+ 
+    '<div class="field"><label>الرسوم الشهرية (ر.س)</label><input class="input" type="number" min="0" id="f-fees" value="'+(s?s.fees:'')+'" placeholder="مثال: 1500"/></div>'+ 
+    '<div class="field"><label>اسم الأب</label><input class="input" id="f-father" value="'+NS.attr(s?(s.father_name||''):'')+'"/></div>'+ 
+    '<div class="field"><label>اسم الأم</label><input class="input" id="f-mother" value="'+NS.attr(s?(s.mother_name||''):'')+'"/></div>'+ 
+    '<div class="field"><label>اسم ولي الأمر</label><input class="input" id="f-gn" value="'+NS.attr(s?s.guardian_name:'')+'"/></div>'+ 
+    '<div class="field"><label>البريد الإلكتروني لولي الأمر</label><input class="input" id="f-ge" type="email" value="'+NS.attr(s?s.parent_email:'')+'" placeholder="parent@email.com"/></div>'+ 
+    '<div class="field"><label>جوال ولي الأمر</label><input class="input" id="f-gp" type="tel" inputmode="tel" value="'+NS.attr(s?s.guardian_phone:'')+'" placeholder="05xxxxxxxx"/></div>'+ 
+    '<div class="field"><label>تاريخ الالتحاق</label><input class="input" type="date" id="f-jd" value="'+NS.attr(s?s.joining_date:todayISO())+'"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button>'+
+      (s?'<button class="btn btn--ghost" data-del style="color:var(--danger)">حذف</button>':'')+
+      '<button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  if(s) m.el.querySelector('[data-del]').addEventListener('click',function(){
+    m.close();
+    NS.confirm({title:'حذف الطالب نهائياً؟',body:'سيُخفى '+NS.esc(s.name)+' من قوائم الطلاب ومن كشوف الحسابات للشهور المفتوحة. الشهور المُقفَلة تحتفظ بسجله ولا تُحذف الدفعات السابقة.',okText:'حذف',danger:true}).then(function(ok){
+      if(!ok) return;
+      NS.api('/api/manager/student/delete',{mt:TOKEN,id:s.id}).then(function(r){ if(r&&r.ok){ NS.toast('تم الحذف'); boot(); } else NS.toast((r&&r.error)||'خطأ','err'); });
+    });
+  });
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return;
+    var name=m.el.querySelector('#f-name').value.trim();
+    if(!name){ NS.toast('اكتبي اسم الطالب','err'); return; }
+    btn.classList.add('is-loading');
+    NS.api('/api/manager/student/save',{mt:TOKEN, id:s?s.id:'', name:name,
+      class_id:m.el.querySelector('#f-class').value, fees:m.el.querySelector('#f-fees').value,
+      level:m.el.querySelector('#f-level').value,
+      father_name:m.el.querySelector('#f-father').value,
+      mother_name:m.el.querySelector('#f-mother').value,
+      guardian_name:m.el.querySelector('#f-gn').value, parent_email:m.el.querySelector('#f-ge').value,
+      guardian_phone:m.el.querySelector('#f-gp').value,
+      joining_date:m.el.querySelector('#f-jd').value})
+    .then(function(r){ if(r&&r.ok){ m.close(); NS.toast(s?'تم الحفظ':'تمت إضافة الطالب'); boot(); } else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); } })
+    .catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر الحفظ','err'); });
+  });
+}
+
+/* ---- record a payment ---- */
+function pay(s){
+  var defUntil = plusMonthISO(s.paid_until && s.paid_until>=todayISO() ? s.paid_until : todayISO());
+  var m=NS.modal(
+    '<div class="modal__icon">'+I('wallet')+'</div>'+
+    '<h3>تسجيل دفعة — '+NS.esc(s.name)+'</h3>'+
+    '<p class="muted" style="font-size:.86rem;margin-bottom:6px">الرسوم الشهرية: '+NS.riyal(s.fees)+'</p>'+
+    '<div class="field"><label>المبلغ المدفوع (ر.س) *</label><input class="input" type="number" min="1" id="p-amt" value="'+(s.fees||'')+'"/></div>'+
+    '<div class="field"><label>تاريخ الدفع</label><input class="input" type="date" id="p-date" value="'+todayISO()+'"/></div>'+
+    '<div class="field"><label>مدفوع حتى (موعد التجديد القادم)</label><input class="input" type="date" id="p-until" value="'+defUntil+'"/></div>'+
+    '<div class="field"><label>طريقة الدفع</label><select class="input" id="p-method">'+
+      '<option value="cash">نقداً</option><option value="transfer">تحويل</option><option value="card">شبكة</option><option value="other">أخرى</option></select></div>'+
+    '<div class="field"><label>ملاحظة (اختياري)</label><input class="input" id="p-note" placeholder="مثال: رسوم شهر يوليو"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' تأكيد الدفعة</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return;
+    var amt=parseFloat(m.el.querySelector('#p-amt').value);
+    if(!(amt>0)){ NS.toast('اكتبي مبلغاً صحيحاً','err'); return; }
+    btn.classList.add('is-loading');
+    NS.api('/api/manager/student/pay',{mt:TOKEN, student_id:s.id, amount:amt,
+      date:m.el.querySelector('#p-date').value, paid_until:m.el.querySelector('#p-until').value,
+      method:m.el.querySelector('#p-method').value, note:m.el.querySelector('#p-note').value})
+    .then(function(r){ if(r&&r.ok){ m.close(); NS.toast('تم تسجيل الدفعة ✔'); refreshRow(r.row); } else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); } })
+    .catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر التسجيل','err'); });
+  });
+}
+
+function payBooks(s){
+  var remaining=Number(s.books_remaining||1000);
+  var m=NS.modal(
+    '<div class="modal__icon">'+I('book')+'</div>'+
+    '<h3>دفع رسوم الكتب — '+NS.esc(s.name)+'</h3>'+
+    '<p class="muted" style="font-size:.86rem;margin-bottom:6px">المطلوب: '+NS.riyal(s.books_due||1000)+' · المدفوع: '+NS.riyal(s.books_paid||0)+' · المتبقي: '+NS.riyal(remaining)+'</p>'+
+    '<div class="field"><label>المبلغ المدفوع (ر.س) *</label><input class="input" type="number" min="1" max="'+remaining+'" id="bp-amt" value="'+remaining+'"/></div>'+
+    '<div class="field"><label>تاريخ الدفع</label><input class="input" type="date" id="bp-date" value="'+todayISO()+'"/></div>'+
+    '<div class="field"><label>طريقة الدفع</label><select class="input" id="bp-method">'+
+      '<option value="cash">نقداً</option><option value="transfer">تحويل</option><option value="card">شبكة</option><option value="other">أخرى</option></select></div>'+
+    '<div class="field"><label>ملاحظة (اختياري)</label><input class="input" id="bp-note" placeholder="مثال: دفعة أولى من رسوم الكتب"/></div>'+
+    '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' تأكيد دفعة الكتب</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  m.el.querySelector('[data-ok]').addEventListener('click',function(){
+    var btn=this; if(btn.classList.contains('is-loading')) return;
+    var amt=parseFloat(m.el.querySelector('#bp-amt').value);
+    if(!(amt>0)||amt>remaining+0.01){ NS.toast('المبلغ أكبر من المتبقي أو غير صحيح','err'); return; }
+    btn.classList.add('is-loading');
+    NS.api('/api/manager/student/pay',{mt:TOKEN, student_id:s.id, amount:amt,
+      payment_type:'books', date:m.el.querySelector('#bp-date').value,
+      method:m.el.querySelector('#bp-method').value, period:'رسوم الكتب',
+      note:m.el.querySelector('#bp-note').value})
+    .then(function(r){ if(r&&r.ok){ m.close(); NS.toast('تم تسجيل دفعة الكتب ✔'); refreshRow(r.row); } else { btn.classList.remove('is-loading'); NS.toast((r&&r.error)||'خطأ','err'); } })
+    .catch(function(){ btn.classList.remove('is-loading'); NS.toast('تعذّر التسجيل','err'); });
+  });
+}
+
+/* ---- payment history ---- */
+function history(s,type){
+  var isBooks=type==='books';
+  var m=NS.modal('<div class="modal__icon">'+I(isBooks?'book':'clock')+'</div><h3>'+(isBooks?'دفعات الكتب لـ':'دفعات ')+NS.esc(s.name)+'</h3><div id="ph-body"><div class="skel skel-line" style="width:80%"></div><div class="skel skel-line" style="width:60%;margin-top:8px"></div></div>'+
+    '<div class="actions"><button class="btn btn--ghost" data-cancel>إغلاق</button></div>');
+  m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
+  NS.api('/api/manager/student/payments',{mt:TOKEN,student_id:s.id,payment_type:isBooks?'books':'tuition'}).then(function(d){
+    var B=m.el.querySelector('#ph-body'); if(!B) return;
+    if(!d||!d.ok){ B.innerHTML='<p class="muted">تعذّر التحميل.</p>'; return; }
+    if(!d.payments.length){ B.innerHTML=NS.empty('wallet','لا توجد دفعات','لم تُسجَّل أي دفعة لهذا الطالب بعد.'); return; }
+    var h='<div class="ph">';
+    d.payments.forEach(function(p){
+      h+='<div class="p"><span class="amt">'+NS.riyal(p.amount)+'</span>'+
+        '<div class="meta"><b>'+fmtD(p.date)+(p.period?(' · '+NS.esc(p.period)):'')+'</b>'+
+        '<span>'+NS.esc(p.method)+(p.note?(' · '+NS.esc(p.note)):'')+'</span></div>'+
+        '<button class="del" data-del="'+NS.attr(p.id)+'" title="حذف الدفعة">'+I('trash')+'</button></div>';
+    });
+    h+='</div><div style="display:flex;justify-content:space-between;padding-top:10px;border-top:2px solid var(--line-2);font-weight:800;color:var(--forest)"><span>الإجمالي</span><span class="tabnum">'+NS.riyal(d.total_paid)+'</span></div>';
+    B.innerHTML=h;
+    bind(B,'data-del',function(id){
+      NS.confirm({title:'حذف الدفعة؟',body:'سيُحذف هذا السجل نهائياً.',okText:'حذف',danger:true}).then(function(ok){
+        if(!ok) return;
+        NS.api('/api/manager/payment/delete',{mt:TOKEN,id:id}).then(function(r){ if(r&&r.ok){ NS.toast('تم الحذف'); if(r.row) refreshRow(r.row); m.close(); history(get(s.id),type); } else NS.toast((r&&r.error)||'خطأ','err'); });
+      });
+    });
+  }).catch(function(){ var B=m.el.querySelector('#ph-body'); if(B) B.innerHTML='<p class="muted">تعذّر التحميل.</p>'; });
+}
+
+/* ---- whatsapp reminder ---- */
+function remind(s){
+  var msg='السلام عليكم، تذكير ودّي برسوم الطالب '+s.name+' ('+Math.round(s.fees)+' ر.س)';
+  if(s.status==='overdue') msg+=' — المتأخرة منذ '+Math.abs(s.days)+' يوم';
+  msg+='. يسعدنا استقبال السداد أو الإجابة عن أي استفسار. شكراً لتعاونكم 🌿';
+  window.open(NS.wa(s.guardian_phone,msg),'_blank','noopener');
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script src="/assets/install.js?v=4" defer></script>
+</body>
+</html>

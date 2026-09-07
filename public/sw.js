@@ -1,39 +1,12 @@
 // روضة كوكب الطفل الحر — service worker خفيف للتثبيت والسرعة والإشعارات
-const CACHE = 'mk-shell-v24';
-const SHELL = [
-  '/',
-  '/offline.html',
-  '/app/',
-  '/login/',
-  '/dashboard/',
-  '/dashboard/index.html',
-  '/classes/',
-  '/classes/index.html',
-  '/whatsapp/',
-  '/assets/app-admin.css?v=4',
-  '/assets/fonts.css?v=2',
-  '/assets/app.js?v=49',
-  '/assets/bot.js',
-  '/assets/install.js?v=3',
-  '/assets/whatsapp-admin.css?v=1',
-  '/assets/whatsapp-admin.js?v=1',
-  '/dashboard/dashboard-inline-1.js?v=1',
-  '/dashboard/dashboard-inline-2.js?v=2',
-  '/manifest.webmanifest',
-  '/logo.png',
-  '/apple-touch-icon.png',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-maskable-512.png'
-];
+const CACHE = 'mk-shell-v25';
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));
-  self.skipWaiting();
+  // Never pre-cache authenticated pages or API responses.
+  e.waitUntil(caches.open(CACHE).then((c) => c.add('/offline.html')).then(() => self.skipWaiting()));
 
 });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.map((k) => caches.delete(k))).then(() => self.registration.unregister())));
-  self.clients.claim();
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('mk-shell-') && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 
 });
 self.addEventListener('fetch', (e) => {
@@ -44,27 +17,17 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(e.request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(e.request, copy)).catch(() => {});
           return response;
         })
-        .catch(() => caches.match(e.request).then((r) => r || caches.match('/login/')).then((r) => r || caches.match('/offline.html')))
+        .catch(() => caches.match('/offline.html'))
     );
     return;
   }
 
-  if (url.pathname === '/assets/app.js' || url.pathname === '/assets/install.js' || url.pathname === '/sw.js') {
-    e.respondWith(
-      fetch(e.request).then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE).then((cache) => cache.put(url.pathname, copy)).catch(() => {});
-        return response;
-      }).catch(() => caches.match(e.request).then((r) => r || caches.match(url.pathname)))
-    );
-    return;
+  // Revalidate even old version URLs retained by an already-open page.
+  if (/\.(?:css|js)$/.test(url.pathname)) {
+    e.respondWith(fetch(e.request, { cache: 'no-cache' }));
   }
-
-  e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
 
 });
 

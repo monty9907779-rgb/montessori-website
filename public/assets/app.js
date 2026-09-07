@@ -324,42 +324,7 @@ NS.icon = function(name, attrs){
   return P.replace('<svg ', '<svg '+(attrs?attrs+' ':'')) + body + '</svg>';
 };
 
-(function(){
-  var css = ''+
-'html.ns-admin-shell body{padding-inline-start:0}'+
-'html.ns-admin-shell .appbar{position:sticky;top:0;z-index:80;background:rgba(251,248,242,.96);border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(31,54,42,.06);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}'+
-'html.ns-admin-shell .appbar__in{max-width:var(--maxw);margin-inline:auto;padding:11px clamp(14px,3vw,26px);display:flex;flex-direction:row;align-items:center;gap:14px}'+
-'html.ns-admin-shell .brand{justify-content:flex-start;color:var(--forest);text-align:start;padding:0;border-bottom:0}'+
-'html.ns-admin-shell .brand img{width:40px;height:40px;border-radius:11px;background:#fff;padding:3px;box-shadow:var(--sh-1)}'+
-'html.ns-admin-shell .brand span{white-space:nowrap;line-height:1.25;font-size:inherit}'+
-'html.ns-admin-shell .brand .b-sub{display:block;color:var(--muted);font-size:.72rem;margin-top:-2px}'+
-'html.ns-admin-shell .spacer{display:block;flex:1}'+
-'html.ns-admin-shell .navtoggle{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;flex:none;border:0;border-radius:14px;background:var(--sand);color:var(--forest);cursor:pointer}'+
-'html.ns-admin-shell .appnav{position:fixed;top:0;right:0;bottom:0;left:auto;width:min(340px,86vw);height:100dvh;max-height:100dvh;display:flex;flex-direction:column;flex-wrap:nowrap;gap:6px;overflow-y:auto;overflow-x:hidden;border-radius:0;padding:14px;background:var(--paper);box-shadow:-8px 0 28px rgba(0,0,0,.18);transform:translateX(100%);transition:transform var(--dur);z-index:120;scrollbar-width:thin;overscroll-behavior:contain;padding-top:max(14px,env(safe-area-inset-top));padding-bottom:max(14px,env(safe-area-inset-bottom))}'+
-'html.ns-admin-shell .navscrim{position:fixed;inset:0;background:transparent;opacity:0;pointer-events:none;transition:opacity var(--dur);z-index:70}'+
-'html.ns-admin-shell .navscrim.on{opacity:1;pointer-events:auto}'+
-'html.ns-admin-shell body.nav-open .appnav{transform:none}'+
-'html.ns-admin-shell .navclose{display:flex;align-items:center;justify-content:center;width:42px;height:42px;min-height:42px;margin-inline-start:auto;margin-bottom:8px;border:0;border-radius:14px;background:var(--sand);color:var(--forest);cursor:pointer;flex:none}'+
-'html.ns-admin-shell .navclose svg{width:22px;height:22px}'+
-'html.ns-admin-shell .appnav a{width:100%;min-height:48px;display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:14px;color:var(--muted);font-size:.98rem;font-weight:700;white-space:normal;text-align:start;line-height:1.35;flex:none}'+
-'html.ns-admin-shell .appnav a svg{width:22px;height:22px;flex:none}'+
-'html.ns-admin-shell .appnav a.on{background:var(--sand);color:var(--forest);box-shadow:none;position:relative}'+
-'html.ns-admin-shell .appnav a.on:before{content:"";position:absolute;top:10px;bottom:10px;right:0;width:4px;border-radius:999px;background:var(--clay)}'+
-'html.ns-admin-shell .appnav a.on svg{color:var(--clay)}'+
-'html.ns-admin-shell .appnav a:not(.on):hover{background:var(--sand);color:var(--forest)}'+
-'html.ns-admin-shell #ns-logout{margin-top:0;align-self:auto;width:42px;height:42px;border-radius:14px}'+
-'html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none}'+
-'@media(max-width:640px){html.ns-admin-shell .appbar__in{padding:9px 12px;gap:10px}html.ns-admin-shell .brand span{font-size:.9rem}html.ns-admin-shell .brand .b-sub{display:none}html.ns-admin-shell #ns-logout{width:40px;height:40px}html.ns-admin-shell .appnav{width:min(320px,88vw)}}';
-  function inject(){
-    if(document.getElementById('ns-vertical-admin-nav-style')) return;
-    var s=document.createElement('style');
-    s.id='ns-vertical-admin-nav-style';
-    s.textContent=css;
-    document.head.appendChild(s);
-  }
-  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', inject); }
-  else inject();
-})();
+/* Admin navigation styles are loaded once from the shared stylesheet. */
 
 /* ---- shared app-shell (identical header across app pages) ---- */
 NS.appbar = function(opts){
@@ -390,6 +355,7 @@ NS._navHidden = (function(){ try{ return JSON.parse(localStorage.getItem('ns_nav
 NS.adminNav = function(active){
   return [
     {href:'/dashboard/', label:'الرئيسية', icon:'home',   on:active==='dashboard'},
+    {href:'/whatsapp/', label:'واتساب', icon:'whatsapp', on:active==='whatsapp'},
     {href:'/students/',  label:'الطلاب',   icon:'user',   on:active==='students'},
     {href:'/enrollments/', label:'طلبات السنة الجديدة', icon:'calendar', on:active==='enrollments'},
     {href:'/classes/',   label:'الفصول',   icon:'book',   on:active==='classes'},

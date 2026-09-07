@@ -1,0 +1,20 @@
+.en-target-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 14px;direction:rtl}
+.en-target-field{display:grid!important;grid-template-columns:1fr;gap:5px;min-width:0;padding:8px 10px;border:1px solid rgba(38,100,79,.16);border-radius:8px;background:#f8fbf8}
+.en-target-field label{font-size:12px;font-weight:700;color:#557268;line-height:1.25}
+.en-transfer-select{width:100%;min-width:0;height:38px;padding:0 9px;border:1px solid #d9e5df;border-radius:8px;background:#fff;color:#173f34;font:inherit;font-size:13px;outline:none}
+.en-transfer-select:focus{border-color:#2e8065;box-shadow:0 0 0 3px rgba(46,128,101,.12)}
+.en-transfer-status{display:inline-flex;align-items:center;min-height:36px;margin-inline-start:8px;color:#557268;font-size:13px;font-weight:700}
+.en-transfer-external{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 15px;border:0;border-radius:8px;background:#17604d;color:#fff;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
+.en-transfer-external:hover:not(:disabled){background:#0f4b3b}
+.en-transfer-external:disabled{background:#b9c9c2;color:#fff;cursor:not-allowed;opacity:.85}
+.st-transfer-bar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;margin:16px 0;padding:12px 14px;border:1px solid #dce9e2;border-radius:8px;background:#f8fbf8;direction:rtl}
+.st-transfer-bar__title{color:#173f34;font-size:14px;font-weight:800}
+.st-transfer-bar__status{color:#557268;font-size:13px;font-weight:700}
+.st-transfer-bar__button{white-space:nowrap}
+.st-transfer-pick-row{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:6px 8px;border-bottom:1px solid #edf2ee;color:#557268;font-size:13px;font-weight:700;direction:rtl}
+.st-transfer-check{width:17px;height:17px;margin:0;accent-color:#17604d}
+.st-transfer-pick-label{cursor:pointer}
+.st-transfer-target{display:grid!important;grid-template-columns:1fr;gap:6px;margin:10px 0 12px;padding:9px 10px;border:1px solid rgba(38,100,79,.16);border-radius:8px;background:#f8fbf8;direction:rtl}
+.st-transfer-target label{color:#557268;font-size:12px;font-weight:700;line-height:1.25}
+.st-transfer-class-select{width:100%;min-width:0;height:38px}
+@media(max-width:640px){.en-target-fields{grid-template-columns:1fr}.en-transfer-status{display:block;margin:7px 0 0;width:100%;text-align:center}.en-transfer-external{width:100%;margin-top:8px}.st-transfer-bar{grid-template-columns:1fr;gap:7px}.st-transfer-bar__button{width:100%}}

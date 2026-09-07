@@ -15,7 +15,7 @@
 
   /* Register from every public page so a shared homepage can be installed too. */
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+    navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' }).then(function (registration) { return registration.update(); }).catch(function () {});
   }
 
   if (standalone) return;

@@ -12,11 +12,8 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="الإدارة"/>
-
-<title>روضة كوكب الطفل الحر | لوحة التحكم</title>
+<title>صلاحيات الأدوار | روضة كوكب الطفل الحر</title>
 <link rel="icon" href="/logo.png"/>
-<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/Iurf6YBj_oCad4k1l5anHrRpiZtK6GwN9w.woff2" as="font" type="font/woff2" crossorigin><style>/* arabic */
 @font-face {
   font-family: 'Tajawal';
@@ -126,15 +123,128 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=5"/>
-<link rel="stylesheet" href="/assets/dashboard.css?v=1"/>
+<link rel="stylesheet" href="/assets/app.css?v=22"/>
+<style>
+.perm-card{margin-bottom:14px;position:relative}
+.perm-head{display:flex;align-items:center;gap:9px;font-size:1.05rem;color:var(--forest);
+  margin-bottom:4px;padding-bottom:11px;border-bottom:1px solid var(--line)}
+.perm-head svg{width:20px;height:20px;color:var(--sage);flex:none}
+.perm-head b{font-weight:800}
+.perm-row{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:13px 2px;border-bottom:1px dashed var(--line);cursor:pointer}
+.perm-row:last-child{border-bottom:0}
+.perm-lbl{font-size:.95rem;color:var(--ink);font-weight:600}
+.switch{position:relative;flex:none}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch .track{display:block;width:48px;height:28px;border-radius:999px;background:#cfd8d2;
+  transition:background .2s;position:relative}
+.switch .track::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch input:checked + .track{background:var(--forest)}
+.switch input:checked + .track::after{transform:translateX(-20px)}
+.switch input:focus-visible + .track{outline:2px solid var(--forest);outline-offset:2px}
+.save-bar{position:sticky;bottom:14px;margin-top:20px;z-index:3}
+.note-strip{display:flex;align-items:flex-start;gap:10px;background:var(--info-bg);color:#2b5c72;
+  border-radius:var(--r-sm);padding:12px 15px;font-size:.9rem;line-height:1.6;margin-bottom:var(--s5)}
+.note-strip svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--info)}
+</style>
 </head>
 <body>
-<div id="app"><div class="app-main" id="boot"></div></div>
+<div id="app"><div class="app-main app-narrow" id="boot"></div></div>
 
 <script src="/assets/app.js?v=50"></script>
-<script src="/dashboard/dashboard-inline-1.js?v=1"></script>
-<script src="/dashboard/dashboard-inline-2.js?v=3"></script>
+<script>
+(function(){
+var I=NS.icon, TOKEN=NS.token('mt'), DATA=null;
+var app=document.getElementById('app');
+
+if(!TOKEN){ gate(); } else { boot(); }
+
+function gate(){
+  app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
+  NS.gate(m,{title:'صلاحيات الأدوار',body:'هذه الصفحة للمالكة فقط. سجّلي دخولك كمالكة للمتابعة.'});
+}
+function ownerOnly(msg){
+  app.innerHTML=NS.appbar({sub:'الصلاحيات', nav:NS.adminNav('')})+
+    '<main class="app-main app-narrow" id="main"><div class="gate" style="min-height:auto;padding:40px 0">'+
+    '<div class="gate__card"><div class="modal__icon u-block-c">'+I('shield')+'</div>'+
+    '<h2>للمالكة فقط</h2><p>'+NS.esc(msg||'صفحة الصلاحيات متاحة لحساب المالكة فقط.')+'</p>'+
+    '<a class="btn btn--ghost btn--block" href="/roles/">'+I('users')+' رجوع للأدوار</a></div></div></main>';
+  NS.wireLogout('mt');
+}
+function netError(){
+  var _bar=NS.ensureShell(app); app.innerHTML=''; if(_bar){ app.appendChild(_bar); NS.wireLogout('mt'); } var m=document.createElement('div'); app.appendChild(m); m.className='gate';
+  m.innerHTML='<div class="gate__card"><div class="modal__icon u-block-c">'+I('wifi')+'</div>'+
+    '<h2>تعذّر الاتصال</h2><p>تحقّقي من اتصالك بالإنترنت ثم أعيدي المحاولة.</p>'+
+    '<button class="btn btn--primary btn--block btn--lg" id="retry">'+I('refresh')+' إعادة المحاولة</button></div>';
+  m.querySelector('#retry').addEventListener('click', boot);
+}
+
+function boot(){
+  app.innerHTML=NS.appbar({sub:'الصلاحيات', nav:NS.adminNav('')})+
+    '<main class="app-main app-narrow" id="main">'+
+      '<div class="page-head"><h1>صلاحيات الأدوار</h1><div class="sub">حدّدي إيه اللي كل دور يشوفه.</div></div>'+
+      NS.skelCard()+NS.skelCard()+'</main>';
+  NS.wireLogout('mt');
+  NS.api('/api/perms/get',{mt:TOKEN}).then(function(d){
+    if(!d){ gate(); return; }
+    if(d.ok===false){
+      var er=d.error||'';
+      if(er.indexOf('الأونر')>=0 || er.indexOf('المالكة')>=0){ ownerOnly(er); }
+      else { NS.clearToken('mt'); gate(); }
+      return;
+    }
+    DATA=d; render();
+  }).catch(function(err){
+    if(err.type==='auth'){ NS.clearToken('mt'); gate(); } else { netError(); }
+  });
+}
+
+function render(){
+  var cards=(DATA.catalog||[]).map(function(role){
+    var rows=(role.caps||[]).map(function(cap){
+      var on=((DATA.perms||{})[role.role]||{})[cap.key]!==false;
+      return '<label class="perm-row"><span class="perm-lbl">'+NS.esc(cap.label)+'</span>'+
+        '<span class="switch"><input type="checkbox" data-role="'+NS.attr(role.role)+'" data-cap="'+NS.attr(cap.key)+'"'+(on?' checked':'')+'/>'+
+        '<span class="track"></span></span></label>';
+    }).join('');
+    return '<div class="card card--pad perm-card"><div class="perm-head">'+I('users')+' <b>'+NS.esc(role.label)+'</b></div>'+rows+'</div>';
+  }).join('');
+  app.innerHTML=NS.appbar({sub:'الصلاحيات', nav:NS.adminNav('')})+
+    '<main class="app-main app-narrow" id="main">'+
+      '<div class="page-head between u-wrap">'+
+        '<div><h1>صلاحيات الأدوار</h1><div class="sub">شغّلي / أوقفي إيه اللي كل دور يشوفه. المقفول = الدور ده مش هيشوفه خالص.</div></div>'+
+        '<a class="btn btn--ghost btn--sm" href="/roles/">'+I('users')+' الأدوار</a>'+
+      '</div>'+
+      '<div class="note-strip">'+I('info')+' التغييرات بتتطبّق فوراً بعد الحفظ على كل مين له الدور ده. المالكة بتشوف كل حاجة دايماً.</div>'+
+      cards+
+      '<div class="save-bar"><button class="btn btn--primary btn--lg btn--block" id="save">'+I('check')+' حفظ الصلاحيات</button></div>'+
+    '</main>';
+  NS.wireLogout('mt');
+  document.getElementById('save').addEventListener('click', save);
+}
+
+function save(){
+  var btn=document.getElementById('save'); if(btn.classList.contains('is-loading')) return;
+  btn.classList.add('is-loading');
+  var perms={};
+  document.querySelectorAll('#main input[type=checkbox][data-role]').forEach(function(ch){
+    var r=ch.getAttribute('data-role'), c=ch.getAttribute('data-cap');
+    (perms[r]=perms[r]||{})[c]=ch.checked;
+  });
+  NS.api('/api/perms/save',{mt:TOKEN, perms:perms}).then(function(r){
+    btn.classList.remove('is-loading');
+    if(r && r.ok){ NS.toast('اتحفظت الصلاحيات ✓'); DATA.perms=r.perms; }
+    else { NS.toast((r&&r.error)||'تعذّر الحفظ','err'); }
+  }).catch(function(err){
+    btn.classList.remove('is-loading');
+    if(err.type==='auth'){ NS.clearToken('mt'); gate(); return; }
+    NS.toast(err.message||'تعذّر الحفظ','err');
+  });
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
 <script src="/assets/install.js?v=4" defer></script>
 </body>
 </html>
