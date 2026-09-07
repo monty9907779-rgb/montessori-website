@@ -176,6 +176,18 @@
 .need-nums{display:flex;gap:6px;flex:none;align-items:center}
 .need-buy{background:#fee2e2;color:var(--danger)}
 @media(max-width:480px){.need-row{flex-direction:column;align-items:flex-start}.cls-row .select{width:130px}}
+@media(max-width:640px){
+  .lvtabs{display:grid;grid-template-columns:1fr;gap:6px}
+  .lvtab{width:100%;min-width:0}
+  .book-card{min-width:0;overflow:hidden}
+  .book-top{align-items:flex-start;flex-wrap:wrap}
+  .book-name,.student-book-total,.student-book-remaining,.need-info,.need-info small{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+  .chips{min-width:0}
+  .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.45}
+  .cls-row{align-items:flex-start;flex-wrap:wrap}
+  .cls-row .select{max-width:100%}
+  .need-nums{width:100%;flex-wrap:wrap}
+}
 </style>
 </head>
 <body>
