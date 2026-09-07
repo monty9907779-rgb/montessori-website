@@ -12,7 +12,8 @@ NS.ODOO  = 'https://odoo.montessori-ksa.com';
 NS.LOGIN = NS.ODOO + '/portal-login';                 /* invisible 303 -> Google */
 NS.SWITCH = NS.ODOO + '/web/session/logout?redirect=%2Fportal-login'; /* logout then Google chooser */
 /* The production host serves the static app; API routes live on Odoo. */
-NS.SITE  = NS.ODOO;
+// Keep browser API calls same-origin; nginx proxies /api/ to Odoo internally.
+NS.SITE  = '';
 NS.WA_MANAGER = '966541558173';                       /* nursery admin whatsapp */
 
 /* ---- escaping ---- */
