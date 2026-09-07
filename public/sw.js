@@ -1,15 +1,24 @@
 // روضة كوكب الطفل الحر — service worker خفيف للتثبيت والسرعة والإشعارات
-const CACHE = 'mk-shell-v19';
+const CACHE = 'mk-shell-v24';
 const SHELL = [
   '/',
   '/offline.html',
   '/app/',
   '/login/',
-  '/assets/app.css?v=21',
+  '/dashboard/',
+  '/dashboard/index.html',
+  '/classes/',
+  '/classes/index.html',
+  '/whatsapp/',
+  '/assets/app-admin.css?v=4',
   '/assets/fonts.css?v=2',
-  '/assets/app.js',
+  '/assets/app.js?v=49',
   '/assets/bot.js',
-  '/assets/install.js',
+  '/assets/install.js?v=3',
+  '/assets/whatsapp-admin.css?v=1',
+  '/assets/whatsapp-admin.js?v=1',
+  '/dashboard/dashboard-inline-1.js?v=1',
+  '/dashboard/dashboard-inline-2.js?v=2',
   '/manifest.webmanifest',
   '/logo.png',
   '/apple-touch-icon.png',
@@ -23,7 +32,7 @@ self.addEventListener('install', (e) => {
 
 });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))));
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.map((k) => caches.delete(k))).then(() => self.registration.unregister())));
   self.clients.claim();
 
 });
