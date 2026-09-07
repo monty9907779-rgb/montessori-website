@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 
 const root = path.resolve(import.meta.dirname, '..', 'public');
-const versions = { 'app.js': '50', 'app-admin.css': '5', 'install.js': '4' };
+const versions = { 'app.js': '50', 'app-admin.css': '6', 'install.js': '4' };
 let pages = 0;
 for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
   const file = path.join(root, entry.name, 'index.html');
