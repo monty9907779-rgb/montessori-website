@@ -143,6 +143,18 @@
 .fee-table .paid-in{width:104px}
 .fee-table td{vertical-align:middle}
 .fee-row-paid{background:var(--ok-bg)}
+.tag--xs{font-size:.68rem}
+.fee-actions{text-align:left;white-space:nowrap}
+.btn--tiny{padding:0 8px;min-height:24px;font-size:.75rem}
+.mo-select{max-width:220px}
+.acc-sum--second{margin-top:8px}
+.fp-tags{margin-bottom:14px;display:flex;gap:6px;flex-wrap:wrap}
+.fp-tags--sm{margin-bottom:10px}
+.mo-label{font-weight:800;color:var(--forest);display:inline-flex;align-items:center;gap:7px}
+.days-extra{font-weight:800}.days-extra.is-plus{color:var(--ok)}.days-extra.is-minus{color:var(--danger)}
+.u-fs9{font-size:.9rem}
+.sec-actions{display:flex;gap:8px}
+.link-pending{color:#a86f27;font-weight:800}
 .fee-group td{background:var(--sand);border-top:2px solid var(--line);padding:10px 14px;font-size:.95rem}
 .fee-group .tag{margin-inline-start:8px;vertical-align:middle}
 .entry-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:.93rem}
@@ -276,8 +288,8 @@ function render(){
     return '<option value="'+x.ym+'"'+(x.ym===M.ym?' selected':'')+'>'+NS.esc(x.label)+(x.state==='closed'?' 🔒':'')+'</option>';
   }).join('');
   var bh='<div class="mo-bar">'+
-    '<span style="font-weight:800;color:var(--forest);display:inline-flex;align-items:center;gap:7px">'+I('calendar')+' الشهر</span>'+
-    '<select class="input" id="mo-sel" style="max-width:220px">'+opts+'</select>'+
+    '<span class="mo-label">'+I('calendar')+' الشهر</span>'+
+    '<select class="input mo-select" id="mo-sel">'+opts+'</select>'+
     '<span class="mo-state '+(closed?'mo-closed':'mo-open')+'">'+(closed?'🔒 مقفول':'مفتوح')+'</span>'+
     '<span class="u-flex1"></span>'+
     (closed?'':'<button class="btn btn--soft btn--sm" id="close-month">'+I('check')+' قفل الشهر</button>')+
@@ -317,7 +329,7 @@ function renderLedger(B, closed, t){
     stat('is-clay','users','الرواتب',NS.riyal(t.salaries),null,'#source-salary')+
     stat('is-danger','wallet','حركة المصروفات بالشيت',NS.riyal(t.expenses),null,'#source-expense')+
   '</div>'+
-  '<div class="acc-sum" style="margin-top:8px">'+
+  '<div class="acc-sum acc-sum--second">'+
     stat(cashClosing>=0?'is-forest':'is-danger','wallet','On hand Randa / الإغلاق النقدي',NS.riyal(cashClosing),null,'#source-expense')+
     stat(cashAfterSalaries>=0?'is-forest':'is-danger','users','المتاح بعد الرواتب',NS.riyal(cashAfterSalaries),null,'#source-salary')+
     stat(excelDelta>=0?'is-forest':'is-danger','alert','Delta الشيت (تدقيق فقط)',NS.riyal(excelDelta),null,'#source-salary')+
@@ -377,7 +389,7 @@ function stat(accent,icon,label,value,editKey,jump,action){
   var attrs = (jump?' data-jump="'+NS.attr(jump)+'" tabindex="0" role="button" title="اضغط لعرض مصدر الرقم"':'')+
               (action?' data-action="'+NS.attr(action)+'" tabindex="0" role="button" title="اضغط لعرض مصدر الرقم"':'');
   return '<div class="stat '+accent+'"'+attrs+'><div class="k">'+I(icon)+'<span>'+NS.esc(label)+'</span>'+
-    (editKey?' <button class="btn btn--ghost btn--sm" data-editopen style="padding:0 8px;min-height:24px;font-size:.75rem">تعديل</button>':'')+
+    (editKey?' <button class="btn btn--ghost btn--sm btn--tiny" data-editopen>تعديل</button>':'')+
     '</div><div class="v tabnum">'+value+'</div></div>';
 }
 function wireStatSources(root){
@@ -458,30 +470,30 @@ function feeTable(closed){
     var remaining=(typeof f.remaining==='number')?f.remaining:0;
     var book=bookMap[f.student_id];
     var bal = remaining>0.01 ? '<b class="u-danger">'+NS.riyal(remaining)+'</b>' : '<span class="muted">'+NS.riyal(0)+'</span>';
-    var dueCell = NS.riyal(f.fees) + (f.prorated ? '<br/><small class="tag tag--soft" style="font-size:.68rem">متناسب · كامل '+NS.riyal(f.full_fee)+'</small>' : '')
+    var dueCell = NS.riyal(f.fees) + (f.prorated ? '<br/><small class="tag tag--soft tag--xs">متناسب · كامل '+NS.riyal(f.full_fee)+'</small>' : '')
                 + ((f.carry_in && Math.abs(f.carry_in)>0.01) ? '<br/><small class="muted">مُرحّل سابق: '+(f.carry_in>0?'+':'')+NS.riyal(f.carry_in)+'</small>' : '');
     var monthly=f.monthly||f.full_fee||f.fees||0;
     var days=f.days_paid||NS.daysForAmount(f.paid,monthly);
     var dueNext=f.paid_until||NS.dueAfterPay(f.paid,monthly,f.until_before||'');
     var extra=days-NS.DAY_BASIS;
-    var linkLine=f.linked?'<br/><small class="u-ok">مرتبط بولي الأمر</small>':(f.link_state==='pending'?'<br/><small style="color:#a86f27;font-weight:800">بانتظار الربط</small>':'<br/><small class="muted">غير مرتبط</small>');
+    var linkLine=f.linked?'<br/><small class="u-ok">مرتبط بولي الأمر</small>':(f.link_state==='pending'?'<br/><small class="link-pending">بانتظار الربط</small>':'<br/><small class="muted">غير مرتبط</small>');
     /* أعمدة الشيت: اسم ولي الأمر · هاتفه · ID */
     var guardian=[f.guardian_name,f.guardian_phone].filter(Boolean).map(NS.esc).join(' · ');
     var metaLine=(guardian?'<br/><small class="muted">ولي الأمر: '+guardian+'</small>':'')+
                  (f.student_id?'<br/><small class="muted tabnum">ID '+NS.esc(f.student_id)+'</small>':'');
-    var methodLine=paid?'<br/><small class="tag tag--soft" style="font-size:.68rem">'+NS.esc(METHOD_LABEL[f.method]||f.method||'')+'</small>':'';
+    var methodLine=paid?'<br/><small class="tag tag--soft tag--xs">'+NS.esc(METHOD_LABEL[f.method]||f.method||'')+'</small>':'';
     return '<tr'+(paid?' class="fee-row-paid"':'')+'>'+
       '<td class="tabnum">'+(serial?serial:'<span class="muted" title="صف بلا رقم في الشيت">—</span>')+'</td>'+
-      '<td><b>'+NS.esc(f.name)+'</b>'+(serial?'':' <span class="tag tag--soft" style="font-size:.68rem">بدون رقم</span>')+linkLine+metaLine+(f.note?'<br/><small class="muted">'+NS.esc(f.note)+'</small>':'')+'</td>'+
+      '<td><b>'+NS.esc(f.name)+'</b>'+(serial?'':' <span class="tag tag--soft tag--xs">بدون رقم</span>')+linkLine+metaLine+(f.note?'<br/><small class="muted">'+NS.esc(f.note)+'</small>':'')+'</td>'+
       '<td class="tabnum">'+(f.joining_date?NS.fmtShort(f.joining_date):'<span class="muted">—</span>')+'</td>'+
       '<td class="tabnum">'+NS.riyal(monthly)+'<br/><small class="muted">لكل '+NS.DAY_BASIS+' يوم</small></td>'+
       '<td class="tabnum">'+dueCell+'</td>'+
       '<td class="tabnum">'+(paid?'<b class="u-ok">'+NS.riyal(f.paid)+'</b>'+(f.paid_date?'<br/><small class="muted">'+NS.fmtShort(f.paid_date)+'</small>':'')+methodLine:noPayCell(f))+'</td>'+
       '<td class="tabnum">'+NS.riyal(book?book.due:0)+'</td>'+
-      '<td class="tabnum">'+(paid?('<span class="days-chip">'+days+' يوم</span>'+(extra?('<br/><small style="font-weight:800;color:'+(extra>0?'var(--ok)':'var(--danger)')+'">'+(extra>0?'+':'')+extra+' يوم</small>'):'')):'<span class="muted">—</span>')+'</td>'+
+      '<td class="tabnum">'+(paid?('<span class="days-chip">'+days+' يوم</span>'+(extra?('<br/><small class="days-extra '+(extra>0?'is-plus':'is-minus')+'">'+(extra>0?'+':'')+extra+' يوم</small>'):'')):'<span class="muted">—</span>')+'</td>'+
       '<td class="tabnum">'+(dueNext?NS.fmtShort(dueNext):'<span class="muted">—</span>')+'</td>'+
       '<td class="tabnum">'+bal+'</td>'+
-      '<td style="text-align:left;white-space:nowrap">'+
+      '<td class="fee-actions">'+
         '<div class="row-calc">'+
           '<input class="input" type="number" min="1" placeholder="مبلغ" data-camt="'+NS.attr(f.id)+'"/>'+
           '<button class="btn btn--calc btn--sm" data-calc="'+NS.attr(f.id)+'" type="button">'+I('refresh')+' حسبة الأيام</button>'+
@@ -516,9 +528,9 @@ function entrySection(etype,title,total,closed,extraBtn){
   var h='<div class="card card--pad u-mt14 stat-source" id="source-'+NS.attr(etype)+'">'+
     '<div class="sec-head"><span class="card__title">'+I(icons[etype])+' '+title+
       ' <span class="tag tag--soft tabnum">'+NS.riyal(total)+'</span></span>'+
-    '<span style="display:flex;gap:8px">'+(extraBtn||'')+
+    '<span class="sec-actions">'+(extraBtn||'')+
     (closed?'':'<button class="btn btn--soft btn--sm" data-eadd="'+etype+'">'+I('plus')+' إضافة</button>')+'</span></div>';
-  if(!list.length) h+='<p class="muted" style="font-size:.9rem">لا توجد قيود بعد.</p>';
+  if(!list.length) h+='<p class="muted u-fs9">لا توجد قيود بعد.</p>';
   else list.forEach(function(e){
     h+='<div class="entry-row"><div class="en"><b>'+NS.esc(e.name)+'</b>'+
       '<small>'+(e.date?NS.fmtShort(e.date):'')+(e.note?' · '+NS.esc(e.note):'')+'</small></div>'+
@@ -599,7 +611,7 @@ function feePage(f){
       '</div>'+
       (closed?'<div class="closed-note">'+I('alert')+' هذا الشهر مقفول — للعرض فقط.</div>':'')+
       '<div class="card card--pad">'+
-        '<div style="margin-bottom:14px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<div class="fp-tags">'+
           (f.prorated?'<span class="tag tag--soft">شهر التحاق · كامل '+NS.riyal(f.full_fee)+'</span>':'')+
           ((f.carry_in&&Math.abs(f.carry_in)>0.01)?'<span class="tag tag--soft">مُرحّل سابق: '+(f.carry_in>0?'+':'')+NS.riyal(f.carry_in)+'</span>':'')+
           '<span class="tag tag--soft">الرصيد بعد الدفع: '+(co0>=0?'+':'')+NS.riyal(co0)+'</span>'+
@@ -657,7 +669,7 @@ function payFee(id){
           + ((f.carry_in&&Math.abs(f.carry_in)>0.01)?'<span class="tag tag--soft">مُرحّل سابق: '+(f.carry_in>0?'+':'')+NS.riyal(f.carry_in)+'</span> ':'')
           + '<span class="tag tag--soft">الرصيد بعد الدفع: '+(co0>=0?'+':'')+NS.riyal(co0)+'</span>';
   var m=NS.modal('<div class="modal__icon">'+I('wallet')+'</div><h3>دفع '+NS.esc(f.name)+' — '+NS.esc(M.label)+'</h3>'+
-    '<div style="margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap">'+ctx+'</div>'+
+    '<div class="fp-tags fp-tags--sm">'+ctx+'</div>'+
     '<div class="mrow">'+
       '<div class="field"><label>المستحق هذا الشهر</label><input class="input" type="number" id="pf-fees" value="'+(f.fees||0)+'"/></div>'+
       '<div class="field"><label>المصاريف المتفق عليها / '+NS.DAY_BASIS+' يوم</label><input class="input" type="number" value="'+(f.monthly||f.full_fee||f.fees||0)+'" disabled/></div>'+
