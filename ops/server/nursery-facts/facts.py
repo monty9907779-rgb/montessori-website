@@ -57,13 +57,33 @@ STAGE_AGES = [
 ]
 
 # مدى يلي اسم المرحلة مباشرة: '(2-4 سنوات)' أو ' من 2 إلى 4'
-_RANGE = r'[^\w؀-ۿ]{0,12}(\d{1,2})\s*(?:إلى|الى|حتى|[-–—])\s*(\d{1,2})'
+# الحدود تُكتب أحياناً بالكلمات لا بالأرقام (مثال حقيقي في FACTS نفسه:
+# «ما قبل الروضة (سنتان–٣)»)، فلازم يفهمها الفاحص وإلا فلتت من كل قواعد الأعمار.
+WORD_NUMS = {
+    'سنتين': 2, 'سنتان': 2, 'عامين': 2,
+    'ثلاث': 3, 'أربع': 4, 'خمس': 5, 'ست': 6,
+}
+_NUM = r'(?:\d{1,2}|سنتين|سنتان|عامين|ثلاث|أربع|خمس|ست)'
+_RANGE = r'[^\w؀-ۿ]{0,12}(' + _NUM + r')\s*(?:إلى|الى|حتى|[-–—])\s*(' + _NUM + r')'
+
+
+def _num(s):
+    """يحوّل حد المدى (رقم أو كلمة) إلى عدد صحيح."""
+    return int(s) if s.isdigit() else WORD_NUMS.get(s)
+
 
 _STAGE_WORD = re.compile(
     r'PREKG|(?:ال)?مستوى الأول|(?:ال)?مستوى الثاني|(?:ال)?تمهيدي|(?:ال)?حضانة|(?:ال)?روضة')
 
+# فقرة 1 من RULES تسمح صراحةً بذكر أسعار سوق الحضانات في جدة بصيغة عامة
+# دون نسبتها إلينا. القاعدة القديمة كانت ترفض أي رقم+ريال بلا سياق فتصطدم
+# بهذا الاستثناء المكتوب في نفس الملف — فُصل الفحص لدالة مخصّصة (تحت) بدل
+# regex بسيط ضمن BANS.
+GENERALITY_CUES = ('أسعار الحضانات', 'في السوق', 'متوسط الأسعار', 'عموماً', 'بشكل عام')
+ATTRIBUTION_CUES = ('رسومنا', 'أسعارنا', 'رسوم حضانتنا', 'عندنا', 'لدينا', 'حضانتنا', 'روضتنا')
+_PRICE = re.compile(r'(\d[\d,\.]{2,})\s*(ريال|ر\.س|SAR)')
+
 BANS = [
-    ('سعر مخترع', re.compile(r'(\d[\d,\.]{2,})\s*(ريال|ر\.س|SAR)')),
     ('سعر مخترع', re.compile(r'(رسومنا|أسعارنا|رسوم حضانتنا)[^.]{0,40}\d')),
     ('ادعاء عمر غلط',
      re.compile(r'(?:نستقبل|نرحّب ب|نقبل|لدينا برنامج)[^.؟]{0,45}'
@@ -105,9 +125,9 @@ def _check_stage_ages(t):
             r = re.match(_RANGE, tail)
             if not r:
                 continue
-            got = (int(r.group(1)), int(r.group(2)))
+            got = (_num(r.group(1)), _num(r.group(2)))
             if got != (lo, hi):
-                out.append('عمر مرحلة خاطئ — %s: وجد %d-%d والصحيح %d-%d'
+                out.append('عمر مرحلة خاطئ — %s: وجد %s-%s والصحيح %d-%d'
                            % (label, got[0], got[1], lo, hi))
     return out
 
@@ -123,10 +143,29 @@ def _check_orphan_stage_ages(t):
         r = re.match(_RANGE, tail)
         if not r:
             continue
-        got = (int(r.group(1)), int(r.group(2)))
+        got = (_num(r.group(1)), _num(r.group(2)))
         if got != (2, 5):  # مدى الاستقبال الكلي مسموح
-            out.append('«الروضة» مقترنة بعمر مرحلة (%d-%d) — التسمية الصحيحة '
+            out.append('«الروضة» مقترنة بعمر مرحلة (%s-%s) — التسمية الصحيحة '
                        'المستوى الأول/الثاني/التمهيدي' % got)
+    return out
+
+
+def _check_invented_price(t):
+    """سعر مذكور مسموح فقط لو الجملة عامة عن سوق جدة وبلا نسبته إلينا.
+
+    الفحص على مستوى الجملة (مقسّمة على . ؟ !) حتى لا تُغسَّل جملة منسوبة
+    إلينا بعبارة عمومية في جملة تانية بعيدة عنها.
+    """
+    out = []
+    for sent in re.split(r'[.؟!]', t):
+        m = _PRICE.search(sent)
+        if not m:
+            continue
+        general = any(c in sent for c in GENERALITY_CUES)
+        attributed = any(c in sent for c in ATTRIBUTION_CUES)
+        if general and not attributed:
+            continue
+        out.append('سعر مخترع: «%s»' % m.group(0)[:45])
     return out
 
 
@@ -148,6 +187,7 @@ def check_text(text):
         m = rx.search(t)
         if m:
             bad.append('%s: «%s»' % (name, m.group(0)[:45]))
+    bad.extend(_check_invented_price(t))
     bad.extend(_check_stage_ages(t))
     bad.extend(_check_orphan_stage_ages(t))
     bad.extend(_check_program_count(t))
