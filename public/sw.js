@@ -1,5 +1,7 @@
 // روضة كوكب الطفل الحر — service worker خفيف للتثبيت والسرعة والإشعارات
-const CACHE = 'mk-shell-v25';
+// The cache name is rewritten per release during packaging so each deploy gets
+// a fresh shell and old mobile caches can be retired cleanly.
+const CACHE = 'mk-shell-__RELEASE__';
 self.addEventListener('install', (e) => {
   // Never pre-cache authenticated pages or API responses.
   e.waitUntil(caches.open(CACHE).then((c) => c.add('/offline.html')).then(() => self.skipWaiting()));

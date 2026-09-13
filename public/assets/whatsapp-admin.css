@@ -44,9 +44,12 @@
 .qa-icon-button{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:8px;color:var(--forest);
   border:1px solid transparent;transition:background .2s,border-color .2s,color .2s}
 .qa-icon-button:hover{background:var(--sand);border-color:var(--line)}
+.qa-icon-button:disabled{opacity:.35;cursor:not-allowed}
+.qa-icon-button:disabled:hover{background:transparent;border-color:transparent}
 .qa-icon-button.is-danger{color:var(--danger)}
 .qa-icon-button.is-danger:hover{background:var(--danger-bg);border-color:#f2cfc6}
 .qa-icon-button svg{width:19px;height:19px}
+.qa-arrow-down{transform:rotate(180deg)}
 .qa-empty{padding:46px 20px;text-align:center;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}
 .qa-empty__icon{display:grid;place-items:center;width:50px;height:50px;margin:0 auto 12px;border-radius:8px;background:var(--sand);color:var(--forest)}
 .qa-empty__icon svg{width:26px;height:26px}

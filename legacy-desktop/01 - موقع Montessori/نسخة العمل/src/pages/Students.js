@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getStudents, getClasses, addStudent, updateStudent, deleteStudent, addPayment, getPayments, getRegistrations, approveRegistration, deleteRegistration } from '../utils/database';
-import { Plus, Search, Edit2, Trash2, X, Phone, Mail, UserPlus, CheckCircle } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X, Phone, Mail, UserPlus, CheckCircle, Download } from 'lucide-react';
+import { downloadXlsx } from '../utils/xlsx-export';
 /* eslint-disable no-unused-vars */
 
 const EMPTY = { name: '', classId: '', parentName: '', parentPhone: '', parentEmail: '', enrollDate: new Date().toISOString().slice(0,10), status: 'active' };
@@ -67,6 +68,37 @@ export default function Students() {
     return payments.filter(p => p.studentId === studentId && p.status === 'pending').reduce((s, p) => s + p.amount, 0);
   };
 
+  const exportStudents = () => {
+    if (visible.length === 0) {
+      alert('No students to export');
+      return;
+    }
+
+    const rows = visible.map(s => {
+      const cls = classes.find(c => c.id === s.classId);
+      const balance = getStudentBalance(s.id);
+      const contact = [s.parentPhone, s.parentEmail].filter(Boolean).join(' / ');
+
+      return [
+        s.name || '—',
+        cls?.name || '—',
+        s.parentName || '—',
+        contact || '—',
+        s.enrollDate || '—',
+        balance > 0 ? balance : 'Clear',
+        s.status || '—',
+      ];
+    });
+
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadXlsx({
+      filename: `students_${stamp}.xlsx`,
+      sheetName: 'Students',
+      headers: ['Student Name', 'Class', 'Parent', 'Contact', 'Enrolled', 'Balance Due', 'Status'],
+      rows,
+    });
+  };
+
   return (
     <div>
       {/* Tabs */}
@@ -95,6 +127,12 @@ export default function Students() {
               {registrations.length}
             </span>
           )}
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+        <button className="btn btn-secondary" onClick={exportStudents}>
+          <Download size={15} /> Export Excel
         </button>
       </div>
 
@@ -187,7 +225,7 @@ export default function Students() {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        <button className="btn btn-primary" onClick={openAdd} style={{ marginLeft: 'auto' }}>
+        <button className="btn btn-primary" onClick={openAdd}>
           <Plus size={15} /> Add Student
         </button>
       </div>

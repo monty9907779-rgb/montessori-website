@@ -46,7 +46,7 @@
     "features": {
       "montessori": "Montessori AMI/AMS Aligned",
       "bilingual": "Bilingual AR/EN",
-      "ages": "Ages 3m – 6yr",
+      "ages": "Ages 2–5",
       "established": "Since 2014"
     },
     "values": {
@@ -72,42 +72,42 @@
   "programs": {
     "badge": "Educational Programs",
     "title": "Programs Designed for Every Stage",
-    "subtitle": "We offer comprehensive programs that respect the developmental stages of each child, from infancy through kindergarten.",
+    "subtitle": "We offer developmental programs for children from age 2 to 5.",
     "cta": "Enrol Now",
     "learnMore": "Learn More",
     "items": {
       "infants": {
-        "title": "Infant Care",
-        "age": "3 months – 18 months",
-        "desc": "A nurturing, safe environment that stimulates the senses and builds healthy emotional bonds during the first months of a child's life."
+        "title": "Pre-KG",
+        "age": "Age 2",
+        "desc": "A warm Montessori start supporting language, movement, independence, and self-care."
       },
       "toddlers": {
-        "title": "Toddlers World",
-        "age": "18 months – 3 years",
-        "desc": "Activities that develop language, movement, and early independence through purposeful play and free exploration."
+        "title": "KG1",
+        "age": "Age 3",
+        "desc": "Practical and sensory activities that develop language, coordination, and independence."
       },
       "casa": {
-        "title": "Children's House (Casa)",
-        "age": "3 – 6 years",
-        "desc": "The classic Montessori classroom: practical life, language, mathematics, science, and arts in a multi-age environment."
+        "title": "KG2",
+        "age": "Age 4",
+        "desc": "A balanced Montessori program covering practical life, language, mathematics, culture, and arts."
       },
       "prep": {
-        "title": "Kindergarten Prep",
-        "age": "5 – 6 years",
+        "title": "KG3",
+        "age": "Age 5",
         "desc": "Comprehensive preparation for primary school: reading, writing, and numeracy skills in an interactive, joyful approach."
       }
     },
     "curriculum": {
       "infants": {
         "outcomes": [
-          "Strengthened sensory awareness and body coordination",
-          "Secure emotional attachment and trust in caregivers",
-          "Early communication through babbling, gestures, and gaze"
+          "A gradual transition into the classroom and daily routine",
+          "Growing Arabic and English vocabulary and communication",
+          "Independence in self-care and caring for classroom materials"
         ],
         "materials": [
-          "Montessori mobile series (Munari, Gobbi, Dancers)",
-          "Treasure baskets with natural texture objects",
-          "Simple wooden grasping and rattling toys"
+          "Practical life activities for pouring, transferring, and sorting",
+          "Sensory materials for matching and classification",
+          "Age-appropriate language cards and stories"
         ]
       },
       "toddlers": {
@@ -231,10 +231,10 @@
       "errorMessage": "Failed to send message. Please try again or contact us directly."
     },
     "info": {
-      "address": "Planet of the Free Child Nursery (formerly Bedaya Montessori), Al Shati District, Jeddah, Kingdom of Saudi Arabia",
+      "address": "Planet of the Free Child Nursery, Al Faisaliyah District, Jeddah, Kingdom of Saudi Arabia",
       "phone": "+966 541558173",
       "email": "info@montessori-ksa.com",
-      "hours": "Sun – Thu: 7:30 AM – 3:00 PM"
+      "hours": "Sun – Thu: 8:00 AM – 1:00 PM"
     },
     "mapLink": "Open in Google Maps ↗"
   },
@@ -392,7 +392,7 @@
     "subtitle": "Every day at Planet of the Free Child follows a warm, predictable rhythm that gives children a sense of security and belonging. Within this gentle structure, each child's day unfolds uniquely — guided by their own curiosity, energy, and readiness.",
     "schedule": [
       {
-        "time": "7:30 – 8:00 AM",
+        "time": "8:00 – 8:30 AM",
         "activity": "Morning Arrival & Welcome",
         "emoji": "🌅",
         "desc": "Children arrive and are greeted individually by their guide. Morning routines such as hanging up bags, signing in at the attendance board, and choosing their first work of the day help children transition smoothly into the school environment and build a sense of ownership over their space."
@@ -422,7 +422,7 @@
         "desc": "Younger children rest in a cosy, darkened sleep area, while older children engage in quiet work, guided reading, journaling, or sensorial activities. Story time and music weave through this period, nurturing a love of literature, language, and calm self-regulation before the afternoon."
       },
       {
-        "time": "1:30 – 3:00 PM",
+        "time": "12:30 – 1:00 PM",
         "activity": "Afternoon Enrichment & Dismissal",
         "emoji": "🎨",
         "desc": "The afternoon is enriched with art, music, movement, cultural projects, and language sessions. Children reflect on their day, tidy their materials, and prepare for dismissal. Guides share brief observations with families at pick-up, keeping parents connected to their child's daily journey and achievements."

@@ -4,3 +4,4 @@ from . import dashboard
 from . import parent
 from . import roles
 from . import staff_api
+from . import excel_import

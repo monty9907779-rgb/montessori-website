@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { siteFacts } from "@/lib/site-facts";
 
 type PageCopy = {
   title: string;
@@ -21,7 +22,7 @@ const localeSlugs: Record<Locale, readonly string[]> = {
 
 const keywordMap: Record<Locale, Record<string, string[]>> = {
   ar: {
-    "hadana-qariba-minni": ["حضانة قريبة مني", "حضانة اطفال جدة", "حضانة مونتيسوري جدة", "حضانة في جدة", "حضانة حي الشاطئ"],
+    "hadana-qariba-minni": ["حضانة قريبة مني", "حضانة اطفال جدة", "حضانة مونتيسوري جدة", "حضانة في جدة", "حضانة حي الفيصلية"],
     "kayfa-akhtar-hadana": ["كيف أختار حضانة", "أفضل حضانة في جدة", "اختيار حضانة للأطفال"],
     "rsum-alhadanat-fi-jeddah": ["رسوم الحضانات في جدة", "أسعار الحضانات في جدة", "رسوم الحضانة", "حضانة يوم كامل جدة", "حضانة بالساعة في جدة"],
     "what-is-montessori-method": ["ما هو منهج مونتيسوري", "مركز اطفال مونتيسوري", "مونتيسوري للاطفال"],
@@ -56,15 +57,15 @@ const pages: Record<string, PageCopy> = {
     intro: "إذا كنت تبحث عن حضانة قريبة منك في جدة، فالقرب مهم، لكنه ليس المعيار الوحيد. ابدأ بالموقع، ثم تحقق من السلامة، خبرة الفريق، البرنامج اليومي، وطريقة تواصل الحضانة مع الأسرة.",
     sections: [
       { heading: "ماذا تتحقق منه قبل التسجيل؟", body: "اسأل عن الترخيص، نسبة المعلمات إلى الأطفال، إجراءات الاستلام والانصراف، النظافة، المساحات الداخلية والخارجية، وآلية التعامل مع الحالات الصحية والطوارئ." },
-      { heading: "برامج تناسب مراحل النمو", body: "تقدم حضانة كوكب الطفل الحر برامج للأطفال من عمر 3 أشهر إلى 6 سنوات، تشمل نيدو للرضع، وبرنامج الأطفال الصغار، وبيت الأطفال، والتهيئة المدرسية. اسأل الفريق عن البرنامج الأنسب لعمر طفلك واستعداده." },
+      { heading: "برامج تناسب مراحل النمو", body: `تقدم حضانة كوكب الطفل الحر برامج للأطفال ${siteFacts.ages.ar}، تشمل ما قبل التمهيدي والتمهيدي والروضة. اسأل الفريق عن البرنامج الأنسب لعمر طفلك واستعداده.` },
       { heading: "الرعاية بالساعة أو اليوم الكامل", body: "إذا كنت تحتاج إلى حضانة بالساعة أو رعاية يوم كامل، اطلب من الفريق توضيح الخيارات المتاحة، أوقات الاستقبال والانصراف، وما يتضمنه كل نظام قبل التسجيل. لا تعتمد على إعلان قديم أو سعر غير مؤكد." },
       { heading: "اللغة والسلامة والتواصل مع الأسرة", body: "تأكد من وجود تعرض عربي وإنجليزي مناسب لاحتياجات طفلك، ومن وضوح إجراءات الاستلام والطوارئ والنظافة. اسأل كيف تُشارك الحضانة الملاحظات اليومية والتقدم مع الأسرة." },
-      { heading: "الموقع وساعات العمل", body: "تقع الروضة في حي الشاطئ في جدة، وتستقبل الأسر من الأحد إلى الخميس من ٧:٣٠ صباحًا حتى ٣:٠٠ مساءً. استخدم رابط خرائط جوجل في قسم التواصل للتحقق من الاتجاهات قبل الزيارة." },
+      { heading: "الموقع وساعات العمل", body: `تقع الروضة في ${siteFacts.address.districtAr} في جدة، وتستقبل الأسر ${siteFacts.hours.ar}. استخدم رابط خرائط جوجل في قسم التواصل للتحقق من الاتجاهات قبل الزيارة.` },
       { heading: "الرسوم وخطوات القبول", body: "اطلب الرسوم الحالية كتابةً، وما إذا كانت تشمل الوجبات أو المواد أو التسجيل، ثم تحقق من المستندات المطلوبة والطاقة الاستيعابية وموعد بدء الطفل. التفاصيل تتغير، لذلك الأفضل تأكيدها مباشرة مع الحضانة." },
     ],
     faq: [
       { question: "هل الحضانة القريبة أفضل دائمًا؟", answer: "القرب يسهل الروتين اليومي والطوارئ، لكنه يجب أن يأتي مع بيئة آمنة وفريق مؤهل وبرنامج مناسب لعمر الطفل." },
-      { question: "ما الأعمار التي تستقبلها الحضانة؟", answer: "تستقبل البرامج الأطفال من عمر 3 أشهر حتى 6 سنوات، حسب البرنامج والطاقة الاستيعابية المتاحة." },
+      { question: "ما الأعمار التي تستقبلها الحضانة؟", answer: `تستقبل البرامج الأطفال ${siteFacts.ages.ar}، حسب البرنامج والطاقة الاستيعابية المتاحة.` },
     ],
     related: [
       { href: "/ar/kayfa-akhtar-hadana", label: "كيف أختار حضانة لطفلي؟" },
@@ -98,7 +99,7 @@ const pages: Record<string, PageCopy> = {
     description: "دليل عملي لفهم رسوم الحضانات في جدة ومقارنة الدوام الكامل والدوام الجزئي والرعاية بالساعة وما يشمله التسجيل.",
     intro: "تختلف رسوم الحضانات في جدة حسب عمر الطفل، عدد الساعات، البرنامج، الوجبات، والخدمات الإضافية. استخدم هذا الدليل لطلب عرض واضح ومقارنة الخيارات قبل حجز المقعد.",
     sections: [
-      { heading: "ما الذي يحدد الرسوم؟", body: "اسأل عن عمر الطفل والبرنامج المناسب له، عدد أيام الحضور، ساعات الدوام، مدة الفصل أو الشهر، وهل تختلف الرسوم بين الرضع والأطفال الصغار وبيت الأطفال والتهيئة المدرسية." },
+      { heading: "ما الذي يحدد الرسوم؟", body: "اسأل عن عمر الطفل والبرنامج المناسب له، عدد أيام الحضور، ساعات الدوام، مدة الفصل أو الشهر، وهل تختلف الرسوم بين ما قبل التمهيدي وKG1 وKG2 وKG3." },
       { heading: "دوام كامل أم جزئي؟", body: "اطلب توضيح الفرق بين الدوام الكامل والدوام الجزئي، وما إذا كان المقعد ثابتًا طوال الأسبوع. قارن ساعات الرعاية الفعلية مع احتياج أسرتك بدل مقارنة رقم شهري فقط." },
       { heading: "الرعاية بالساعة", body: "إذا كنت تبحث عن حضانة بالساعة في جدة، اسأل عن توفر هذا الخيار، الحد الأدنى للساعات، الحجز المسبق، أوقات الاستلام والانصراف، وما إذا كانت الرعاية بالساعة متاحة لكل الأعمار." },
       { heading: "ما الذي قد يشمله السعر؟", body: "تحقق كتابةً من شمول التسجيل، المواد التعليمية، الوجبات، وقت الراحة، الأنشطة، الزي، أو أي خدمة نقل. لا تفترض أن هذه البنود مشمولة ما لم تُذكر في العرض الحالي." },
@@ -122,16 +123,16 @@ const pages: Record<string, PageCopy> = {
     intro: "When searching for daycare near you in Jeddah, location is only the first filter. Compare safety routines, staff qualifications, age groups, daily communication, and the learning environment before enrolling.",
     sections: [
       { heading: "What to check before enrollment", body: "Ask about licensing, child-to-educator ratios, arrival and pickup procedures, hygiene, outdoor time, meals, and how the nursery handles illness and emergencies." },
-      { heading: "Programs and ages", body: "Planet of the Free Child Nursery serves children from 3 months to 6 years in Jeddah through infant, toddler, Children's House, and school-preparation programs. Ask the team which program matches your child's age and readiness." },
+      { heading: "Programs and ages", body: `Planet of the Free Child Nursery serves children ${siteFacts.ages.en.toLowerCase()} in Jeddah through Pre-KG and kindergarten programs. Ask the team which program matches your child's age and readiness.` },
       { heading: "Hourly and full-day daycare", body: "If you need hourly care or a full-day arrangement, ask the nursery to confirm the current options, arrival and pickup windows, inclusions, and availability. Treat older social posts and unconfirmed prices as out of date." },
       { heading: "Bilingual care and safety routines", body: "Ask how Arabic-English exposure is integrated into the day, how authorized pickup is managed, and how the team handles hygiene, illness, allergies, and emergencies. Clear daily updates help families stay informed." },
-      { heading: "Hours and location", body: "The nursery is in Jeddah's Al Shati District and is open Sunday through Thursday from 7:30 AM to 3:00 PM. Use the Google Maps link in the contact section to confirm directions before your visit." },
+      { heading: "Hours and location", body: `The nursery is in Jeddah's ${siteFacts.address.districtEn} and is open ${siteFacts.hours.en.toLowerCase()}. Use the Google Maps link in the contact section to confirm directions before your visit.` },
       { heading: "Fees and enrollment documents", body: "Request current fees in writing and confirm what is included, which documents are required, how a place is reserved, and when your child can start. These details should be verified directly with the nursery." },
       { heading: "Book a visit", body: "A visit during operating hours helps you assess the atmosphere, observe educator-child interactions, and receive clear information about schedules, fees, and availability." },
     ],
     faq: [
       { question: "Is the closest daycare always the best choice?", answer: "Proximity makes daily routines easier, but safety, qualified educators, and a suitable program should guide the final decision." },
-      { question: "What ages are accepted?", answer: "Programs are available for children from 3 months to 6 years, subject to the selected program and availability." },
+      { question: "What ages are accepted?", answer: `Programs are available for children ${siteFacts.ages.en.toLowerCase()}, subject to the selected program and availability.` },
     ],
     related: [
       { href: "/en/preschool-near-me-jeddah", label: "Preschool Near Me in Jeddah" },
@@ -144,7 +145,7 @@ const pages: Record<string, PageCopy> = {
     intro: "A strong preschool gives children time to build language, movement, concentration, independence, and social confidence. In Jeddah, families can compare location and convenience with the quality of the prepared environment.",
     sections: [
       { heading: "What makes a preschool supportive?", body: "Look for calm classrooms, accessible materials, a predictable rhythm, purposeful activities, outdoor movement, and educators who observe each child instead of using one pace for everyone." },
-      { heading: "Montessori preschool ages and programs", body: "Planet of the Free Child serves children from 3 months to 6 years with bilingual Arabic-English exposure and Montessori-inspired developmental programs. Ask about the daily rhythm, group size, and transition between age groups." },
+      { heading: "Montessori preschool ages and programs", body: `Planet of the Free Child serves children ${siteFacts.ages.en.toLowerCase()} with bilingual Arabic-English exposure and Montessori developmental programs. Ask about the daily rhythm, group size, and transition between age groups.` },
       { heading: "Bilingual learning and school readiness", body: "Children can build practical skills, communication, early literacy, numeracy, concentration, and cooperation through hands-on work. Ask how the team records progress and supports the move to primary school." },
       { heading: "Hours, meals, and family communication", body: "Confirm the current Sunday-to-Thursday schedule, arrival and pickup process, meal and allergy arrangements, rest time, and how updates are shared with families. Written details make preschool options easier to compare." },
       { heading: "A practical visit checklist", body: "During a visit, observe the prepared environment, the materials at the child's level, educator-child interactions, opportunities for movement, and the way children return work to its place. Then request current fees and enrollment requirements." },

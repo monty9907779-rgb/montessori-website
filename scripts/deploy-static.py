@@ -33,7 +33,13 @@ class Hashes(HTMLParser):
         attrs = dict(attrs)
         if 'style' in attrs:
             self.add('attr', attrs['style'])
-        if tag == 'style' or (tag == 'script' and 'src' not in attrs):
+        script_type = attrs.get('type', '').lower().strip()
+        executable_script = (
+            tag == 'script'
+            and 'src' not in attrs
+            and script_type not in {'application/ld+json', 'application/json', 'importmap'}
+        )
+        if tag == 'style' or executable_script:
             self.tag, self.body = tag, ''
 
     def handle_data(self, data):
@@ -63,12 +69,21 @@ def refresh_csp():
             continue
         parser.feed(file.read_text(encoding='utf-8'))
     policy = HEADERS.read_text()
-    current = PARTS.read_text()
-    lines = ['# Generated from the canonical static release; existing grants preserved.']
+    required_sources = {
+        'img-src': ['https://www.google.de'],
+        'connect-src': ['https://ad.doubleclick.net', 'https://stats.g.doubleclick.net', 'https://www.google.com'],
+    }
+    for directive, sources in required_sources.items():
+        match = re.search(r'(' + re.escape(directive) + r' [^;]+)', policy)
+        if not match:
+            raise RuntimeError('Missing CSP directive: ' + directive)
+        value = match.group(1)
+        additions = [source for source in sources if source not in value]
+        if additions:
+            policy = policy[:match.end()] + ' ' + ' '.join(additions) + policy[match.end():]
+    lines = ['# Generated exactly from the current canonical static release.']
     for group, hashes in parser.values.items():
         prefix = 'mk_csp_' + group + '_'
-        for value in re.findall(r'set \$' + prefix + r'\d+ "([^"]*)";', current):
-            hashes.update(value.split())
         chunks = ['']
         for value in sorted(hashes):
             if len(chunks[-1]) + len(value) > 1700:

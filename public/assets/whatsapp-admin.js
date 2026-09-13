@@ -64,11 +64,15 @@ function render(){
     var image = item.image_url
       ? '<img class="qa-answer__image" src="'+NS.attr(item.image_url)+'" alt="صورة مرفقة بالإجابة"/>'
       : '';
+    var canMoveUp = index > 0;
+    var canMoveDown = index < questions.length - 1;
     return '<article class="qa-item" data-id="'+NS.attr(item.id)+'">'+
       '<div class="qa-number">'+(index+1)+'</div>'+
       '<div><h3 class="qa-question">'+NS.esc(item.question)+'</h3>'+
         '<div class="qa-answer">'+NS.esc(item.answer)+'</div>'+image+'</div>'+
       '<div class="qa-actions">'+
+        '<button type="button" class="qa-icon-button" data-move="up" data-id="'+NS.attr(item.id)+'" title="نقل لأعلى" aria-label="نقل السؤال لأعلى"'+(canMoveUp?'':' disabled')+'>'+NS.icon('arrowUp')+'</button>'+
+        '<button type="button" class="qa-icon-button" data-move="down" data-id="'+NS.attr(item.id)+'" title="نقل لأسفل" aria-label="نقل السؤال لأسفل"'+(canMoveDown?'':' disabled')+'>'+NS.icon('arrowUp','class="qa-arrow-down"')+'</button>'+
         '<button type="button" class="qa-icon-button" data-edit="'+NS.attr(item.id)+'" title="تعديل" aria-label="تعديل السؤال">'+NS.icon('edit')+'</button>'+
         '<button type="button" class="qa-icon-button is-danger" data-delete="'+NS.attr(item.id)+'" title="حذف" aria-label="حذف السؤال">'+NS.icon('trash')+'</button>'+
       '</div></article>';
@@ -118,6 +122,11 @@ function wireControls(){
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-delete]'),function(button){
     button.addEventListener('click',function(){ deleteItem(button.getAttribute('data-delete')); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-move]'),function(button){
+    button.addEventListener('click',function(){
+      moveItem(button.getAttribute('data-id'),button.getAttribute('data-move'));
+    });
   });
   document.getElementById('qa-search').addEventListener('input',filterQuestions);
 }
@@ -191,6 +200,35 @@ function callSettings(action,payload){
 function requireOk(data){
   if(!data || data.ok===false) throw new Error((data&&data.error)||'تعذّر حفظ التغييرات');
   return data;
+}
+
+var orderBusy = false;
+
+function moveItem(itemId, direction){
+  if(orderBusy) return;
+  var questions = (DATA.questions||[]).slice();
+  var index = questions.findIndex(function(item){ return item.id===itemId; });
+  if(index < 0) return;
+  var target = direction==='up' ? index-1 : index+1;
+  if(target < 0 || target >= questions.length) return;
+
+  var moved = questions[index];
+  questions[index] = questions[target];
+  questions[target] = moved;
+  orderBusy = true;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-move]'),function(button){
+    button.disabled = true;
+  });
+  callSettings('reorder',{item_ids:questions.map(function(item){ return item.id; })}).then(function(data){
+    orderBusy = false;
+    DATA = data;
+    render();
+    NS.toast('تم حفظ ترتيب الأسئلة');
+  }).catch(function(error){
+    orderBusy = false;
+    render();
+    NS.toast(error.message||'تعذّر حفظ الترتيب','err');
+  });
 }
 
 function openEditor(item){

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { ArrowUpRight, Clock, Mail, MapPin, Phone } from "lucide-react";
+import { siteFacts } from "@/lib/site-facts";
 
 type FormState = {
   name: string;
@@ -26,10 +27,10 @@ const initialForm: FormState = {
 };
 
 const programOptions = [
-  { value: "infants",  labelEn: "Nido (Infants 3–18 mo)",    labelAr: "نيدو (رضع ٣–١٨ شهرًا)" },
-  { value: "toddlers", labelEn: "Toddlers (18 mo – 3 yr)",   labelAr: "الأطفال الصغار (١٨ شهر – ٣ سنوات)" },
-  { value: "casa",     labelEn: "Casa dei Bambini (3–6 yr)",  labelAr: "كاسا دي بامبيني (٣–٦ سنوات)" },
-  { value: "prep",     labelEn: "School Preparation (5–6 yr)",labelAr: "التهيئة المدرسية (٥–٦ سنوات)" },
+  { value: "pre-kg", labelEn: "Pre-KG (Age 2)", labelAr: "ما قبل التمهيدي (سنتان)" },
+  { value: "kg1", labelEn: "KG1 (Age 3)", labelAr: "KG1 (٣ سنوات)" },
+  { value: "kg2", labelEn: "KG2 (Age 4)", labelAr: "KG2 (٤ سنوات)" },
+  { value: "kg3", labelEn: "KG3 (Age 5)", labelAr: "KG3 (٥ سنوات)" },
 ];
 
 export default function ContactSection() {
@@ -137,7 +138,7 @@ export default function ContactSection() {
                     {isAr ? "العنوان" : "Address"}
                   </p>
                   <p className="text-gray-700 text-sm leading-relaxed">
-                    {t("info.address")}
+                    {isAr ? siteFacts.address.ar : siteFacts.address.en}
                   </p>
                 </div>
               </div>
@@ -155,11 +156,11 @@ export default function ContactSection() {
                     {isAr ? "الهاتف" : "Phone"}
                   </p>
                   <a
-                    href={`tel:${t("info.phone")}`}
+                    href={`tel:${siteFacts.contact.phone}`}
                     className="text-sm font-medium hover:underline"
                     style={{ color: "#2d5016" }}
                   >
-                    {t("info.phone")}
+                    {siteFacts.contact.phoneDisplay}
                   </a>
                 </div>
               </div>
@@ -177,11 +178,11 @@ export default function ContactSection() {
                     {isAr ? "البريد الإلكتروني" : "Email"}
                   </p>
                   <a
-                    href={`mailto:${t("info.email")}`}
+                    href={`mailto:${siteFacts.contact.email}`}
                     className="text-sm font-medium hover:underline"
                     style={{ color: "#2d5016" }}
                   >
-                    {t("info.email")}
+                    {siteFacts.contact.email}
                   </a>
                 </div>
               </div>
@@ -199,7 +200,7 @@ export default function ContactSection() {
                     {isAr ? "ساعات العمل" : "Working Hours"}
                   </p>
                   <p className="text-gray-700 text-sm leading-relaxed">
-                    {t("info.hours")}
+                    {isAr ? siteFacts.hours.arShort : siteFacts.hours.enShort}
                   </p>
                 </div>
               </div>

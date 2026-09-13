@@ -1,0 +1,34 @@
+.excel-review__intro{line-height:1.8}
+.excel-review__meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;color:var(--muted);font-size:.86rem}
+.excel-review__meta span{display:inline-flex;align-items:center;gap:5px;background:var(--sand);border-radius:var(--pill);padding:6px 10px}
+.excel-review__meta svg{width:16px;height:16px}
+.excel-review__warnings{border:1px solid var(--danger);background:var(--danger-bg);color:var(--danger);border-radius:var(--r-sm);padding:10px 12px;margin:0 0 14px;line-height:1.7}
+.excel-review__warnings strong{display:flex;align-items:center;gap:6px}
+.excel-review__warnings svg{width:18px;height:18px}
+.excel-review__warnings ul{margin:6px 0 0;padding-inline-start:22px}
+.excel-review__classes{border:1px solid var(--line-2);background:var(--sand);border-radius:var(--r-sm);padding:12px;margin:0 0 14px}
+.excel-review__classes>strong{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.excel-review__classes label{display:grid;grid-template-columns:minmax(150px,1fr) minmax(170px,1fr);align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line-2)}
+.excel-review__classes small{color:var(--muted)}
+.excel-review__classes select{width:100%}
+.excel-review__list{display:flex;flex-direction:column;gap:8px;max-height:48vh;overflow:auto}
+.excel-review__item{border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--paper)}
+.excel-review__item summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;padding:10px 12px}
+.excel-review__item summary::-webkit-details-marker{display:none}
+.excel-review__kind{margin-inline-start:auto;color:var(--muted);font-size:.8rem}
+.excel-review__badge{font-size:.76rem;font-weight:800;padding:3px 8px;border-radius:var(--pill);white-space:nowrap}
+.excel-review__badge--update{background:var(--ok-bg);color:var(--ok)}
+.excel-review__badge--new{background:var(--info-bg);color:var(--info)}
+.excel-review__badge--warn{background:var(--danger-bg);color:var(--danger)}
+.excel-review__warning{display:flex;align-items:flex-start;gap:6px;color:var(--danger);font-size:.82rem;padding:0 12px 8px}
+.excel-review__warning svg{width:16px;height:16px;flex:none}
+.excel-review__table{font-size:.82rem;min-width:360px}
+.excel-review__table th,.excel-review__table td{padding:8px 10px}
+.modal:has(.excel-review__list){max-width:860px}
+.modal .actions button[disabled]{opacity:.5;cursor:not-allowed}
+@media(max-width:600px){
+  .excel-review__classes label{grid-template-columns:1fr}
+  .excel-review__list{max-height:42vh}
+  .excel-review__item summary{align-items:flex-start;flex-wrap:wrap}
+  .excel-review__kind{width:100%;margin-inline-start:0}
+}

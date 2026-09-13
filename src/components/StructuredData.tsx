@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { siteFacts } from "@/lib/site-facts";
 
 export function StructuredData({ locale }: { locale: string }) {
   const isArabic = locale === 'ar';
@@ -7,20 +8,20 @@ export function StructuredData({ locale }: { locale: string }) {
     "@context": "https://schema.org",
     "@id": "https://montessori-ksa.com/#childcare",
     "@type": ["ChildCare", "LocalBusiness"],
-    "name": isArabic ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery",
-    "alternateName": isArabic ? "Planet of the Free Child Nursery" : "روضة كوكب الطفل الحر",
+    "name": isArabic ? siteFacts.name.ar : siteFacts.name.en,
+    "alternateName": isArabic ? siteFacts.name.en : siteFacts.name.ar,
     "description": isArabic
-      ? "حضانة وروضة مونتيسوري في جدة للأطفال من عمر 3 أشهر إلى 6 سنوات، مع برامج للرضع والأطفال الصغار وبيت الأطفال والتهيئة المدرسية."
-      : "Montessori nursery in Jeddah for children aged 3 months to 6 years, with infant, toddler, Children's House, and school-preparation programs.",
+      ? "حضانة وروضة مونتيسوري في جدة للأطفال من عمر سنتين إلى ٥ سنوات، مع برامج ما قبل التمهيدي والتمهيدي والروضة."
+      : "Montessori nursery in Jeddah for children aged 2 to 5 years, with Pre-KG and kindergarten programs.",
     "url": "https://montessori-ksa.com",
     "logo": "https://montessori-ksa.com/og-image.png",
     "image": "https://montessori-ksa.com/og-image.png",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "حي الشاطئ",
-      "addressLocality": "جدة",
+      "streetAddress": siteFacts.address.streetAr,
+      "addressLocality": siteFacts.address.cityAr,
       "addressRegion": "مكة المكرمة",
-      "postalCode": "23421",
+      "postalCode": siteFacts.address.postalCode,
       "addressCountry": "SA"
     },
     "geo": {
@@ -28,23 +29,23 @@ export function StructuredData({ locale }: { locale: string }) {
       "latitude": "21.5795281",
       "longitude": "39.194829"
     },
-    "telephone": "+966541558173",
-    "email": "info@montessori-ksa.com",
-    "hasMap": "https://www.google.com/maps/place/%D8%B1%D9%88%D8%B6%D8%A9+%D9%83%D9%88%D9%83%D8%A8+%D8%A7%D9%84%D8%B7%D9%81%D9%84+%D8%A7%D9%84%D8%AD%D8%B1%E2%80%AD/@21.5795281,39.194829,673m/data=!3m2!1e3!4b1!4m6!3m5!1s0x15c3d18ac84c1d4d:0xaee1671b468377fb!8m2!3d21.5795281!4d39.194829!16s%2Fg%2F11s619kg25",
+    "telephone": siteFacts.contact.phone,
+    "email": siteFacts.contact.email,
+    "hasMap": siteFacts.contact.maps,
     "openingHoursSpecification": [
       {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
-        "opens": "07:30",
-        "closes": "15:00"
+        "dayOfWeek": siteFacts.hours.days,
+        "opens": siteFacts.hours.opens,
+        "closes": siteFacts.hours.closes
       }
     ],
     "serviceType": isArabic
       ? ["حضانة أطفال", "روضة مونتيسوري", "تعليم مبكر"]
       : ["Child daycare", "Montessori nursery", "Early childhood education"],
     "knowsAbout": isArabic
-      ? ["منهج مونتيسوري", "التعليم المبكر", "رعاية الرضع", "التهيئة المدرسية"]
-      : ["Montessori method", "Early childhood education", "Infant care", "School preparation"],
+      ? ["منهج مونتيسوري", "التعليم المبكر", "ما قبل التمهيدي", "التهيئة المدرسية"]
+      : ["Montessori method", "Early childhood education", "Pre-KG", "School preparation"],
     "areaServed": {
       "@type": "City",
       "name": isArabic ? "جدة" : "Jeddah",
@@ -61,18 +62,18 @@ export function StructuredData({ locale }: { locale: string }) {
           "@type": "Offer",
           "itemOffered": {
             "@type": "EducationalOccupationalProgram",
-            "name": isArabic ? "برنامج الرضع (3-12 شهر)" : "Infant Program (3-12 months)",
-            "description": isArabic ? "بيئة هادئة ومحفزة لنمو الطفل" : "Calm and stimulating environment for infant development",
+            "name": isArabic ? "برنامج ما قبل التمهيدي (سنتان)" : "Pre-KG Program (Age 2)",
+            "description": isArabic ? "بيئة مونتيسورية تدعم الاستقلال واللغة والحركة" : "A Montessori environment supporting independence, language, and movement",
             "educationalProgramMode": "Full-time",
-            "timeToComplete": "P9M"
+            "timeToComplete": "P1Y"
           }
         },
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "EducationalOccupationalProgram",
-            "name": isArabic ? "برنامج الأطفال الصغار (12-36 شهر)" : "Toddler Program (12-36 months)",
-            "description": isArabic ? "تعزيز الاستقلالية والمهارات الحركية" : "Fostering independence and motor skills",
+            "name": isArabic ? "برنامج التمهيدي (٣-٤ سنوات)" : "KG1-KG2 Program (Ages 3-4)",
+            "description": isArabic ? "تعزيز الاستقلال والمهارات الأكاديمية والاجتماعية" : "Building independence plus academic and social skills",
             "educationalProgramMode": "Full-time",
             "timeToComplete": "P2Y"
           }
@@ -81,10 +82,10 @@ export function StructuredData({ locale }: { locale: string }) {
           "@type": "Offer",
           "itemOffered": {
             "@type": "EducationalOccupationalProgram",
-            "name": isArabic ? "برنامج بيت الأطفال (3-6 سنوات)" : "Casa dei Bambini (3-6 years)",
-            "description": isArabic ? "منهج مونتيسوري الكامل للتعلم الأكاديمي والاجتماعي" : "Full Montessori curriculum for academic and social learning",
+            "name": isArabic ? "برنامج الروضة (٥ سنوات)" : "KG3 Program (Age 5)",
+            "description": isArabic ? "منهج مونتيسوري مع التهيئة للمرحلة المدرسية" : "Montessori learning with school preparation",
             "educationalProgramMode": "Full-time",
-            "timeToComplete": "P3Y"
+            "timeToComplete": "P1Y"
           }
         }
       ]

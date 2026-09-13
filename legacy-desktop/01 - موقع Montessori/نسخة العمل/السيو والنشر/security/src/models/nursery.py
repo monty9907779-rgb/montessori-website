@@ -3,11 +3,62 @@ import secrets
 from datetime import datetime, time, timedelta
 
 import pytz
+from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 NURSERY_TZ = 'Asia/Riyadh'
+
+# الشهر المتفق عليه في عقد الرسوم = 30 يوماً بالضبط. أي مبلغ يُدفع يُترجَم
+# إلى أيام تغطية بهذا القاسم، وموعد الاستحقاق يتحرّك بعدد الأيام المدفوعة.
+DAY_BASIS = 30
+
+
+def days_for_amount(amount, monthly_fee):
+    """عدد أيام التغطية لمبلغ مدفوع: (المدفوع ÷ الرسوم الشهرية) × 30.
+    لو الرسوم غير محدّدة (صفر) نفترض أن الدفعة تغطّي شهراً كاملاً.
+    (مقياس تقريبي للعرض فقط — لتحريك تاريخ الاستحقاق استخدم advance_due.)"""
+    try:
+        amount = float(amount or 0.0)
+        fee = float(monthly_fee or 0.0)
+    except (TypeError, ValueError):
+        return 0
+    if amount <= 0:
+        return 0
+    if fee <= 0:
+        return DAY_BASIS
+    return int(round(amount / fee * DAY_BASIS))
+
+
+def coverage_for(amount, monthly_fee):
+    """تغطية الدفعة = (شهور كاملة، أيام إضافية).
+
+    الشهور الكاملة تتحرّك كشهور تقويمية (٤ سبتمبر + ٣ شهور = ٤ ديسمبر)،
+    والباقي فقط هو الذي يُحوَّل إلى أيام بقاسم 30. ده اللي بيخلّي
+    «شهر + ٣ أيام» تطلع شهر وثلاث أيام بالظبط مهما كان طول الشهر."""
+    try:
+        amount = float(amount or 0.0)
+        fee = float(monthly_fee or 0.0)
+    except (TypeError, ValueError):
+        return (0, 0)
+    if amount <= 0:
+        return (0, 0)
+    if fee <= 0:
+        return (1, 0)
+    months = int(amount // fee)
+    rem = amount - months * fee
+    days = int(round(rem / fee * DAY_BASIS))
+    if days >= DAY_BASIS:       # التقريب رفع الباقي لشهر كامل
+        months += 1
+        days = 0
+    return (months, days)
+
+
+def advance_due(anchor, amount, monthly_fee):
+    """تاريخ الاستحقاق الجديد = المرساة + شهور كاملة تقويمية + أيام الباقي."""
+    months, days = coverage_for(amount, monthly_fee)
+    return anchor + relativedelta(months=months) + timedelta(days=days)
 
 
 def _new_token():
@@ -19,12 +70,28 @@ TERMS = [
     ('term_2027', 'ترم 2027'),
 ]
 
+PLAN_CODES = [
+    ('daily', 'يومي'),
+    ('weekly', 'أسبوعي'),
+    ('monthly', 'شهري'),
+    ('term', 'ترم'),
+    ('term2', 'ترمين'),
+]
+
 PAYMENT_METHODS = [
     ('cash', 'كاش'),
     ('transfer', 'تحويل بنكي'),
     ('card', 'بطاقة'),
     ('other', 'أخرى'),
 ]
+
+STUDENT_LEVELS = [
+    ('prekg', 'Pre-KG'),
+    ('kg1', 'KG1'),
+    ('kg2', 'KG2'),
+    ('kg3', 'KG3'),
+]
+BOOKS_FEE_DEFAULT = 1000.0
 
 
 class ResUsersNursery(models.Model):
@@ -60,6 +127,9 @@ class NurseryLinkRequest(models.Model):
     note = fields.Char('ملاحظة')
     nudged = fields.Boolean('بلّغ ولي الأمر', default=False)
     nudged_at = fields.Datetime('وقت التبليغ')
+    gclid = fields.Char('معرّف ضغطة إعلان جوجل', index=True,
+                        help='بييجي من الموقع لما ولي الأمر يوصل من إعلان. '
+                             'بيتستخدم لرفع التسجيلات الفعلية لجوجل.')
 
     @api.depends('matched_student_id')
     def _compute_enrolled(self):
@@ -90,17 +160,33 @@ class NurseryLinkRequest(models.Model):
         return req
 
     def action_link(self):
-        """المديرة تعتمد الطلب: تعلّم الطلب كمقبول.
-        الربط الفعلي (parent_user_id) بيحصل بس لما ولي الأمر يسجّل دخول
-        بجوجل بنفس الإيميل (في portal_home) — إثبات ملكية الإيميل. عشان
-        كده مابنكتبش parent_user_id هنا بناءً على إيميل مش متحقّق منه."""
+        """اعتماد الطلب يثبت دور ولي الأمر ويربط كل أطفاله الموجودين.
+
+        الحساب الموجود في سجل المستخدمين هو المرجع المعتمد داخل النظام؛ لذلك
+        لا نحتاج إلى إعادة تعيين الدور من صفحة الأدوار بعد قبول طلب الربط.
+        """
         for rec in self:
             if not rec.matched_student_id:
                 raise ValidationError('اختاري الطفل الأول قبل الربط!')
-            if not rec.matched_student_id.guardian_name:
-                rec.matched_student_id.sudo().guardian_name = rec.parent_name
-            if not rec.matched_student_id.guardian_phone and rec.parent_phone:
-                rec.matched_student_id.sudo().guardian_phone = rec.parent_phone
+            student = rec.matched_student_id.sudo()
+            if not student.guardian_name:
+                student.guardian_name = rec.parent_name
+            if not student.guardian_phone and rec.parent_phone:
+                student.guardian_phone = rec.parent_phone
+            user = self.env['res.users'].sudo().search([
+                '&', ('active', '=', True), '|',
+                ('login', '=ilike', rec.parent_email.strip()),
+                ('email', '=ilike', rec.parent_email.strip()),
+            ], limit=1)
+            if user:
+                base_user = self.env.ref('base.group_user')
+                portal = self.env.ref('base.group_portal')
+                manager = self.env.ref('nursery.group_nursery_manager')
+                teacher = self.env.ref('nursery.group_nursery_teacher')
+                user.write({'groups_id': [(3, base_user.id), (3, manager.id),
+                                          (3, teacher.id), (4, portal.id)],
+                            'nursery_api_token': False})
+                student._link_parent_user(user)
             rec.state = 'linked'
 
 
@@ -128,11 +214,63 @@ class NurseryClass(models.Model):
     student_count = fields.Integer('عدد الطلاب', compute='_compute_student_count')
     note = fields.Text('ملاحظات')
     active = fields.Boolean(default=True)
+    # ربط الفصل بقناة كاميرا في مسجّل DVR (بث «طفلي فقط»)
+    camera_channel = fields.Integer(
+        'قناة الكاميرا', default=0,
+        help='رقم قناة الكاميرا في مسجّل DVR التي تصوّر هذا الفصل (0 = غير مربوط)')
 
     @api.depends('student_ids')
     def _compute_student_count(self):
         for rec in self:
             rec.student_count = len(rec.student_ids)
+
+
+class NurseryFeePlan(models.Model):
+    """جدول أسعار الاشتراك حسب مدة الدفع.
+
+    كل خطة = طول فترة بالأيام + سعر الفترة. كل ما المدة تطول يقلّ
+    السعر اليومي — وده اللي بيخلّي الأسبوعي (٣٠٠ ÷ ٧ = ٤٢.٩/يوم)
+    أغلى من الشهري (١١٠٠ ÷ ٣٠ = ٣٦.٧/يوم).
+
+    ⚠️ النظام كله بيفوتر بـ«رسوم شهرية» على قاسم DAY_BASIS = ٣٠ يوم
+    (شوف coverage_for و advance_due و nursery.month). فبدل ما نغيّر
+    محرّك الفوترة، بنترجم أي خطة لمكافئها الشهري ونحطّه في
+    student.fees — وبكده التغطية والاستحقاق والتناسب والذمم تفضل
+    تشتغل من غير أي تعديل."""
+    _name = 'nursery.fee.plan'
+    _description = 'خطة الدفع'
+    _order = 'days, id'
+
+    name = fields.Char('الخطة', required=True)
+    code = fields.Selection(PLAN_CODES, string='الكود', required=True)
+    days = fields.Integer('طول الفترة (أيام)', required=True,
+                          help='يومي=1، أسبوعي=7، شهري=30، الترم حسب تقويم الحضانة')
+    price = fields.Float('سعر الفترة (ر.س)',
+                         help='اتركه صفراً لو الخطة لسه ما اتسعّرتش — لن تظهر للاختيار')
+    monthly_equiv = fields.Float('المكافئ الشهري (٣٠ يوم)',
+                                 compute='_compute_rates', store=True)
+    daily_rate = fields.Float('السعر اليومي', compute='_compute_rates', store=True)
+    priced = fields.Boolean('مُسعَّرة', compute='_compute_rates', store=True)
+    active = fields.Boolean(default=True)
+
+    _sql_constraints = [
+        ('code_uniq', 'unique(code)', 'كل خطة دفع لازم يكون لها كود فريد!'),
+    ]
+
+    @api.depends('price', 'days')
+    def _compute_rates(self):
+        for rec in self:
+            d = rec.days or 0
+            p = rec.price or 0.0
+            rec.daily_rate = round(p / d, 2) if d > 0 else 0.0
+            rec.monthly_equiv = round(p / d * DAY_BASIS, 2) if d > 0 else 0.0
+            rec.priced = bool(d > 0 and p > 0)
+
+    @api.constrains('days')
+    def _check_days(self):
+        for rec in self:
+            if rec.days <= 0:
+                raise ValidationError('طول الفترة لازم يكون أكبر من صفر.')
 
 
 class NurseryStudent(models.Model):
@@ -144,16 +282,29 @@ class NurseryStudent(models.Model):
     name = fields.Char('اسم الطالب', required=True, tracking=True)
     serial = fields.Integer('الرقم التسلسلي')
     term = fields.Selection(TERMS, string='الترم', default='term_2026', tracking=True)
+    level = fields.Selection(STUDENT_LEVELS, string='المرحلة', tracking=True,
+                             help='مرحلة الطالب التي تحدد قسم الكتب تلقائياً: KG1 أو KG2 أو KG3')
     class_id = fields.Many2one('nursery.class', string='الفصل', tracking=True)
     joining_date = fields.Date('تاريخ الالتحاق')
 
     guardian_name = fields.Char('اسم ولي الأمر')
+    father_name = fields.Char('اسم الأب')
+    mother_name = fields.Char('اسم الأم')
     guardian_phone = fields.Char('تليفون ولي الأمر')
     guardian_phone2 = fields.Char('تليفون إضافي')
     emergency_note = fields.Char('ملاحظات طبية / طوارئ')
 
-    fees = fields.Float('الرسوم الشهرية', tracking=True)
-    books_fees = fields.Float('رسوم الكتب')
+    plan_id = fields.Many2one(
+        'nursery.fee.plan', string='خطة الدفع', tracking=True,
+        domain="[('priced', '=', True)]",
+        help='اختيار الخطة بيملأ «الرسوم الشهرية» بمكافئها الشهري تلقائياً. '
+             'تقدر تعدّل الرقم بعدها لو الطالب له اتفاق خاص.')
+    plan_price = fields.Float('سعر الفترة', related='plan_id.price', readonly=True)
+    plan_days = fields.Integer('طول الفترة (أيام)', related='plan_id.days', readonly=True)
+    fees = fields.Float('الرسوم الشهرية', tracking=True,
+                        help='المكافئ الشهري (٣٠ يوم) — الأساس اللي بتتحسب عليه '
+                             'التغطية والاستحقاق مهما كانت خطة الدفع')
+    books_fees = fields.Float('رسوم الكتب', default=BOOKS_FEE_DEFAULT)
     paid = fields.Boolean('مدفوع', tracking=True)
     paid_at = fields.Date('تاريخ الدفع')
     paid_until = fields.Date('مدفوع حتى')
@@ -163,6 +314,29 @@ class NurseryStudent(models.Model):
     attendance_ids = fields.One2many('nursery.attendance', 'student_id', string='الحضور')
     book_move_ids = fields.One2many('nursery.book.move', 'student_id', string='الكتب')
     total_paid = fields.Float('إجمالي المدفوع', compute='_compute_total_paid')
+    books_paid = fields.Float('المدفوع من رسوم الكتب', compute='_compute_books_balance')
+    books_remaining = fields.Float('المتبقي من رسوم الكتب', compute='_compute_books_balance')
+
+    # ----- الذمم المدينة (A/R) عبر كشوف الشهور (محاسبة استحقاق) -----
+    total_billed = fields.Float('إجمالي المفوتر', compute='_compute_ar',
+                                help='مجموع الإيراد المُعترَف به (المستحق) عبر كل الشهور')
+    total_collected = fields.Float('إجمالي المُحصَّل', compute='_compute_ar')
+    receivable = fields.Float('الرصيد المستحق على وليّ الأمر', compute='_compute_ar',
+                              help='المفوتر − المُحصَّل. موجب = مدين (عليه)، سالب = دائن (مقدّم)')
+
+    def _compute_ar(self):
+        Fee = self.env['nursery.month.fee'].sudo()
+        for s in self:
+            rows = Fee.search([('student_id', '=', s.id)])
+            tuition_billed = sum(rows.mapped('fees'))
+            tuition_collected = sum(rows.mapped('paid'))
+            books_collected = sum(
+                p.amount for p in s.payment_ids if p.payment_type == 'books')
+            billed = tuition_billed + BOOKS_FEE_DEFAULT
+            collected = tuition_collected + books_collected
+            s.total_billed = billed
+            s.total_collected = collected
+            s.receivable = billed - collected
 
     remark = fields.Text('ملاحظات')
     active = fields.Boolean(default=True)
@@ -174,6 +348,26 @@ class NurseryStudent(models.Model):
     parent_user_id = fields.Many2one(
         'res.users', string='حساب ولي الأمر (جوجل)', copy=False,
         help='لو ولي الأمر سجل دخول بجوجل، اربطه هنا — يدخل على /my-child ويلاقي ابنه')
+    parent_user_ids = fields.Many2many(
+        'res.users', 'nursery_student_parent_rel', 'student_id', 'user_id',
+        string='أولياء الأمور', copy=False,
+        help='كل الحسابات المرتبطة بهذا الطفل؛ يسمح لولي الأمر الواحد بأكثر من طفل.')
+
+    # ----- تسجيل الوجه (بث «طفلي فقط») -----
+    face_photo_ids = fields.One2many('nursery.face.photo', 'student_id', string='صور الوجه')
+    face_photo_count = fields.Integer('عدد صور الوجه', compute='_compute_face')
+    face_ready = fields.Boolean('جاهز للتعرّف', compute='_compute_face',
+                                help='يصبح جاهزاً عند رفع صورتين واضحتين للوجه على الأقل')
+    face_enrolled = fields.Boolean(
+        'تم استخراج البصمة', default=False, copy=False,
+        help='يضعه سيرفر التعرّف بعد حساب بصمة ArcFace من الصور')
+
+    @api.depends('face_photo_ids')
+    def _compute_face(self):
+        for rec in self:
+            n = len(rec.face_photo_ids)
+            rec.face_photo_count = n
+            rec.face_ready = n >= 2
 
     _sql_constraints = [
         ('portal_token_uniq', 'unique(portal_token)',
@@ -187,18 +381,38 @@ class NurseryStudent(models.Model):
         # لكل الصفوف القديمة دفعة واحدة (SQL backfill واحد)
         for vals in vals_list:
             vals.setdefault('portal_token', _new_token())
-        return super().create(vals_list)
+        recs = super().create(vals_list)
+        for vals, rec in zip(vals_list, recs):
+            if vals.get('parent_user_id'):
+                rec._link_parent_user(self.env['res.users'].sudo().browse(vals['parent_user_id']))
+        return recs
+
+    def _link_parent_user(self, user):
+        """أضف حساب ولي الأمر بدون إلغاء ربطه بالأطفال الآخرين."""
+        self.ensure_one()
+        user = user.sudo()
+        if not user.exists():
+            return
+        self.sudo().write({'parent_user_ids': [(4, user.id)]})
+        if not self.parent_user_id:
+            self.sudo().write({'parent_user_id': user.id})
 
     def write(self, vals):
         res = super().write(vals)
-        # قاعدة: حساب ولي أمر واحد = طفل واحد فقط.
-        # عند ربط ولي أمر بطفل، يُلغى ربطه بأي طفل آخر تلقائياً.
+        # اسم الطالب في كشوف الشهور (nursery.month.fee.name) لقطة نصّية
+        # اتاخدت وقت فتح الشهر — عشان الصفوف اللي اتشال طالبها تفضل مقروءة.
+        # لكن ده كان معناه إن تغيير الاسم في «الطلاب» ما يوصلش لـ«الحسابات».
+        # نرحّل الاسم الجديد لكل صفوف الطالب في كل الشهور.
+        if vals.get('name'):
+            self.env['nursery.month.fee'].sudo().search(
+                [('student_id', 'in', self.ids)]
+            ).write({'name': vals['name']})
+        # حافظ على الحقل القديم للتوافق، مع إضافة العلاقة الجديدة متعددة الأطفال.
         uid = vals.get('parent_user_id')
         if uid:
-            others = self.sudo().search([('parent_user_id', '=', uid),
-                                         ('id', 'not in', self.ids)])
-            if others:
-                others.write({'parent_user_id': False})
+            user = self.env['res.users'].sudo().browse(uid)
+            for rec in self:
+                rec._link_parent_user(user)
         return res
 
     @api.depends('portal_token')
@@ -248,10 +462,61 @@ class NurseryStudent(models.Model):
                 'body': '%s\n%s' % (text, marker),
             })
 
-    @api.depends('payment_ids.amount')
+    @api.onchange('plan_id')
+    def _onchange_plan_id(self):
+        """اختيار خطة بيملأ الرسوم الشهرية بمكافئها — onchange مش compute
+        عشان يفضل ممكن تعدّل الرقم يدوياً لطالب له اتفاق خاص."""
+        if self.plan_id and self.plan_id.monthly_equiv:
+            self.fees = self.plan_id.monthly_equiv
+
+    @api.depends('payment_ids.amount', 'payment_ids.payment_type')
     def _compute_total_paid(self):
         for rec in self:
-            rec.total_paid = sum(rec.payment_ids.mapped('amount'))
+            rec.total_paid = sum(
+                p.amount for p in rec.payment_ids if p.payment_type != 'books')
+
+    @api.depends('books_fees', 'payment_ids.amount', 'payment_ids.payment_type')
+    def _compute_books_balance(self):
+        for rec in self:
+            due = BOOKS_FEE_DEFAULT
+            paid = sum(
+                p.amount for p in rec.payment_ids if p.payment_type == 'books')
+            rec.books_paid = round(paid, 2)
+            rec.books_remaining = round(max(0.0, due - paid), 2)
+
+
+class NurseryFacePhoto(models.Model):
+    """صورة وجه مرجعية لطفل — تُستخدم لاستخراج بصمة ArcFace لبث «طفلي فقط».
+    تُخزَّن داخل أودو (خلف توكن المديرة) — لا تُنشر أبداً على رابط عام."""
+    _name = 'nursery.face.photo'
+    _description = 'صورة وجه مرجعية (بموافقة ولي الأمر)'
+    _order = 'id desc'
+
+    student_id = fields.Many2one(
+        'nursery.student', string='الطالب', required=True,
+        ondelete='cascade', index=True)
+    image = fields.Image('الصورة', required=True, max_width=1024, max_height=1024)
+    image_256 = fields.Image('مصغّرة', related='image', max_width=256, max_height=256, store=True)
+    note = fields.Char('ملاحظة')
+    # يضعها سيرفر التعرّف بعد استخراج بصمة صالحة من هذه الصورة
+    embedded = fields.Boolean('استُخرجت بصمتها', default=False, copy=False)
+    quality = fields.Char('جودة الوجه', copy=False,
+                          help='ok / no_face / multi_face — يحدّده سيرفر التعرّف')
+
+    def write(self, vals):
+        # أي تعديل على الصورة يبطل البصمة القديمة → يُعاد الاستخراج
+        if 'image' in vals:
+            vals.setdefault('embedded', False)
+        res = super().write(vals)
+        if 'image' in vals:
+            self.mapped('student_id').write({'face_enrolled': False})
+        return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        recs = super().create(vals_list)
+        recs.mapped('student_id').write({'face_enrolled': False})
+        return recs
 
 
 class NurseryFeePayment(models.Model):
@@ -263,9 +528,43 @@ class NurseryFeePayment(models.Model):
         'nursery.student', string='الطالب', required=True, ondelete='cascade')
     date = fields.Date('التاريخ', default=fields.Date.context_today, required=True)
     amount = fields.Float('المبلغ', required=True)
+    payment_type = fields.Selection([
+        ('tuition', 'رسوم الحضانة'),
+        ('books', 'رسوم الكتب'),
+    ], string='نوع الدفعة', required=True, default='tuition')
     method = fields.Selection(PAYMENT_METHODS, string='طريقة الدفع', default='cash')
     period = fields.Char('عن فترة')  # e.g. "يونيو 2026"
     note = fields.Char('ملاحظة')
+    # تغطية الدفعة بالأيام (الشهر = 30 يوماً) — تُخزَّن وقت التسجيل حتى يمكن
+    # عرضها لاحقاً والتراجع عنها بدقة عند حذف الدفعة.
+    days = fields.Integer('عدد الأيام المغطاة')
+    until_before = fields.Date('الاستحقاق قبل هذه الدفعة')
+    until_after = fields.Date('الاستحقاق بعد هذه الدفعة')
+
+    def unlink(self):
+        """حذف سند الدفع يعكس أثره في كشف الشهر والاستحقاق تلقائياً.
+
+        يمنع الحذف من الشهر المقفول حتى لو تم الحذف من واجهة Odoo مباشرة،
+        وليس من API المديرة فقط.
+        """
+        Month = self.env['nursery.month'].sudo()
+        Fee = self.env['nursery.month.fee'].sudo()
+        for payment in self:
+            month = Month.search([
+                ('ym', '=', payment.date.strftime('%Y-%m') if payment.date else ''),
+            ], limit=1)
+            if month and month.state == 'closed':
+                raise ValidationError('هذه الدفعة داخل شهر محاسبي مقفول — لا يمكن حذفها')
+            linked = Fee.search([('payment_id', '=', payment.id)])
+            if linked:
+                linked.write({'paid': 0.0, 'paid_date': False, 'method': False,
+                              'payment_id': False, 'days_paid': 0,
+                              'until_before': False})
+            student = payment.student_id
+            if student and payment.until_before and payment.until_after \
+                    and student.paid_until == payment.until_after:
+                student.write({'paid_until': payment.until_before})
+        return super().unlink()
 
 
 class NurseryAttendance(models.Model):
@@ -654,12 +953,130 @@ class NurseryMonth(models.Model):
                              default='open', required=True)
     opening_balance = fields.Float('الرصيد الافتتاحي')
     closed_at = fields.Datetime('وقت القفل')
+    closed_by = fields.Many2one('res.users', string='أغلقه', readonly=True,
+                                copy=False)
     fee_ids = fields.One2many('nursery.month.fee', 'month_id', string='رسوم الطلبة')
     entry_ids = fields.One2many('nursery.month.entry', 'month_id', string='القيود')
 
     _sql_constraints = [
         ('uniq_ym', 'unique(ym)', 'هذا الشهر مفتوح بالفعل!'),
     ]
+
+    # ==================== محرّك الفوترة (محاسبة الاستحقاق) ====================
+    @api.model
+    def _prorated_fee(self, full_fee, joining_date, ym):
+        """المستحق (الإيراد المُعترَف به) هذا الشهر: متناسب بالأيام في شهر الالتحاق
+        فقط (قاسم ثابت 30)، وكامل بعده. الصيغة: (31 − يوم الالتحاق) ÷ 30 × الرسوم."""
+        full_fee = full_fee or 0.0
+        try:
+            if joining_date and joining_date.strftime('%Y-%m') == ym:
+                day = min(max(joining_date.day, 1), 30)
+                return round(full_fee * (31 - day) / 30.0, 2)
+        except Exception:
+            pass
+        return full_fee
+
+    def _expense_cash_movement(self):
+        """حركة المصروفات النقدية بإشارة الشيت.
+
+        سطر نسرين الموجب هو مصدر الرصيد الافتتاحي، لذلك لا يدخل مرة ثانية
+        في حركة الكاش. أما المصروفات الخارجة فتُسجّل بالسالب كما في الملف.
+        الإدخال اليدوي القديم الذي يحفظ مصروفاً موجباً يُعامل كمصروف خارج.
+        """
+        opening = 0.0
+        movement = 0.0
+        for entry in self.entry_ids:
+            if entry.etype != 'expense':
+                continue
+            amount = float(entry.amount or 0.0)
+            if amount > 0 and 'نسرين' in (entry.name or ''):
+                opening += amount
+                continue
+            movement += amount if amount < 0 else -amount
+        return opening, movement
+
+    def _month_closing(self):
+        """الرصيد الختامي النقدي المرحّل، وليس صافي التشغيل.
+
+        يطابق On hand Randa في الشيت: افتتاحي + كاش رندا + الدخل النقدي
+        + المصروفات الخارجة. التحويل البنكي والرواتب لهما عرض/تدقيق منفصل.
+        """
+        self.ensure_one()
+        methods = set(self.fee_ids.mapped('method'))
+        collected = sum((f.paid or 0.0) for f in self.fee_ids
+                        if not methods or f.method in (False, 'cash'))
+        inc = sum(e.amount for e in self.entry_ids if e.etype == 'income')
+        res = sum(e.amount for e in self.entry_ids if e.etype == 'reservation')
+        _opening_entry, expense_movement = self._expense_cash_movement()
+        return (self.opening_balance or 0.0) + collected + inc + res + expense_movement
+
+    @api.model
+    def _open_month(self, ym):
+        """يفتح شهر فوترة (لو مش مفتوح): يُنشئ لكل طالب نشط فاتورة الشهر —
+        يُعترَف بالإيراد (fees، متناسب في شهر التسجيل) ويُرحَّل رصيد الذمم
+        (مدين على وليّ الأمر) الذي يُغلق لاحقاً بالتحصيل (paid). idempotent."""
+        existing = self.search([('ym', '=', ym)], limit=1)
+        if existing:
+            return existing
+        prev = self.search([('ym', '<', ym)], order='ym desc', limit=1)
+        open_bal = prev._month_closing() if prev else 0.0
+        month = self.create({'ym': ym, 'opening_balance': open_bal})
+        Fee = self.env['nursery.month.fee']
+        import calendar as _cal
+        month_end = datetime.strptime(
+            '%s-%02d' % (ym, _cal.monthrange(int(ym[:4]), int(ym[5:7]))[1]),
+            '%Y-%m-%d').date()
+        if prev:
+            for f in prev.fee_ids:
+                st = f.student_id
+                if st and not st.active:
+                    continue
+                if st and st.joining_date and st.joining_date > month_end:
+                    continue
+                full = (st.fees if st else 0.0) or f.full_fee or f.fees or 0.0
+                due = self._coverage_due(st, full, ym)
+                carry = (f.carry_in or 0.0) + (f.paid or 0.0) - (f.fees or 0.0)
+                Fee.create({'month_id': month.id, 'student_id': st.id or False,
+                            'name': f.name, 'full_fee': full, 'fees': due,
+                            'carry_in': carry})
+        else:
+            for s in self.env['nursery.student'].search(
+                    [('active', '=', True)], order='name'):
+                if s.joining_date and s.joining_date > month_end:
+                    continue
+                full = s.fees or 0.0
+                due = self._coverage_due(s, full, ym)
+                Fee.create({'month_id': month.id, 'student_id': s.id, 'name': s.name,
+                            'full_fee': full, 'fees': due, 'carry_in': 0.0})
+        return month
+
+    def _coverage_due(self, student, full_fee, ym):
+        """المستحق على أساس الأيام: أيام الشهر غير المغطّاة بتغطية سابقة.
+        الطالب المدفوع لغاية ٢٧ أغسطس لا يُطالَب بشهر أغسطس كاملاً — بل بالأيام
+        الباقية فقط. القاعدة: شهر = ٣٠ يوماً، والمستحق لا يتجاوز الرسوم الكاملة.
+        (قرار المالك 2026-08-05: كشف الحسابات يتبع الأيام لا الشهر التقويمي.)"""
+        import calendar as _cal
+        import datetime as _dt
+        y, mo = int(ym[:4]), int(ym[5:7])
+        mstart = _dt.date(y, mo, 1)
+        ndays = _cal.monthrange(y, mo)[1]
+        covered = 0
+        if student and student.paid_until:
+            covered = max(0, min((student.paid_until - mstart).days, ndays))
+        late = 0
+        if student and student.joining_date and student.joining_date > mstart:
+            late = min((student.joining_date - mstart).days, ndays)
+        uncovered = max(0, ndays - covered - late)
+        if not full_fee:
+            return 0.0
+        return round(min(full_fee, full_fee * uncovered / DAY_BASIS), 2)
+
+    @api.model
+    def cron_ensure_current_month(self):
+        """كرون يومي: يفتح شهر الفوترة الحالي تلقائياً (بتوقيت الرياض) —
+        فالفوترة الشهرية تتولّد من التسجيل دون تدخّل يدوي."""
+        now = datetime.utcnow() + timedelta(hours=3)
+        self._open_month(now.strftime('%Y-%m'))
 
 
 class NurseryMonthFee(models.Model):
@@ -673,13 +1090,28 @@ class NurseryMonthFee(models.Model):
     student_id = fields.Many2one('nursery.student', string='الطالب',
                                  ondelete='set null', index=True)
     name = fields.Char('اسم الطالب', required=True)
-    fees = fields.Float('الرسوم المستحقة')
+    full_fee = fields.Float('الرسوم الشهرية الكاملة')
+    fees = fields.Float('المستحق هذا الشهر')   # متناسب في شهر الالتحاق، كامل بعده
     paid = fields.Float('المدفوع')
+    excel_remaining = fields.Float('الباقي من Excel')
     paid_date = fields.Date('تاريخ الدفع')
     method = fields.Selection(PAYMENT_METHODS, string='طريقة الدفع')
     note = fields.Char('ملاحظة')
+    # محاسبة الاستحقاق: رصيد مُرحّل (+ رصيد دائن مدفوع مقدّماً / − متأخّرات)
+    carry_in = fields.Float('رصيد مُرحّل من الشهر السابق')
+    carry_out = fields.Float('الرصيد المُرحّل للتالي', compute='_compute_carry_out')
     payment_id = fields.Many2one('nursery.fee.payment', string='سند الدفع',
                                  ondelete='set null')
+    # تغطية الدفعة بالأيام (الشهر = 30 يوماً). until_before = موعد الاستحقاق
+    # قبل احتساب هذا السطر، حتى تظل إعادة الحفظ/التعديل مُتَّسقة ولا تُزحزح
+    # التاريخ مرّتين.
+    days_paid = fields.Integer('عدد الأيام المدفوعة')
+    until_before = fields.Date('الاستحقاق قبل هذه الدفعة')
+
+    @api.depends('carry_in', 'paid', 'fees')
+    def _compute_carry_out(self):
+        for r in self:
+            r.carry_out = (r.carry_in or 0.0) + (r.paid or 0.0) - (r.fees or 0.0)
 
 
 class NurseryMonthEntry(models.Model):
@@ -691,10 +1123,72 @@ class NurseryMonthEntry(models.Model):
     month_id = fields.Many2one('nursery.month', required=True,
                                ondelete='cascade', index=True)
     etype = fields.Selection([('income', 'دخل إضافي'), ('expense', 'مصروف'),
-                              ('salary', 'راتب')], required=True)
+                              ('salary', 'راتب'),
+                              ('reservation', 'حجز مقدّم')], required=True)
     name = fields.Char('البيان', required=True)
     amount = fields.Float('المبلغ')
     date = fields.Date('التاريخ')
     note = fields.Char('ملاحظة')
     expense_id = fields.Many2one('nursery.expense', string='سند المصروف',
                                  ondelete='set null')
+
+
+class NurseryAdClick(models.Model):
+    """عدّاد يومي للنقرات المدفوعة الواصلة للموقع — تاريخ دائم.
+
+    سجلّ nginx يتدوّر كل يومين تقريباً، فنُثبّت العدّ هنا قبل أن يُمحى.
+    المصدر: معرّفات gclid/wbraid الفريدة في سجلّ الخادم — مستقلة تماماً
+    عن حساب Google Ads.
+    """
+    _name = 'nursery.ad.click'
+    _description = 'نقرات إعلانية يومية'
+    _order = 'day desc, clicks desc'
+    _rec_name = 'campaign'
+
+    day = fields.Date('اليوم', required=True, index=True)
+    campaign = fields.Char('معرّف الحملة', required=True, index=True)
+    clicks = fields.Integer('النقرات', default=0)
+
+    _sql_constraints = [
+        ('day_campaign_uniq', 'unique(day, campaign)',
+         'يوجد سجل لهذه الحملة في هذا اليوم بالفعل.'),
+    ]
+
+    @api.model
+    def record(self, day, campaign, clicks):
+        """تثبيت عدّ يوم/حملة. نأخذ الأكبر: العدّ ينمو خلال اليوم الجاري،
+        وبعد تدوير السجلّ قد يعود ناقصاً — فلا نسمح له بالتراجع."""
+        rec = self.sudo().search(
+            [('day', '=', day), ('campaign', '=', campaign)], limit=1)
+        if rec:
+            if clicks > rec.clicks:
+                rec.clicks = clicks
+            return rec
+        return self.sudo().create(
+            {'day': day, 'campaign': campaign, 'clicks': clicks})
+
+
+class NurseryVisit(models.Model):
+    """موعد زيارة لعميل محتمل — يظهر في تقويم الزيارات ويُدار من قمع المبيعات."""
+    _name = 'nursery.visit'
+    _description = 'موعد زيارة'
+    _order = 'when_dt asc'
+    _rec_name = 'lead_name'
+
+    lead_name = fields.Char('اسم العميل', required=True)
+    phone = fields.Char('الجوال')
+    conv_id = fields.Char('معرّف محادثة Chatwoot', index=True)
+    when_dt = fields.Datetime('موعد الزيارة', required=True, index=True)
+    note = fields.Char('ملاحظة')
+    state = fields.Selection([
+        ('scheduled', 'مجدولة'),
+        ('done', 'تمّت'),
+        ('missed', 'لم يحضر'),
+        ('cancelled', 'ملغاة'),
+    ], default='scheduled', required=True, index=True)
+    source = fields.Selection([
+        ('staff', 'حدّدها الفريق'),
+        ('customer', 'حجزها العميل'),
+    ], default='staff')
+    reminded_day = fields.Boolean('ذُكِّر قبل يوم', default=False)
+    reminded_soon = fields.Boolean('ذُكِّر قبل الموعد', default=False)

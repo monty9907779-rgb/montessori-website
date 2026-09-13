@@ -2,6 +2,18 @@
 
 Repository: https://github.com/monty9907779-rgb/montessori-website.git, branch `main`.
 
+## Release Checklist
+
+Before any release, confirm all four:
+
+- Single source: change `public/` only.
+- Single deploy path: run `bash deploy.sh` only.
+- Cache accounted for: bump asset versions or service-worker state when JS, CSS, SW, or manifest changes.
+- Live proof required: open the real production URL and inspect desktop and mobile screenshots before calling it done.
+- The service-worker cache is release-bound by `deploy.sh`, so every deploy gets a fresh shell and old mobile caches retire automatically.
+
+If any of those is not true, stop and fix that first. A local build, Git push, or repo screenshot is not release proof.
+
 `public/` is the canonical source for the static administration pages, including
 `dashboard/`, `classes/`, and `whatsapp/`. Shared styling is in `assets/app-admin.css`.
 Dashboard styling is only in `assets/dashboard.css`; WhatsApp controls and styles

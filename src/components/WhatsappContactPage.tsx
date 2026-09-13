@@ -12,6 +12,7 @@ import {
   Send,
   Sparkles,
 } from "lucide-react";
+import { siteFacts } from "@/lib/site-facts";
 
 type FormState = {
   name: string;
@@ -30,11 +31,11 @@ const initialForm: FormState = {
 };
 
 const infoItems = [
-  { label: "العنوان", value: "روضة كوكب الطفل الحر، حي الفيصلية، جدة" },
-  { label: "الدوام", value: "الأحد إلى الخميس، من ٧:٣٠ صباحًا حتى ٣:٠٠ مساءً" },
-  { label: "العمر", value: "من عمر سنتين إلى ٥ سنوات" },
-  { label: "البريد", value: "info@montessori-ksa.com" },
-  { label: "واتساب", value: "+966 54 155 8173" },
+  { label: "العنوان", value: siteFacts.address.ar },
+  { label: "الدوام", value: siteFacts.hours.ar },
+  { label: "العمر", value: siteFacts.ages.ar },
+  { label: "البريد", value: siteFacts.contact.email },
+  { label: "واتساب", value: siteFacts.contact.phoneDisplay },
 ];
 
 const askPoints = [
@@ -74,7 +75,7 @@ function buildWhatsappUrl(form: FormState) {
     "شكرًا لكم.",
   ].filter(Boolean);
 
-  return `https://wa.me/966541558173?text=${encodeURIComponent(lines.join("\n"))}`;
+  return `${siteFacts.contact.whatsapp}?text=${encodeURIComponent(lines.join("\n"))}`;
 }
 
 export default function WhatsappContactPage() {
@@ -152,7 +153,7 @@ export default function WhatsappContactPage() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href="https://wa.me/966541558173"
+                href={siteFacts.contact.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_30px_rgba(37,211,102,.28)] transition-transform hover:scale-[1.01]"
@@ -161,7 +162,7 @@ export default function WhatsappContactPage() {
                 افتحي واتساب الآن
               </a>
               <a
-                href="mailto:info@montessori-ksa.com"
+              href={`mailto:${siteFacts.contact.email}`}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#ccd7b4] bg-white px-5 py-3 text-sm font-bold text-[#184e3e] transition-all hover:-translate-y-0.5 hover:bg-[#f8fbf1]"
               >
                 <Mail size={18} />
@@ -259,10 +260,10 @@ export default function WhatsappContactPage() {
                   className="w-full rounded-2xl border border-[#d6dfb9] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#9ebf92] focus:ring-4 focus:ring-[#2d5016]/10"
                 >
                   <option value="">اختاري البرنامج</option>
-                  <option value="الحضانة / Nido">الحضانة / Nido</option>
-                  <option value="الأطفال الصغار">الأطفال الصغار</option>
-                  <option value="الروضة">الروضة</option>
-                  <option value="التهيئة المدرسية">التهيئة المدرسية</option>
+                  <option value="ما قبل التمهيدي">ما قبل التمهيدي - سنتان</option>
+                  <option value="KG1">KG1 - ٣ سنوات</option>
+                  <option value="KG2">KG2 - ٤ سنوات</option>
+                  <option value="KG3">KG3 - ٥ سنوات</option>
                 </select>
               </label>
 
@@ -333,7 +334,7 @@ export default function WhatsappContactPage() {
               تصفح المدونة
             </Link>
             <a
-              href="https://wa.me/966541558173"
+              href={siteFacts.contact.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-[#25D366]/30 bg-[#eafaf0] px-5 py-3 text-sm font-bold text-[#185f36] transition hover:-translate-y-0.5"
@@ -352,17 +353,18 @@ export default function WhatsappContactPage() {
             "@graph": [
               {
                 "@type": "LocalBusiness",
-                name: "روضة كوكب الطفل الحر",
+                name: siteFacts.name.ar,
                 url: "https://montessori-ksa.com/wa/",
-                telephone: "+966541558173",
-                email: "info@montessori-ksa.com",
+                telephone: siteFacts.contact.phone,
+                email: siteFacts.contact.email,
                 address: {
                   "@type": "PostalAddress",
-                  streetAddress: "حي الفيصلية",
-                  addressLocality: "جدة",
+                  streetAddress: siteFacts.address.streetAr,
+                  addressLocality: siteFacts.address.cityAr,
+                  postalCode: siteFacts.address.postalCode,
                   addressCountry: "SA",
                 },
-                openingHours: ["Su-Th 07:30-15:00"],
+                openingHours: [siteFacts.hours.schema],
               },
               {
                 "@type": "FAQPage",

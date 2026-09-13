@@ -1,0 +1,1525 @@
+# -*- coding: utf-8 -*-
+"""استيراد Excel شهري آمن مع معاينة قبل الكتابة."""
+import base64
+import csv
+import io
+import json
+import os
+import re
+from calendar import monthrange
+from copy import copy
+from datetime import date, datetime
+
+import pytz
+from openpyxl import Workbook, load_workbook
+
+from odoo import fields, http
+from odoo.http import request
+
+from .roles import WEBSITE, _manager_by_token
+
+
+MAX_FILE_BYTES = 12 * 1024 * 1024
+MAX_TOTAL_BYTES = 24 * 1024 * 1024
+
+MONTHS = {
+    1: ('يناير', 'january', 'jan'),
+    2: ('فبراير', 'february', 'feb'),
+    3: ('مارس', 'march', 'mar'),
+    4: ('أبريل', 'april', 'apr'),
+    5: ('مايو', 'may'),
+    6: ('يونيو', 'june', 'jun'),
+    7: ('يوليو', 'july', 'jul'),
+    8: ('أغسطس', 'august', 'aug'),
+    9: ('سبتمبر', 'september', 'sep'),
+    10: ('أكتوبر', 'october', 'oct'),
+    11: ('نوفمبر', 'november', 'nov'),
+    12: ('ديسمبر', 'december', 'dec'),
+}
+
+ALIASES = {
+    'name': ('student name', 'student', 'name', 'اسم الطالب', 'الاسم', 'اسم الطفل',
+             'اسم المصروف', 'expense', 'expense name', 'البيان', 'teacher name'),
+    'serial': ('serial', 'no', 'number', 'الرقم', 'رقم', 'رقم الطالب'),
+    'db_id': ('id', 'student id', 'studentid', 'معرف الطالب', 'كود الطالب'),
+    'class_name': ('class', 'class name', 'الفصل', 'الصف', 'المستوى'),
+    'joining_date': ('joining date', 'join date', 'تاريخ الالتحاق', 'تاريخ الانضمام'),
+    'fees': ('agreed monthly fees', 'monthly fees', 'fees', 'monthly fee',
+             'الرسوم الشهرية', 'الاشتراك الشهري', 'قيمة الاشتراك'),
+    'paid': ('last payment amount', 'last payment', 'fees paid', 'paid', 'amount paid',
+             'المبلغ المدفوع', 'آخر دفعة', 'المدفوع'),
+    'paid_date': ('payment date', 'paid date', 'تاريخ الدفع', 'تاريخ آخر دفعة'),
+    'paid_until': ('paid until date', 'paid until', 'مدفوع حتى', 'مدفوع حتى تاريخ'),
+    'books': ('books', 'book fees', 'books fees', 'الكتب', 'رسوم الكتب'),
+    'remaining': ('remaining', 'balance', 'المتبقي', 'الباقي', 'الرصيد المتبقي'),
+    'method': ('payment method', 'method', 'طريقة الدفع', 'طريقة السداد'),
+    'guardian_name': ('guardian name', 'parent name', 'اسم ولي الأمر'),
+    'guardian_phone': ('guardian phone', 'parent phone', 'phone', 'هاتف ولي الأمر',
+                       'تليفون ولي الأمر'),
+    'note': ('note', 'notes', 'remark', 'remarks', 'ملاحظات', 'ملاحظة'),
+    'amount': ('amount', 'value', 'expense amount', 'المبلغ', 'القيمة', 'التكلفة'),
+    'date': ('date', 'expense date', 'التاريخ', 'تاريخ المصروف'),
+    'teacher': ('teacher name', 'teacher', 'employee', 'اسم المعلمة', 'المعلمة',
+                'اسم الموظف'),
+}
+
+
+def _norm(value):
+    value = '' if value is None else str(value)
+    value = value.strip().lower()
+    value = value.translate(str.maketrans({
+        'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ى': 'ي', 'ة': 'ه',
+        '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+        '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+    }))
+    value = re.sub(r'[\u200f\u200e]', '', value)
+    value = re.sub(r'[^0-9a-z\u0600-\u06ff]+', ' ', value)
+    return re.sub(r'\s+', ' ', value).strip()
+
+
+def _student_name_key(value):
+    raw = '' if value is None else str(value).strip().lower()
+    raw = re.split(r'[/\\]', raw, 1)[0]
+    key = _norm(raw)
+    key = re.sub(r'\b(?:kg\s*\d|pre\s*kg|pre|summer)\b$', '', key).strip()
+    parts = []
+    aliases = {
+        'ahmad': 'ahmed', 'sheehab': 'shehab',
+        'mohamad': 'mohamed', 'mohammad': 'mohamed', 'mohammed': 'mohamed',
+        'mousa': 'musa',
+        'yones': 'younis', 'younes': 'younis', 'yunis': 'younis',
+        'yousef': 'youssef',
+        'hamzah': 'hamza',
+        'marya': 'maria',
+        'lulia': 'lolia',
+        'dialaa': 'dyala', 'diala': 'dyala',
+    }
+    for part in key.split():
+        if re.search(r'\d', part):
+            continue
+        parts.append(aliases.get(part, part))
+    return ' '.join(parts)
+
+
+def _student_excel_name_key(value):
+    """Normalize an Excel name without applying site-name aliases."""
+    raw = '' if value is None else str(value).strip().lower()
+    raw = re.split(r'[/\\]', raw, 1)[0]
+    key = _norm(raw)
+    return re.sub(r'\b(?:kg\s*\d|pre\s*kg|pre|summer)\b$', '', key).strip()
+
+
+def _student_level_key(value):
+    key = _norm(value)
+    if 'summer' in key:
+        return 'summer'
+    if 'pre' in key:
+        return 'prekg'
+    match = re.search(r'\bkg\s*([123])\b', key)
+    return 'kg%s' % match.group(1) if match else ''
+
+
+def _student_record_level(record):
+    return _student_level_key(record.get('class_name') or record.get('name'))
+
+
+def _student_model_level(student):
+    return (_student_level_key(student.class_id.name if student.class_id else '')
+            or _student_level_key(student.name))
+
+
+def _clean(value, limit=200):
+    if value is None:
+        return ''
+    return str(value).replace('<', '').replace('>', '').strip()[:limit]
+
+
+def _number(value):
+    if value is None or value is False or value == '':
+        return None
+    if isinstance(value, bool):
+        return 1.0 if value else 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+    raw = str(value).strip().replace(',', '').replace('٬', '').replace('٫', '.')
+    raw = raw.translate(str.maketrans('٠١٢٣٤٥٦٧٨٩', '0123456789'))
+    raw = re.sub(r'[^\d.\-]', '', raw)
+    if not raw or raw in ('-', '.', '-.'):
+        return None
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def _date_string(value):
+    if value is None or value is False or value == '':
+        return ''
+    if isinstance(value, datetime):
+        return value.date().strftime('%Y-%m-%d')
+    if isinstance(value, date):
+        return value.strftime('%Y-%m-%d')
+    raw = str(value).strip()
+    raw = raw.translate(str.maketrans('٠١٢٣٤٥٦٧٨٩', '0123456789'))
+    for fmt in ('%Y-%m-%d', '%Y/%m/%d', '%d/%m/%Y', '%d-%m-%Y',
+                '%m/%d/%Y', '%d.%m.%Y'):
+        try:
+            return datetime.strptime(raw[:10], fmt).strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    return raw[:10] if re.match(r'^\d{4}-\d{2}-\d{2}$', raw[:10]) else ''
+
+
+def _ym_from_text(value, default_year):
+    raw = _norm(value)
+    year_match = re.search(r'(20\d{2})', raw)
+    year = int(year_match.group(1)) if year_match else int(default_year)
+    for month_number, names in MONTHS.items():
+        if any(_norm(name) in raw for name in names):
+            return '%04d-%02d' % (year, month_number)
+    return ''
+
+
+def _month_label(ym):
+    try:
+        year, month = ym.split('-')
+        return '%s %s' % (MONTHS[int(month)][0], year)
+    except (AttributeError, IndexError, ValueError):
+        return ym
+
+
+def _model_fields(model):
+    return getattr(model, '_fields', {})
+
+
+def _col(headers, key, exact=False):
+    aliases = {_norm(item) for item in ALIASES.get(key, ())}
+    for index, header in enumerate(headers):
+        if _norm(header) in aliases:
+            return index
+    if exact:
+        return None
+    for index, header in enumerate(headers):
+        normalized = _norm(header)
+        if normalized and any(alias and (
+                alias in normalized
+                or (normalized in alias and len(normalized) >= max(4, len(alias) - 2)))
+                for alias in aliases):
+            return index
+    return None
+
+
+def _header_col(headers, aliases):
+    normalized_aliases = {_norm(alias) for alias in aliases}
+    for index, header in enumerate(headers):
+        if _norm(header) in normalized_aliases:
+            return index
+    for index, header in enumerate(headers):
+        normalized = _norm(header)
+        if not normalized:
+            continue
+        if any(len(alias) >= 4 and len(normalized) >= 4 and (
+               alias in normalized
+               or (normalized in alias and len(normalized) >= max(4, len(alias) - 2)))
+               for alias in normalized_aliases):
+            return index
+    return None
+
+
+def _header_kind(headers):
+    student_name_col = _header_col(headers, (
+        'student name', 'student', 'name', 'اسم الطالب', 'الاسم', 'اسم الطفل'))
+    amount_col = _header_col(headers, ALIASES['amount'])
+    date_col = _header_col(headers, ALIASES['date'])
+    if (_header_col(headers, ALIASES['teacher']) is not None
+            and amount_col is not None and date_col is not None):
+        return 'salary'
+    exact_entry_names = {_norm(value) for value in (
+        'expense name', 'اسم المصروف', 'البيان', 'name')}
+    entry_name_col = next((index for index, header in enumerate(headers)
+                           if _norm(header) in exact_entry_names), None)
+    if entry_name_col is not None and amount_col is not None and date_col is not None:
+        return 'expense'
+    student_hint = any(_header_col(headers, ALIASES[key]) is not None
+                       for key in ('serial', 'db_id', 'class_name'))
+    if student_name_col is not None and student_hint:
+        return 'student'
+    return ''
+
+
+def _header_rows(rows):
+    found = []
+    for index, row in enumerate(rows):
+        headers = list(row or [])
+        # Data rows can contain literal cells named "Expense Name" or "Value"
+        # in a side table. A real header row in the supported workbooks is text-only.
+        if any(value is not None and value != '' and not isinstance(value, str)
+               for value in headers):
+            continue
+        kind = _header_kind(headers)
+        if kind:
+            found.append((index, kind, headers))
+    return found
+
+
+def _header_index(headers, aliases, start=0):
+    """Return one header position without letting a neighbouring table win."""
+    aliases = {_norm(item) for item in aliases}
+    for index in range(start, len(headers)):
+        if _norm(headers[index]) in aliases:
+            return index
+    for index in range(start, len(headers)):
+        normalized = _norm(headers[index])
+        if normalized and any(len(alias) >= 4 and len(normalized) >= 4
+                              and (alias in normalized
+                                   or (normalized in alias
+                                       and len(normalized) >= max(4, len(alias) - 2)))
+                              for alias in aliases):
+            return index
+    return None
+
+
+def _table_specs(headers):
+    """Find the student table and any side-by-side expense/salary table."""
+    specs = []
+    main_kind = _header_kind(headers)
+    student_name_index = _header_index(
+        headers, ('student name', 'student', 'name', 'اسم الطالب', 'الاسم', 'اسم الطفل'))
+    student_hint = any(_header_index(headers, ALIASES[key]) is not None
+                       for key in ('serial', 'db_id', 'class_name'))
+    if main_kind == 'student' or (student_name_index is not None and student_hint):
+        specs.append({'kind': 'student', 'headers': headers})
+
+    amount_aliases = ALIASES['amount']
+    date_aliases = ALIASES['date']
+    teacher_index = _header_index(headers, ALIASES['teacher'])
+    expense_index = _header_index(headers, ('expense name', 'اسم المصروف', 'البيان'))
+    generic_name_index = _header_index(headers, ('name', 'الاسم'))
+
+    if teacher_index is not None:
+        name_index, kind = teacher_index, 'salary'
+    elif expense_index is not None:
+        name_index, kind = expense_index, 'expense'
+    elif main_kind != 'student' and generic_name_index is not None:
+        name_index, kind = generic_name_index, 'expense'
+    else:
+        name_index, kind = None, ''
+
+    if name_index is not None:
+        amount_index = _header_index(headers, amount_aliases, start=name_index + 1)
+        date_index = _header_index(headers, date_aliases, start=name_index + 1)
+        if amount_index is not None and date_index is not None:
+            note_index = _header_index(headers, ALIASES['note'], start=name_index + 1)
+            indexes = [name_index, amount_index, date_index]
+            table_headers = [headers[index] for index in indexes]
+            if note_index is not None and note_index not in indexes:
+                indexes.append(note_index)
+                table_headers.append(headers[note_index])
+            specs.append({'kind': kind, 'headers': table_headers, 'indexes': indexes})
+    return specs
+
+
+def _embedded_table_specs(rows, header_index, next_index):
+    """Find entry tables whose header starts inside a student data row."""
+    specs = []
+    scan_end = min(next_index, header_index + 7)
+    for row_index in range(header_index + 1, scan_end):
+        row = list(rows[row_index] or [])
+        row_specs = []
+        for start in range(len(row)):
+            if not isinstance(row[start], str) or not _norm(row[start]):
+                continue
+            max_end = min(len(row), start + 10)
+            for end in range(start + 3, max_end + 1):
+                segment = row[start:end]
+                if any(value not in (None, '') and not isinstance(value, str)
+                       for value in segment):
+                    continue
+                kind = _header_kind(segment)
+                if kind not in ('expense', 'salary'):
+                    continue
+                indexes = list(range(start, end))
+                if any(existing['kind'] == kind
+                       and set(existing['indexes']).intersection(indexes)
+                       for existing in row_specs):
+                    break
+                row_specs.append({
+                    'kind': kind,
+                    'headers': segment,
+                    'indexes': indexes,
+                    'data_start': row_index + 1,
+                })
+                break
+        specs.extend(row_specs)
+    return specs
+
+
+def _project_row(row, indexes):
+    return [row[index] if index < len(row) else None for index in indexes]
+
+
+def _read_xlsx(raw):
+    from openpyxl import load_workbook
+    workbook = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+    out = []
+    for sheet in workbook.worksheets:
+        rows = []
+        for row in sheet.iter_rows(values_only=True):
+            rows.append(list(row[:80]))
+            if len(rows) >= 2500:
+                break
+        out.append((sheet.title, rows))
+    return out
+
+
+def _read_xls(raw):
+    import xlrd
+    workbook = xlrd.open_workbook(file_contents=raw)
+    return [(sheet.name, [list(sheet.row_values(i)[:80])
+                          for i in range(min(sheet.nrows, 2500))])
+            for sheet in workbook.sheets()]
+
+
+def _read_csv(raw):
+    text = None
+    for encoding in ('utf-8-sig', 'utf-8', 'cp1256'):
+        try:
+            text = raw.decode(encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+    if text is None:
+        text = raw.decode('utf-8', errors='replace')
+    return [('CSV', [row for row in csv.reader(io.StringIO(text))])]
+
+
+def _read_file(filename, raw):
+    lower = filename.lower()
+    if lower.endswith('.csv'):
+        return _read_csv(raw)
+    if lower.endswith('.xls') and not lower.endswith('.xlsx'):
+        return _read_xls(raw)
+    return _read_xlsx(raw)
+
+
+def _student_record(headers, row, source, is_master):
+    name_index = _col(headers, 'name')
+    raw_name = row[name_index] if name_index is not None and name_index < len(row) else ''
+    if isinstance(raw_name, (int, float)):
+        return None
+    name = _clean(raw_name)
+    normalized_name = _norm(name)
+    if (not name or normalized_name in {'student', 'student name', 'اسم الطالب', 'الاسم',
+                                        'number', 'رقم'}
+            or any(value in normalized_name for value in
+                   ('amount', 'المبلغ', 'total', 'اجمالي', 'إجمالي'))):
+        return None
+    def val(key, exact=False):
+        index = _col(headers, key, exact=exact)
+        return row[index] if index is not None and index < len(row) else None
+    paid_cell = None if is_master else val('paid')
+    record = {
+        'kind': 'student', 'name': name, 'source': source,
+        'db_id': _number(val('db_id', exact=True)),
+        'serial': _number(val('serial', exact=True)),
+        # Excel's student count is based on numbered rows. Rows without a
+        # serial can still carry a payment, so keep them in the month ledger
+        # but do not make them active roster students.
+        'active': _number(val('serial', exact=True)) is not None,
+        'class_name': _clean(val('class_name'), 80),
+        'joining_date': _date_string(val('joining_date')),
+        'fees': _number(val('fees')),
+        'paid': _number(paid_cell),
+        'paid_present': paid_cell is not None and str(paid_cell).strip() != '',
+        'paid_date': _date_string(val('paid_date')),
+        'paid_until': _date_string(val('paid_until')),
+        'books': _number(val('books')),
+        'remaining': _number(val('remaining')),
+        'method': _clean(val('method'), 40),
+        'guardian_name': _clean(val('guardian_name'), 120),
+        'guardian_phone': _clean(val('guardian_phone'), 50),
+        'note': _clean(val('note')),
+    }
+    if not record['fees'] and is_master:
+        record['fees'] = _number(val('fees'))
+    if not any(record.get(key) not in (None, '') for key in (
+        'db_id', 'serial', 'class_name', 'fees', 'paid', 'paid_until',
+            'guardian_name', 'guardian_phone', 'remaining')):
+        return None
+    return record
+
+
+def _entry_record(headers, row, source, kind):
+    name_index = _col(headers, 'name')
+    amount_index = _col(headers, 'amount')
+    date_index = _col(headers, 'date')
+    name = _clean(row[name_index] if name_index is not None and name_index < len(row) else '')
+    amount = _number(row[amount_index] if amount_index is not None and amount_index < len(row) else None)
+    if not name or amount is None:
+        return None
+    return {
+        'kind': kind, 'name': name, 'amount': amount,
+        'date': _date_string(row[date_index] if date_index is not None and date_index < len(row) else None),
+        'note': _clean(row[_col(headers, 'note')] if _col(headers, 'note') is not None
+                        and _col(headers, 'note') < len(row) else ''),
+        'source': source,
+    }
+
+
+def _parse_records(files, target_ym):
+    students, entries, warnings = [], [], []
+    named_month_sheets = False
+    loaded = []
+    target_year = int(target_ym[:4])
+    for item in files or []:
+        filename = _clean(item.get('name'), 160)
+        try:
+            raw = base64.b64decode(item.get('content') or '', validate=True)
+        except (ValueError, TypeError):
+            warnings.append('الملف %s مشفّر أو تالف ولا يمكن قراءته.' % filename)
+            continue
+        if not filename or len(raw) > MAX_FILE_BYTES:
+            warnings.append('الملف %s أكبر من الحجم المسموح.' % (filename or 'بدون اسم'))
+            continue
+        try:
+            sheets = _read_file(filename, raw)
+            loaded.extend((filename, title, rows) for title, rows in sheets)
+        except Exception as exc:
+            warnings.append('تعذر قراءة %s: %s' % (filename, _clean(exc, 180)))
+    for _, title, _ in loaded:
+        if _ym_from_text(title, target_year):
+            named_month_sheets = True
+            break
+    row_count = 0
+    for filename, title, rows in loaded:
+        sheet_ym = _ym_from_text(title, target_year)
+        title_norm = _norm(title)
+        if 'paid students' in title_norm or 'paid student' in title_norm:
+            continue
+        if sheet_ym and sheet_ym != target_ym:
+            warnings.append('تم تجاهل شيت %s لأنه خاص بشهر %s.' %
+                            (title, _month_label(sheet_ym)))
+            continue
+        if named_month_sheets and not sheet_ym and title_norm not in ('master file', 'master'):
+            continue
+        blocks = _header_rows(rows)
+        if not blocks:
+            continue
+        for header_index, kind, headers in blocks:
+            next_index = next((index for index, _, _ in blocks
+                               if index > header_index), len(rows))
+            specs = _table_specs(headers)
+            if kind == 'student':
+                specs.extend(_embedded_table_specs(rows, header_index, next_index))
+            if not specs:
+                specs = [{'kind': kind, 'headers': headers}]
+            source = '%s / %s / صف %s' % (filename, title, header_index + 1)
+            carried_class = ''
+            for row_number in range(header_index + 1, next_index):
+                row = rows[row_number]
+                if not any(value not in (None, '') for value in row):
+                    continue
+                for spec in specs:
+                    if row_number < spec.get('data_start', header_index + 1):
+                        continue
+                    spec_kind = spec['kind']
+                    spec_headers = spec['headers']
+                    spec_row = (_project_row(row, spec['indexes'])
+                                if 'indexes' in spec else row)
+                    if spec_kind == 'student':
+                        record = _student_record(spec_headers, spec_row, source,
+                                                 title_norm in ('master file', 'master'))
+                        if record:
+                            if record.get('class_name'):
+                                carried_class = record['class_name']
+                            elif carried_class:
+                                record['class_name'] = carried_class
+                            students.append(record)
+                            row_count += 1
+                        continue
+
+                    name_index = _col(spec_headers, 'name')
+                    amount_index = _col(spec_headers, 'amount')
+                    date_index = _col(spec_headers, 'date')
+                    relevant = [spec_row[index] for index in (name_index, amount_index, date_index)
+                                if index is not None and index < len(spec_row)]
+                    if not any(value not in (None, '') for value in relevant):
+                        continue
+                    entry_name = _norm(spec_row[name_index] if name_index is not None
+                                       and name_index < len(spec_row) else '')
+                    amount_value = (spec_row[amount_index] if amount_index is not None
+                                    and amount_index < len(spec_row) else None)
+                    date_value = (spec_row[date_index] if date_index is not None
+                                  and date_index < len(spec_row) else None)
+                    if any(marker in _norm(value) for value in spec_row
+                           if isinstance(value, str)
+                           for marker in ('total', 'اجمالي')):
+                        continue
+                    if not entry_name and amount_value in (None, '', 0, 0.0) and not date_value:
+                        continue
+                    if 'total' in entry_name or 'اجمالي' in entry_name:
+                        continue
+                    record = _entry_record(spec_headers, spec_row, source, spec_kind)
+                    if record:
+                        entries.append(record)
+                        row_count += 1
+                    elif any(value not in (None, '') for value in spec_row):
+                        warnings.append('تم تجاهل صف غير مكتمل في %s.' % source)
+    return {
+        'students': _merge_records(students, 'student'),
+        'entries': _merge_records(entries, 'entry'),
+        'warnings': warnings,
+        'rows': row_count,
+    }
+
+
+def _record_key(record, kind):
+    if kind == 'student':
+        if record.get('db_id') is not None:
+            return 'id:%s' % int(record['db_id'])
+        if record.get('serial') is not None:
+            return 'serial:%s' % int(record['serial'])
+        return 'name:%s' % _norm(record.get('name'))
+    return '%s:%s:%s' % (record.get('kind'), _norm(record.get('name')),
+                         record.get('date') or '')
+
+
+def _merge_records(records, kind):
+    if kind == 'student':
+        id_names = {}
+        for record in records:
+            if record.get('db_id') is not None:
+                identifier = int(record['db_id'])
+                id_names.setdefault(identifier, set()).add(_student_name_key(record.get('name')))
+        conflicting_ids = {identifier for identifier, names in id_names.items()
+                           if len(names) > 1}
+        records = [dict(record, db_id=None)
+                   if record.get('db_id') is not None
+                   and int(record['db_id']) in conflicting_ids else dict(record)
+                   for record in records]
+        return _merge_student_records(records)
+    merged = {}
+    order = []
+    aliases = {}
+    for record in records:
+        if kind != 'student':
+            key = _record_key(record, kind)
+        else:
+            identity_keys = []
+            if record.get('db_id') is not None:
+                identity_keys.append('id:%s' % int(record['db_id']))
+            elif record.get('serial') is not None and record.get('class_name'):
+                identity_keys.append('class-serial:%s:%s' % (
+                    _norm(record['class_name']), int(record['serial'])))
+            identity_keys.append('name:%s' % _norm(record.get('name')))
+            key = next((aliases[item] for item in identity_keys if item in aliases), None)
+            if key is None:
+                key = identity_keys[0]
+        if key not in merged:
+            merged[key] = dict(record)
+            order.append(key)
+        else:
+            previous = merged[key]
+            for field, value in record.items():
+                if field in ('source', 'paid_present'):
+                    continue
+                if value not in (None, ''):
+                    previous[field] = value
+            previous['paid_present'] = previous.get('paid_present') or record.get('paid_present')
+            previous['source'] = '%s + %s' % (
+                previous.get('source', ''), record.get('source', ''))
+        if kind == 'student':
+            for identity_key in identity_keys:
+                aliases[identity_key] = key
+    return [merged[key] for key in order]
+
+
+def _merge_student_values(previous, record):
+    for field, value in record.items():
+        if field in ('source', 'paid_present'):
+            continue
+        if field == 'class_name' and previous.get('class_name'):
+            continue
+        if value not in (None, ''):
+            previous[field] = value
+    previous['paid_present'] = previous.get('paid_present') or record.get('paid_present')
+    if record.get('active') is not None:
+        previous['active'] = record.get('active')
+    previous['source'] = '%s + %s' % (
+        previous.get('source', ''), record.get('source', ''))
+
+
+def _merge_student_records(records):
+    merged = {}
+    order = []
+    for record in (item for item in records if item.get('db_id') is not None):
+        key = 'id:%s' % int(record['db_id'])
+        if key not in merged:
+            merged[key] = dict(record)
+            order.append(key)
+        else:
+            _merge_student_values(merged[key], record)
+
+    for record in (item for item in records if item.get('db_id') is None):
+        name = _student_excel_name_key(record.get('name'))
+        class_name = _norm(record.get('class_name'))
+        serial = (int(record['serial']) if record.get('serial') is not None else None)
+        candidates = [key for key in order
+                      if _student_excel_name_key(merged[key].get('name')) == name
+                      and (not class_name or _norm(merged[key].get('class_name')) == class_name)
+                      and (serial is None or merged[key].get('serial') is not None
+                           and int(merged[key].get('serial')) == serial)]
+        if len(candidates) == 1:
+            _merge_student_values(merged[candidates[0]], record)
+            continue
+        if serial is not None:
+            key = 'class-serial:%s:%s' % (class_name, serial)
+        else:
+            key = 'class-name:%s:%s' % (class_name, name)
+        if key not in merged:
+            merged[key] = dict(record)
+            order.append(key)
+        else:
+            _merge_student_values(merged[key], record)
+    return [merged[key] for key in order]
+
+
+def _field_exists(model, name):
+    return name in _model_fields(model)
+
+
+def _method(value):
+    raw = _norm(value)
+    if raw in ('cash', 'كاش', 'نقدي') or 'cash' in raw or 'كاش' in raw or 'نقد' in raw:
+        return 'cash'
+    if (raw in ('transfer', 'bank transfer', 'تحويل', 'تحويل بنكي')
+            or 'transfer' in raw or 'تحويل' in raw):
+        return 'transfer'
+    if raw in ('card', 'بطاقه', 'بطاقة') or 'card' in raw or 'بطاق' in raw:
+        return 'card'
+    if raw:
+        return 'other'
+    return 'cash'
+
+
+def _class_candidates(name, env):
+    if not name:
+        return env['nursery.class'].sudo().browse()
+    Class = env['nursery.class'].sudo()
+    matches = Class.search([('name', '=ilike', name), ('active', '=', True)], limit=2)
+    if matches:
+        return matches
+    normalized = _norm(name).replace('-', ' ')
+    prefixes = {
+        'kg1': 'kg1', 'kg2': 'kg2', 'kg3': 'kg3',
+        'pre kg': 'pre kg', 'prekg': 'pre kg', 'summer': 'summer',
+    }
+    prefix = prefixes.get(normalized)
+    if not prefix:
+        return Class.browse()
+    candidates = Class.search([('active', '=', True)])
+    return candidates.filtered(
+        lambda item: _norm(item.name).replace('-', ' ').startswith(prefix))
+
+
+def _class_for(name, env):
+    candidates = _class_candidates(name, env)
+    return candidates[0] if len(candidates) == 1 else False
+
+
+def _apply_class_map(parsed, class_map, env):
+    class_map = class_map if isinstance(class_map, dict) else {}
+    Class = env['nursery.class'].sudo()
+    for record in parsed['students']:
+        selected = class_map.get(record.get('name'))
+        if not selected:
+            continue
+        try:
+            selected = Class.browse(int(selected))
+        except (TypeError, ValueError):
+            continue
+        allowed = _class_candidates(record.get('class_name'), env)
+        if selected.exists() and selected.active and selected.id in allowed.ids:
+            record['class_name'] = selected.name
+
+
+def _class_choices(parsed, env):
+    choices = []
+    generic_classes = {'kg1', 'kg2', 'kg3', 'pre', 'pre kg', 'prekg', 'summer'}
+    for record in parsed['students']:
+        student, error = _find_student(record, env)
+        candidates = _class_candidates(record.get('class_name'), env)
+        # Excel is the source of truth. Never infer Bumble Bee/Octopus, etc.
+        # from a broad Excel class such as KG1 or KG2.
+        class_key = _norm(record.get('class_name'))
+        if (not student and not error and len(candidates) > 1
+                and class_key not in generic_classes):
+            choices.append({
+                'student': record['name'], 'source_class': record.get('class_name') or '',
+                'options': [{'id': item.id, 'name': item.name} for item in candidates],
+            })
+    return choices
+
+
+def _find_student(record, env):
+    Student = env['nursery.student'].sudo()
+    # The workbook is authoritative for names and the ID in that workbook is
+    # the only cross-system identity. Do not let a similar site name, or a
+    # reused class-local serial, redirect an Excel row to another student.
+    if record.get('db_id') is not None:
+        student = Student.browse(int(record['db_id']))
+        if not student.exists():
+            return False, 'الـ ID %s الموجود في Excel غير موجود في الموقع.' % int(record['db_id'])
+        if _student_name_key(student.name) != _student_name_key(record.get('name')):
+            return False, 'الـ ID %s يخص الطالب %s وليس %s.' % (
+                int(record['db_id']), student.name, record.get('name'))
+        return student, ''
+    excel_name = _student_excel_name_key(record.get('name'))
+    if excel_name:
+        candidates = Student.search([])
+        exact = candidates.filtered(
+            lambda item: _student_excel_name_key(item.name) == excel_name)
+        class_rec = _class_for(record.get('class_name'), env) if record.get('class_name') else False
+        if class_rec and _field_exists(Student, 'class_id'):
+            same_class = exact.filtered(lambda item: item.class_id.id == class_rec.id)
+            if len(same_class) == 1:
+                return same_class, ''
+        if record.get('serial') is not None and _field_exists(Student, 'serial'):
+            same_serial = exact.filtered(lambda item: item.serial == int(record['serial']))
+            if len(same_serial) == 1:
+                return same_serial, ''
+        if len(exact) == 1 and record.get('serial') is None and not class_rec:
+            return exact, ''
+        if len(exact) > 1:
+            # Excel remains authoritative when its row has no ID. Do not pick
+            # one of several site records; let this row be created as-is.
+            return False, ''
+    return False, ''
+
+
+def _month(env, ym):
+    return env['nursery.month'].sudo().search([('ym', '=', ym)], limit=1)
+
+
+def _month_fee(month, student):
+    if not month or not student:
+        return False
+    Fee = month.env['nursery.month.fee'].sudo()
+    return Fee.search([('month_id', '=', month.id), ('student_id', '=', student.id)], limit=1)
+
+
+def _norm_value(value):
+    if isinstance(value, date):
+        return value.strftime('%Y-%m-%d')
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return value
+
+
+def _same_value(old, new):
+    if old in (False, None, '') and new in (False, None, ''):
+        return True
+    if isinstance(old, float) or isinstance(new, float):
+        try:
+            return abs(float(old or 0) - float(new or 0)) < 0.005
+        except (TypeError, ValueError):
+            return False
+    return _norm_value(old) == _norm_value(new)
+
+
+def _append_change(changes, field, old, new):
+    if not _same_value(old, new):
+        changes.append({'field': field, 'old': _norm_value(old), 'new': _norm_value(new)})
+
+
+def _student_preview(record, month, env):
+    student, error = _find_student(record, env)
+    if error:
+        return {'kind': 'student', 'name': record['name'], 'status': 'warning',
+                'status_label': 'يحتاج مراجعة', 'warning': error, 'changes': []}, True
+    class_rec = _class_for(record.get('class_name'), env) if record.get('class_name') else False
+    class_warning = ('الفصل %s عام أو غير موجود؛ سيُضاف الطالب بدون فصل.' %
+                     record['class_name']) if record.get('class_name') and not class_rec else ''
+    fee = _month_fee(month, student) if student else False
+    changes = []
+    if not student:
+        for field in ('name', 'serial', 'class_name', 'fees', 'joining_date',
+                      'guardian_name', 'guardian_phone', 'books', 'remaining'):
+            value = record.get(field)
+            if value not in (None, ''):
+                _append_change(changes, field, None, value)
+        if record.get('paid_present'):
+            _append_change(changes, 'paid', None, record.get('paid'))
+        return {'kind': 'student', 'name': record['name'], 'status': 'new',
+                'status_label': 'طالب جديد', 'changes': changes,
+                'warning': class_warning}, False
+    for field, source_field in (
+        ('name', 'name'), ('serial', 'serial'), ('joining_date', 'joining_date'),
+        ('guardian_name', 'guardian_name'), ('guardian_phone', 'guardian_phone'),
+        ('note', 'note'),
+    ):
+        value = record.get(source_field)
+        if field == 'serial' and record.get('db_id') is None:
+            continue
+        if value not in (None, '') and _field_exists(student, field):
+            _append_change(changes, field, getattr(student, field), value)
+    if class_rec and record.get('db_id') is not None and _field_exists(student, 'class_id'):
+        _append_change(changes, 'class_name', student.class_id.name if student.class_id else '',
+                       class_rec.name)
+    if record.get('fees') is not None and fee:
+        _append_change(changes, 'fees', fee.fees, record['fees'])
+    elif record.get('fees') is not None and not fee:
+        _append_change(changes, 'fees', None, record['fees'])
+    if record.get('paid_present'):
+        _append_change(changes, 'paid', fee.paid if fee else None, record.get('paid'))
+    if record.get('paid_date'):
+        _append_change(changes, 'paid_date', fee.paid_date if fee else None, record['paid_date'])
+    if record.get('paid_until') and _field_exists(student, 'paid_until'):
+        _append_change(changes, 'paid_until', student.paid_until, record['paid_until'])
+    if record.get('method'):
+        _append_change(changes, 'method', fee.method if fee else '', _method(record['method']))
+    if record.get('books') is not None and record['books'] > 0 and _field_exists(student, 'books_fees'):
+        _append_change(changes, 'books', student.books_fees, record['books'])
+    if record.get('remaining') is not None and fee:
+        old_remaining = max(
+            0.0,
+            float(fee.fees or 0.0) - float(fee.paid or 0.0)
+            - float(fee.carry_in or 0.0),
+        )
+        _append_change(changes, 'remaining', old_remaining, record['remaining'])
+    return {'kind': 'student', 'name': student.name, 'status': 'update',
+            'status_label': 'تحديث', 'changes': changes}, False
+
+
+def _entry_preview(record, month, kind, env):
+    date_value = record.get('date') or '%s-01' % month.ym
+    Entry = env['nursery.month.entry'].sudo()
+    entry = Entry.search([('month_id', '=', month.id), ('etype', '=', kind),
+                          ('name', '=ilike', record['name']), ('date', '=', date_value)],
+                         limit=1) if month else False
+    changes = []
+    _append_change(changes, 'amount', entry.amount if entry else None, record['amount'])
+    _append_change(changes, 'date', entry.date if entry else None, date_value)
+    _append_change(changes, 'note', entry.note if entry else '', record.get('note') or '')
+    return {'kind': kind, 'name': record['name'],
+            'status': 'update' if entry else 'new',
+            'status_label': 'تحديث' if entry else 'جديد', 'changes': changes}, False
+
+
+def _preview(parsed, target_ym, env):
+    month = _month(env, target_ym)
+    warnings = list(parsed['warnings'])
+    blocking = [warning for warning in warnings
+                if not warning.startswith('تم تجاهل شيت')]
+    if month and month.state == 'closed':
+        blocking.append('الشهر %s مقفول، لذلك تم منع التحديث.' % _month_label(target_ym))
+    changes = []
+    for record in parsed['students']:
+        item, blocked = _student_preview(record, month, env)
+        changes.append(item)
+        if blocked:
+            blocking.append('%s: %s' % (record.get('source'), item.get('warning')))
+    if month:
+        for record in parsed['entries']:
+            item, blocked = _entry_preview(record, month, record['kind'], env)
+            changes.append(item)
+    else:
+        for record in parsed['entries']:
+            changes.append({
+                'kind': record['kind'], 'name': record['name'], 'status': 'new',
+                'status_label': 'جديد',
+                'changes': [{'field': 'amount', 'old': None, 'new': record['amount']},
+                            {'field': 'date', 'old': None,
+                             'new': record.get('date') or '%s-01' % target_ym}],
+            })
+    for warning in blocking:
+        if warning not in warnings:
+            warnings.append(warning)
+    changes = [item for item in changes
+               if item.get('changes') or item.get('status') == 'warning']
+    return {
+        'ok': True, 'target_ym': target_ym, 'target_label': _month_label(target_ym),
+        'summary': {
+            'rows': parsed['rows'], 'students': len(parsed['students']),
+            'entries': len(parsed['entries']),
+        },
+        'changes': changes, 'warnings': warnings,
+        'blocked': bool(blocking), 'can_commit': bool(changes) and not blocking,
+    }
+
+
+def _open_month(env, ym):
+    Month = env['nursery.month'].sudo()
+    current = Month.search([('ym', '=', ym)], limit=1)
+    if current:
+        return current
+    opener = getattr(Month, '_open_month', None)
+    if opener:
+        result = opener(ym)
+        if result:
+            return result[0] if isinstance(result, tuple) else result
+    previous = Month.search([('ym', '<', ym)], order='ym desc', limit=1)
+    if previous:
+        # The monthly workbook carries the cash closing balance forward, not
+        # the accounting net.  The model method is the shared source for this
+        # calculation when available.
+        closing_fn = getattr(previous, '_month_closing', None)
+        opening = float(closing_fn() if closing_fn else (previous.opening_balance or 0.0))
+        if not closing_fn:
+            opening += sum((f.paid or 0.0) for f in previous.fee_ids
+                           if getattr(f, 'method', False) in (False, 'cash'))
+            opening += sum(e.amount for e in previous.entry_ids
+                           if e.etype in ('income', 'reservation'))
+    else:
+        opening = 0.0
+    month = Month.create({'ym': ym, 'opening_balance': opening})
+    Fee = env['nursery.month.fee'].sudo()
+    source = previous.fee_ids if previous else env['nursery.student'].sudo().search(
+        [('active', '=', True)], order='name')
+    for row in source:
+        student = getattr(row, 'student_id', row)
+        vals = {'month_id': month.id, 'student_id': student.id,
+                'name': student.name if student else row.name}
+        if _field_exists(Fee, 'fees'):
+            vals['fees'] = getattr(row, 'fees', 0.0) if previous else getattr(student, 'fees', 0.0)
+        Fee.create(vals)
+    return month
+
+
+def _student_vals(record, class_rec, target_ym):
+    vals = {}
+    if record.get('db_id') is not None and record.get('name'):
+        # Keep the site's stored name aligned with the authoritative Excel row
+        # after the ID has safely identified the existing student.
+        vals['name'] = record['name']
+    if record.get('serial') is not None:
+        vals['serial'] = int(record['serial'])
+    if record.get('joining_date'):
+        vals['joining_date'] = record['joining_date']
+    if record.get('guardian_name'):
+        vals['guardian_name'] = record['guardian_name']
+    if record.get('guardian_phone'):
+        vals['guardian_phone'] = record['guardian_phone']
+    if record.get('note'):
+        vals['remark'] = record['note']
+    if class_rec:
+        vals['class_id'] = class_rec.id
+    if record.get('fees') is not None:
+        vals['fees'] = record['fees']
+    if record.get('books') is not None and record['books'] > 0:
+        vals['books_fees'] = record['books']
+    if record.get('paid_present'):
+        vals['paid'] = record.get('paid', 0) > 0
+        vals['paid_at'] = record.get('paid_date') or '%s-01' % target_ym
+        vals['payment_method'] = _method(record.get('method'))
+    if record.get('paid_until'):
+        vals['paid_until'] = record['paid_until']
+    return vals
+
+
+def _fee_amount_from_record(record):
+    """Return the month-row due exactly from the workbook row.
+
+    Remaining is a visible Excel balance.  A blank Remaining cell means zero
+    balance, not a fallback to an old site fee.  When the workbook does not
+    give an agreed-fee value, the due row is the collected payment plus that
+    explicit balance.
+    """
+    if record.get('fees') is not None:
+        return float(record.get('fees') or 0.0)
+    paid = float(record.get('paid') or 0.0) if record.get('paid_present') else 0.0
+    if record.get('remaining') is not None:
+        return paid + float(record.get('remaining') or 0.0)
+    if record.get('paid_present'):
+        return paid
+    return 0.0
+
+
+def _upsert_payment(student, fee, record, month, env):
+    if not record.get('paid_present'):
+        return False
+    amount = float(record.get('paid') or 0.0)
+    payment_date = record.get('paid_date') or '%s-01' % month.ym
+    method = _method(record.get('method'))
+    Payment = env['nursery.fee.payment'].sudo()
+    period = _month_label(month.ym)
+    payment = fee.payment_id if fee and getattr(fee, 'payment_id', False) else False
+    if not payment:
+        domain = [('student_id', '=', student.id), ('period', '=', period)]
+        if _field_exists(Payment, 'payment_type'):
+            domain.append(('payment_type', '=', 'tuition'))
+        payment = Payment.search(domain, order='id desc', limit=1)
+    if amount > 0:
+        pvals = {'student_id': student.id, 'date': payment_date, 'amount': amount,
+                 'method': method, 'period': period}
+        if payment:
+            payment.write(pvals)
+        else:
+            payment = Payment.create(pvals)
+        fee.write({'paid': amount, 'paid_date': payment_date, 'method': method,
+                   'payment_id': payment.id})
+        student.write({'paid': True, 'paid_at': payment_date,
+                       'payment_method': method,
+                       'paid_until': record.get('paid_until') or '%s-%02d' % (
+                           month.ym, monthrange(int(month.ym[:4]),
+                                                int(month.ym[5:7]))[1])})
+        return True
+    if payment and payment.period == period:
+        payment.unlink()
+    fee.write({'paid': 0.0, 'paid_date': False, 'payment_id': False})
+    return True
+
+
+def _upsert_student(record, month, env, target_ym):
+    Student = env['nursery.student'].sudo()
+    student, _ = _find_student(record, env)
+    class_rec = _class_for(record.get('class_name'), env) if record.get('class_name') else False
+    vals = _student_vals(record, class_rec, target_ym)
+    if student:
+        if record.get('db_id') is None:
+            vals.pop('serial', None)
+            vals.pop('class_id', None)
+        if vals:
+            student.write(vals)
+    else:
+        vals.update({'name': record['name'], 'term': 'term_2026' if target_ym[:4] == '2026' else 'term_2027'})
+        student = Student.create(vals)
+    fee = _month_fee(month, student)
+    Fee = env['nursery.month.fee'].sudo()
+    if not fee:
+        fee_vals = {'month_id': month.id, 'student_id': student.id, 'name': student.name}
+        if record.get('fees') is not None or record.get('remaining') is not None:
+            fee_vals['fees'] = _fee_amount_from_record(record)
+        elif _field_exists(student, 'fees'):
+            fee_vals['fees'] = student.fees or 0.0
+        fee = Fee.create(fee_vals)
+    else:
+        fee.write({'name': student.name})
+        if record.get('fees') is not None or record.get('remaining') is not None:
+            fee.write({'fees': _fee_amount_from_record(record)})
+    _upsert_payment(student, fee, record, month, env)
+    return student
+
+
+def _upsert_entry(record, month, env):
+    Entry = env['nursery.month.entry'].sudo()
+    date_value = record.get('date') or '%s-01' % month.ym
+    entry = Entry.search([('month_id', '=', month.id), ('etype', '=', record['kind']),
+                          ('name', '=ilike', record['name']), ('date', '=', date_value)],
+                         limit=1)
+    vals = {'month_id': month.id, 'etype': record['kind'], 'name': record['name'],
+            'amount': float(record['amount']), 'date': date_value,
+            'note': record.get('note') or ''}
+    if record['kind'] == 'expense':
+        Expense = env['nursery.expense'].sudo()
+        expense = entry.expense_id if entry and getattr(entry, 'expense_id', False) else False
+        expense_vals = {'date': date_value, 'value': float(record['amount']),
+                        'note': record.get('note') or record['name']}
+        if expense:
+            expense.write(expense_vals)
+        else:
+            vals['expense_id'] = Expense.create(expense_vals).id
+    elif record['kind'] == 'salary':
+        Salary = env['nursery.salary'].sudo()
+        term = 'term_2026' if month.ym[:4] == '2026' else 'term_2027'
+        salary = Salary.search([('teacher', '=ilike', record['name']),
+                                ('term', '=', term)], limit=1)
+        salary_vals = {'teacher': record['name'], 'actual': float(record['amount']),
+                       'paid_date': date_value, 'term': term,
+                       'notes': record.get('note') or ''}
+        if salary:
+            salary.write(salary_vals)
+        else:
+            salary_vals['expected'] = float(record['amount'])
+            Salary.create(salary_vals)
+    if entry:
+        entry.write(vals)
+    else:
+        entry = Entry.create(vals)
+    return entry
+
+
+def _excel_month_metrics(parsed, target_ym):
+    """Return the September summary using the workbook's own arithmetic.
+
+    The workbook intentionally has three payment rows without a serial. They
+    belong in collected cash/bank totals, while the student count remains the
+    count of numbered rows. Keeping both measures separate is what makes the
+    site match the workbook instead of silently normalizing it.
+    """
+    students = parsed.get('students') or []
+    entries = parsed.get('entries') or []
+    collected = sum(float(row.get('paid') or 0.0) for row in students)
+    cash = sum(float(row.get('paid') or 0.0) for row in students
+               if row.get('paid') and _method(row.get('method')) == 'cash')
+    transfer = sum(float(row.get('paid') or 0.0) for row in students
+                   if row.get('paid') and _method(row.get('method')) == 'transfer')
+    books = sum(float(row.get('books') or 0.0) for row in students)
+    expense_rows = [row for row in entries if row.get('kind') == 'expense']
+    expenses = sum(float(row.get('amount') or 0.0) for row in expense_rows)
+    # The first positive expense line is the workbook's opening cash brought
+    # in by Nesrin.  It is kept as a source entry, but is also stored as the
+    # month's opening balance so it is not counted twice in the closing cash.
+    opening_row = next(
+        (row for row in expense_rows
+         if float(row.get('amount') or 0.0) > 0
+         and 'نسرين' in str(row.get('name') or '')),
+        None,
+    )
+    opening_balance = float(opening_row.get('amount') or 0.0) if opening_row else 0.0
+    expenses_paid_out = sum(
+        float(row.get('amount') or 0.0)
+        for row in expense_rows
+        if row is not opening_row and float(row.get('amount') or 0.0) < 0
+    )
+    cash_closing = opening_balance + cash + expenses_paid_out
+    salaries = sum(float(row.get('amount') or 0.0) for row in entries
+                   if row.get('kind') == 'salary')
+    numbered_students = sum(1 for row in students if row.get('serial') is not None)
+    remaining_total = sum(
+        float(row.get('remaining') or 0.0)
+        for row in students
+        if row.get('serial') is not None
+    )
+    # The top summary's G3 is the cash balance: Randa cash plus the signed
+    # expense movement. The lower audit block remains available separately.
+    on_hand_randa = cash_closing
+    randa_on_hand = 0.0
+    excel_delta = randa_on_hand - salaries
+    return {
+        'ym': target_ym,
+        'student_count': numbered_students,
+        'payment_rows': sum(1 for row in students if float(row.get('paid') or 0.0) > 0),
+        'collected': collected,
+        'randa_cash': cash,
+        'bank_transfer': transfer,
+        'books': books,
+        'remaining_total': remaining_total,
+        'expenses': expenses,
+        'expenses_paid_out': expenses_paid_out,
+        'opening_balance': opening_balance,
+        'opening_source': (opening_row.get('name') if opening_row else ''),
+        'cash_closing': cash_closing,
+        'cash_after_salaries': cash_closing - salaries,
+        'salaries': salaries,
+        'expected_salaries': salaries,
+        'on_hand_randa': on_hand_randa,
+        'randa_on_hand': randa_on_hand,
+        'delta': excel_delta,
+        'net': collected - expenses - salaries,
+    }
+
+
+def _replace_month_from_excel(parsed, target_ym, env):
+    """Replace one month from the authoritative workbook, without upserts.
+
+    This path is deliberately destructive only inside the selected accounting
+    month. It clears that month's fees/payments/entries, archives active
+    roster rows absent from the numbered Excel rows, and then writes every
+    Excel row exactly once. It is used by the explicit `replace` import mode.
+    """
+    month = _open_month(env, target_ym)
+    if month.state == 'closed':
+        raise ValueError('الشهر مقفول — لا يمكن استبدال بياناته.')
+    metrics = _excel_month_metrics(parsed, target_ym)
+    # The positive Nesrin line is the opening cash source. Keep the original
+    # entry for auditability, but do not count it again in cash closing.
+    month.write({'opening_balance': metrics['opening_balance']})
+
+    Fee = env['nursery.month.fee'].sudo()
+    Payment = env['nursery.fee.payment'].sudo()
+    Entry = env['nursery.month.entry'].sudo()
+    Student = env['nursery.student'].sudo()
+    period = _month_label(target_ym)
+
+    # Remove the selected month's linked documents first. The period filter
+    # also catches payment rows that were created by an earlier bad import.
+    month_fees = Fee.search([('month_id', '=', month.id)])
+    linked_payments = month_fees.mapped('payment_id')
+    if linked_payments:
+        linked_payments.unlink()
+    period_payments = Payment.search([('period', '=', period)])
+    if period_payments:
+        period_payments.unlink()
+
+    old_entries = Entry.search([('month_id', '=', month.id)])
+    linked_expenses = old_entries.mapped('expense_id')
+    if old_entries:
+        old_entries.unlink()
+    if linked_expenses:
+        linked_expenses.unlink()
+    if month_fees:
+        month_fees.unlink()
+
+    canonical_active_ids = set()
+    created = 0
+    updated = 0
+    fee_count = 0
+    payment_count = 0
+
+    for record in parsed.get('students') or []:
+        student = False
+        db_id = record.get('db_id')
+        if db_id is not None:
+            student = Student.browse(int(db_id))
+            if not student.exists():
+                student = False
+        if student:
+            updated += 1
+        else:
+            student = Student.create({
+                'name': record.get('name') or 'بدون اسم',
+                'term': 'term_2026' if target_ym[:4] == '2026' else 'term_2027',
+            })
+            created += 1
+
+        vals = {
+            'name': record.get('name') or student.name,
+            'active': bool(record.get('active')),
+            'serial': int(record['serial']) if record.get('serial') is not None else False,
+            'joining_date': record.get('joining_date') or False,
+            'guardian_name': record.get('guardian_name') or False,
+            'guardian_phone': record.get('guardian_phone') or False,
+            'remark': record.get('note') or False,
+            'books_fees': float(record.get('books') or 0.0),
+            'paid': float(record.get('paid') or 0.0) > 0,
+            'paid_at': record.get('paid_date') or False,
+            'paid_until': record.get('paid_until') or False,
+            'payment_method': (_method(record.get('method'))
+                               if float(record.get('paid') or 0.0) > 0 else False),
+        }
+        if record.get('fees') is not None:
+            vals['fees'] = float(record.get('fees') or 0.0)
+        # A broad Excel class must not be converted into a guessed subgroup.
+        # Preserve an existing exact class for ID-backed students; new rows
+        # remain unclassified until the workbook names a concrete class.
+        class_rec = _class_for(record.get('class_name'), env) if record.get('class_name') else False
+        if class_rec:
+            vals['class_id'] = class_rec.id
+        elif not db_id:
+            vals['class_id'] = False
+        student.write(vals)
+
+        if record.get('active'):
+            canonical_active_ids.add(student.id)
+
+        amount = float(record.get('paid') or 0.0)
+        fee_vals = {
+            'month_id': month.id,
+            'student_id': student.id,
+            'name': record.get('name') or student.name,
+            'fees': _fee_amount_from_record(record),
+            'paid': amount,
+            'paid_date': record.get('paid_date') or False,
+            'method': (_method(record.get('method')) if amount > 0 else False),
+            'note': record.get('note') or False,
+        }
+        fee = Fee.create(fee_vals)
+        fee_count += 1
+        if amount > 0:
+            payment = Payment.create({
+                'student_id': student.id,
+                'date': record.get('paid_date') or '%s-01' % target_ym,
+                'amount': amount,
+                'method': _method(record.get('method')),
+                'period': period,
+            })
+            fee.write({'payment_id': payment.id})
+            payment_count += 1
+
+    # The live roster must have exactly the numbered Excel students. Rows
+    # without a serial remain as inactive historical/payment records above.
+    active_students = Student.search([('active', '=', True)])
+    to_archive = active_students.filtered(lambda item: item.id not in canonical_active_ids)
+    if to_archive:
+        to_archive.write({'active': False})
+
+    for record in parsed.get('entries') or []:
+        _upsert_entry(record, month, env)
+
+    icp = env['ir.config_parameter'].sudo()
+    icp.set_param('nursery.excel_month_%s' % target_ym, json.dumps(metrics, ensure_ascii=False))
+    # The dashboard has a compact monthly override for the financial chart.
+    ext = {}
+    try:
+        ext = json.loads(icp.get_param('nursery.ext_fin', '') or '{}')
+    except Exception:
+        ext = {}
+    if not isinstance(ext, dict):
+        ext = {}
+    ext[target_ym] = {
+        'ym': target_ym,
+        'income': metrics['collected'],
+        'student_income': metrics['collected'],
+        'extra_income': 0.0,
+        'salaries': metrics['salaries'],
+        'other': metrics['expenses'],
+        'cash': metrics['randa_cash'],
+        'transfer': metrics['bank_transfer'],
+        'books': metrics['books'],
+        'remaining_total': metrics['remaining_total'],
+        'student_count': metrics['student_count'],
+        'on_hand_randa': metrics['on_hand_randa'],
+        'randa_on_hand': metrics['randa_on_hand'],
+        'delta': metrics['delta'],
+        'opening_balance': metrics['opening_balance'],
+        'opening_source': metrics['opening_source'],
+        'expenses_paid_out': metrics['expenses_paid_out'],
+        'cash_closing': metrics['cash_closing'],
+        'cash_after_salaries': metrics['cash_after_salaries'],
+        'net': metrics['net'],
+    }
+    icp.set_param('nursery.ext_fin', json.dumps(ext, ensure_ascii=False))
+
+    return {
+        'students_created': created,
+        'students_updated': updated,
+        'students_active': len(canonical_active_ids),
+        'fees_rebuilt': fee_count,
+        'payments_rebuilt': payment_count,
+        'expenses_rebuilt': sum(1 for r in parsed.get('entries') or []
+                                if r.get('kind') == 'expense'),
+        'salaries_rebuilt': sum(1 for r in parsed.get('entries') or []
+                                if r.get('kind') == 'salary'),
+        'metrics': metrics,
+    }
+
+
+def _student_export_workbook(env):
+    template = os.path.join(os.path.dirname(__file__), '..', 'assets',
+                            'student-export-template.xlsx')
+    if os.path.exists(template):
+        book = load_workbook(template)
+        sheet = book['الطلاب']
+    else:
+        book = Workbook()
+        sheet = book.active
+        sheet.title = 'الطلاب'
+        sheet.append(['الاسم', 'الصف', 'حالة الدفع', 'إجمالي المدفوع',
+                      'آخر دفعة', 'مدفوع حتى', 'مرتبط بولي الأمر',
+                      'اسم ولي الأمر', 'هاتف ولي الأمر', 'ID', 'ملاحظات'])
+
+    students = env['nursery.student'].sudo().search([], order='name')
+    style_cells = [copy(sheet.cell(2, column)._style) for column in range(1, 12)]
+    today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
+    for row_number, student in enumerate(students, 2):
+        last = student.payment_ids.sorted(
+            lambda payment: (payment.date or today, payment.id), reverse=True)[:1]
+        if student.paid_until and student.paid_until < today:
+            status = 'overdue'
+        elif student.paid:
+            status = 'paid'
+        else:
+            status = 'unpaid'
+        values = [
+            student.name or '', student.class_id.name or '', status,
+            student.total_paid or 0.0, last.amount if last else 0.0,
+            student.paid_until or '', 'نعم' if student.parent_user_id else 'لا',
+            student.guardian_name or '', student.guardian_phone or '',
+            student.id, student.remark or '',
+        ]
+        for column, value in enumerate(values, 1):
+            cell = sheet.cell(row_number, column, value)
+            cell._style = copy(style_cells[column - 1])
+        sheet.row_dimensions[row_number].height = 30
+    sheet.freeze_panes = 'A2'
+    return book, students
+
+
+class NurseryExcelImport(http.Controller):
+    @http.route('/api/manager/excel/export', type='http', auth='public', methods=['GET'], csrf=False, cors=WEBSITE)
+    def api_manager_excel_export(self, mt=None, **kw):
+        if not _manager_by_token(mt):
+            return request.make_response('unauthorized', headers=[('Content-Type', 'text/plain')], status=401)
+        groups = [('الفصول','nursery.class',['id','name','level','teacher_id','active']),('المدفوعات','nursery.fee.payment',['id','student_id','date','amount','method','period','note']),('الحضور','nursery.attendance',['id','student_id','date','status','arrival','departure','by_parent','note']),('الكتب','nursery.book',['id','name','code','level','price','cost','received_qty','issued_qty','stock_qty','note','active']),('حركة الكتب','nursery.book.move',['id','book_id','move_type','qty','date','student_id','paid','note']),('المرتبات','nursery.salary',['id','teacher','employee_id','expected','actual','paid_date','term','notes']),('المصروفات','nursery.expense',['id','date','value','term','note']),('الشهور','nursery.month',['id','ym','state','opening_balance','closed_at']),('رسوم الشهور','nursery.month.fee',['id','month_id','student_id','name','fees','paid','paid_date','method','note']),('قيود الشهور','nursery.month.entry',['id','month_id','etype','name','amount','date','note']),('الإجازات','nursery.holiday',['id','name','date_from','date_to','note'])]
+        book, students = _student_export_workbook(request.env)
+        student_header_styles = [copy(book['الطلاب'].cell(1, column)._style)
+                                 for column in range(1, 12)]
+        overview = book.create_sheet('ملخص التصدير', 0); overview.append(['المجموعة','عدد السجلات'])
+        overview.append(['الطلاب', len(students)])
+        for title, model_name, names in groups:
+            model = request.env[model_name].sudo(); fmap = model.fields_get(names); names = [n for n in names if n in fmap]
+            sheet = book.create_sheet(title[:31]); sheet.append([fmap[n].get('string') or n for n in names]); records = model.search([])
+            for rec in records:
+                row = []
+                for name in names:
+                    value = getattr(rec, name, '')
+                    if hasattr(value, 'display_name'): value = value.display_name
+                    elif isinstance(value, (date, datetime)): value = str(value)
+                    elif isinstance(value, bool): value = 'نعم' if value else 'لا'
+                    row.append(value if value is not False else '')
+                sheet.append(row)
+            sheet.freeze_panes = 'A2'; sheet.auto_filter.ref = sheet.dimensions
+            for column, cell in enumerate(sheet[1], 1):
+                cell._style = copy(student_header_styles[min(column, 11) - 1])
+            overview.append([title, len(records)])
+        output = io.BytesIO(); book.save(output); output.seek(0)
+        filename = 'montessori-export-%s.xlsx' % datetime.now(pytz.timezone('Asia/Riyadh')).strftime('%Y-%m-%d')
+        return request.make_response(output.getvalue(), headers=[('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),('Content-Disposition','attachment; filename="%s"' % filename),('Cache-Control','no-store')])
+
+    @http.route('/api/manager/excel/import', type='json', auth='public',
+                methods=['POST'], csrf=False, cors=WEBSITE)
+    def api_manager_excel_import(self, mt=None, mode='preview', files=None,
+                                 class_map=None, replace=False, **kw):
+        manager = _manager_by_token(mt)
+        if not manager:
+            return {'ok': False, 'error': 'unauthorized'}
+        files = files if isinstance(files, list) else []
+        total = 0
+        for item in files:
+            content = item.get('content') if isinstance(item, dict) else ''
+            try:
+                total += len(base64.b64decode(content or '', validate=True))
+            except (ValueError, TypeError):
+                return {'ok': False, 'error': 'يوجد ملف غير صالح أو تالف.'}
+        if not files or total > MAX_TOTAL_BYTES:
+            return {'ok': False, 'error': 'اختاري ملفات Excel بإجمالي لا يتجاوز 24 ميجابايت.'}
+        today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
+        target_ym = today.strftime('%Y-%m')
+        parsed = _parse_records(files, target_ym)
+        _apply_class_map(parsed, class_map, request.env)
+        if not parsed['students'] and not parsed['entries']:
+            return {'ok': False, 'error': 'لم أجد جداول مفهومة. تأكدي من وجود أعمدة الاسم والمبلغ/الرسوم.'}
+        if mode == 'replace' or replace:
+            try:
+                summary = _replace_month_from_excel(parsed, target_ym, request.env)
+            except ValueError as exc:
+                return {'ok': False, 'error': _clean(exc, 180)}
+            return {'ok': True, 'target_ym': target_ym,
+                    'target_label': _month_label(target_ym),
+                    'summary': summary, 'warnings': parsed['warnings']}
+        if mode == 'preview':
+            result = _preview(parsed, target_ym, request.env)
+            result['class_choices'] = _class_choices(parsed, request.env)
+            return result
+        if mode != 'commit':
+            return {'ok': False, 'error': 'وضع استيراد غير صالح.'}
+        preview = _preview(parsed, target_ym, request.env)
+        choices = _class_choices(parsed, request.env)
+        if choices:
+            return {'ok': False, 'error': 'اختاري الفصل الصحيح للطلاب الجدد قبل الاعتماد.',
+                    'class_choices': choices}
+        if preview.get('blocked'):
+            return {'ok': False, 'error': 'لا يمكن الاعتماد قبل حل التحذيرات.', 'warnings': preview.get('warnings', [])}
+        month = _open_month(request.env, target_ym)
+        if month.state == 'closed':
+            return {'ok': False, 'error': 'الشهر مقفول — لا يمكن التعديل.'}
+        summary = {'students_created': 0, 'students_updated': 0,
+                   'fees_upserted': 0, 'payments_upserted': 0,
+                   'expenses_upserted': 0, 'salaries_upserted': 0}
+        Student = request.env['nursery.student'].sudo()
+        for record in parsed['students']:
+            existing, _ = _find_student(record, request.env)
+            before_fee = _month_fee(month, existing) if existing else False
+            before_payment = bool(before_fee and before_fee.payment_id)
+            student = _upsert_student(record, month, request.env, target_ym)
+            summary['students_updated' if existing else 'students_created'] += 1
+            summary['fees_upserted'] += 1
+            after_fee = _month_fee(month, student)
+            if record.get('paid_present') and (after_fee and (after_fee.payment_id or before_payment)):
+                summary['payments_upserted'] += 1
+        for record in parsed['entries']:
+            _upsert_entry(record, month, request.env)
+            summary['expenses_upserted' if record['kind'] == 'expense' else 'salaries_upserted'] += 1
+        return {'ok': True, 'target_ym': target_ym, 'target_label': _month_label(target_ym),
+                'summary': summary, 'warnings': parsed['warnings']}

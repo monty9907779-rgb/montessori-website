@@ -3,17 +3,21 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://montessori-ksa.com/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://montessori-ksa.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://montessori-ksa.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://montessori-ksa.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://montessori-ksa.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://montessori-ksa.com/"/>
   </url>
   <url>
     <loc>https://montessori-ksa.com/en/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://montessori-ksa.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://montessori-ksa.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://montessori-ksa.com/"/>
   </url>
   <url>
     <loc>https://montessori-ksa.com/blog/</loc>
@@ -323,25 +327,25 @@
   </url>
   <url>
     <loc>https://montessori-ksa.com/en/blog/montessori-nursery-jeddah-guide/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://montessori-ksa.com/en/blog/daycare-in-jeddah/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://montessori-ksa.com/en/blog/nursery-in-jeddah/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://montessori-ksa.com/en/blog/kindergarten-in-jeddah/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -562,8 +566,44 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://montessori-ksa.com/blog/montessori-nursery-al-safa-jeddah-guide/</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://montessori-ksa.com/blog/montessori-nursery-al-khalidiyah-jeddah-guide/</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://montessori-ksa.com/blog/montessori-nursery-al-marwah-jeddah-guide/</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://montessori-ksa.com/blog/montessori-nursery-al-hamra-jeddah-guide/</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://montessori-ksa.com/blog/montessori-nursery-al-rabwah-jeddah-guide/</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://montessori-ksa.com/blog/montessori-nursery-bani-malik-jeddah-guide/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://montessori-ksa.com/wa/</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

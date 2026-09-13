@@ -101,6 +101,15 @@ function render(){
       '<div id="list"></div>'+
     '</main>';
   app.innerHTML=h; NS.wireLogout('mt');
+  var addBtn=document.getElementById('add');
+  if(addBtn){
+    var exportBtn=document.createElement('button');
+    exportBtn.className='btn btn--soft';
+    exportBtn.id='export';
+    exportBtn.innerHTML=I('download')+' تصدير Excel';
+    exportBtn.addEventListener('click',exportStudents);
+    addBtn.insertAdjacentElement('afterend', exportBtn);
+  }
   document.getElementById('add').addEventListener('click',function(){ edit(null); });
   var q=document.getElementById('q');
   q.addEventListener('input',function(){ Q=q.value; renderList(); });
@@ -119,6 +128,37 @@ function filtered(){
   });
   if(!q) return list;
   return list.filter(function(s){ return (s.name+' '+s.guardian_name+' '+s.guardian_phone).indexOf(q)>=0; });
+}
+
+function statusText(s){
+  if(s.status==='overdue') return 'متأخر';
+  if(s.status==='due_soon') return 'قرب موعده';
+  if(s.status==='paid') return 'مُسدَّد';
+  return 'لم يُسجَّل دفع';
+}
+
+function exportStudents(){
+  var list=filtered();
+  if(!list.length){ NS.toast('لا يوجد طلاب للتصدير','err'); return; }
+  NS.downloadXlsx({
+    filename: 'students-' + todayISO() + '.xlsx',
+    sheetName: 'Students',
+    headers: ['اسم الطالب','الفصل','ولي الأمر','الجوال','الحالة','الرسوم الشهرية','آخر دفعة','إجمالي المدفوع','مدفوع حتى','تاريخ الالتحاق'],
+    rows: list.map(function(s){
+      return [
+        s.name || '—',
+        s.class_name || 'بدون فصل',
+        s.guardian_name || '—',
+        s.guardian_phone || '—',
+        statusText(s),
+        s.fees || 0,
+        s.last_amount || 0,
+        s.total_paid || 0,
+        s.paid_until ? fmtD(s.paid_until) : '—',
+        s.joining_date ? fmtD(s.joining_date) : '—'
+      ];
+    })
+  });
 }
 
 function renderList(){

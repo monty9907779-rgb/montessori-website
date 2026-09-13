@@ -305,7 +305,7 @@ function info(){
   else S.holidays.forEach(function(x){ h+='<div class="hol"><b>'+NS.esc(x.name)+'</b><span class="tag tag--soft">'+NS.fmtShort(x.from)+(x.to&&x.to!==x.from?' → '+NS.fmtShort(x.to):'')+'</span></div>'; });
   h+='<div class="hol"><span class="muted">نهاية الأسبوع</span><span class="tag tag--soft">الجمعة والسبت</span></div></div>';
   h+='<div class="card card--pad"><span class="card__title" style="margin-bottom:10px">'+I('clock')+' مواعيد العمل</span>'+
-     '<div class="info-row"><span class="l">الأحد – الخميس</span><b>٨:٠٠ ص – ٢:٠٠ م</b></div></div>';
+     '<div class="info-row"><span class="l">الأحد – الخميس</span><b>٨:٠٠ ص – ١:٠٠ م</b></div></div>';
   C.innerHTML=h;
 }
 

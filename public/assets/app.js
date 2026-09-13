@@ -221,9 +221,10 @@ NS.gate = function(mount, opt){
      '<img class="logo" src="/logo.png" alt="روضة كوكب الطفل الحر"/>'+
      '<h2>'+NS.esc(opt.title||'مرحباً بك')+'</h2>'+
      '<p>'+NS.esc(opt.body||'سجّل دخولك للمتابعة')+'</p>'+
-     '<a class="btn btn--primary btn--block btn--lg" href="/login/">'+NS.icon('google')+' '+NS.esc(opt.cta||'الدخول عبر Google')+'</a>'+
+     '<a class="btn btn--primary btn--block btn--lg" href="'+NS.attr(NS.LOGIN)+'">'+NS.icon('google')+' '+NS.esc(opt.cta||'الدخول عبر Google')+'</a>'+ 
      (opt.altHtml||'')+
-     '<div style="margin-top:14px"><a class="btn btn--ghost btn--block" href="/">'+NS.icon('home')+' رجوع للموقع</a></div>'+
+     '<div style="margin-top:10px"><a class="btn btn--ghost btn--block" href="/login/">'+NS.icon('logout')+' دخول بالبريد وكلمة المرور</a></div>'+ 
+     '<div style="margin-top:14px"><a class="btn btn--ghost btn--block" href="/">'+NS.icon('home')+' رجوع للموقع</a></div>'+ 
    '</div>';
 };
 

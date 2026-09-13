@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { siteFacts } from "@/lib/site-facts";
 
 type Platform = {
   key: string;
@@ -16,7 +17,7 @@ const platforms: Platform[] = [
     emoji:  "📸",
     handle: "@montessori_nursery",
     color:  "linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)",
-    href:   "https://www.instagram.com/montessori_nursery/",
+    href:   siteFacts.contact.instagram,
   },
   {
     key:    "facebook",
@@ -30,9 +31,9 @@ const platforms: Platform[] = [
     key:    "whatsapp",
     name:   "WhatsApp",
     emoji:  "💬",
-    handle: "+966 541558173",
+    handle: siteFacts.contact.phoneDisplay,
     color:  "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
-    href:   "https://wa.me/966541558173",
+    href:   siteFacts.contact.whatsapp,
   },
 ];
 

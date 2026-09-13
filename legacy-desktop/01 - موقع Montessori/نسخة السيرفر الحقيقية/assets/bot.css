@@ -1,0 +1,15 @@
+#mk-faq-widget{position:fixed;right:20px;bottom:20px;z-index:9400;font-family:inherit;direction:rtl}
+#mk-faq-toggle{width:58px;height:58px;border:0;border-radius:50%;background:#7c3aed;color:#fff;font-size:25px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.24)}
+#mk-faq-panel{display:none;position:absolute;left:0;bottom:70px;width:min(360px,calc(100vw - 28px));max-height:520px;background:#fff;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+#mk-faq-panel.open{display:flex;flex-direction:column}
+#mk-faq-title{padding:14px 16px;background:#7c3aed;color:#fff;font-weight:800}
+#mk-faq-log{padding:14px;overflow:auto;min-height:220px;max-height:360px;background:#fafafa}
+.mk-faq-msg{white-space:pre-line;margin:0 0 10px;padding:10px 12px;border-radius:12px;line-height:1.65}
+.mk-faq-bot{background:#fff;border:1px solid #ede9fe;color:#292524}
+.mk-faq-user{background:#7c3aed;color:#fff;margin-right:42px}
+#mk-faq-form{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eee}
+#mk-faq-input{flex:1;min-width:0;border:1px solid #d1d5db;border-radius:10px;padding:10px;font:inherit}
+#mk-faq-send{border:0;border-radius:10px;background:#f59e0b;color:#fff;padding:0 16px;font-weight:800;cursor:pointer}
+.mk-faq-media{display:block;width:100%;height:auto;border-radius:12px;margin:0 0 10px}
+.mk-faq-link{display:block;color:#6d28d9;font-weight:700;margin:0;text-decoration:underline}
+.mk-faq-link-spaced{margin-top:8px}

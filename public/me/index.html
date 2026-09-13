@@ -81,7 +81,7 @@
 <body>
 <div id="app"><div class="app-main app-narrow" id="boot"></div></div>
 
-<script src="/assets/app.js?v=50"></script>
+<script src="/assets/app.js?v=51"></script>
 <script>
 (function(){
 var I=NS.icon, TOKEN=NS.token('t'), S=null, cdTimer=null;
@@ -384,7 +384,7 @@ function info(){
   else S.holidays.forEach(function(x){ h+='<div class="hol"><b>'+NS.esc(x.name)+'</b><span class="tag tag--soft">'+NS.fmtShort(x.from)+(x.to&&x.to!==x.from?' → '+NS.fmtShort(x.to):'')+'</span></div>'; });
   h+='<div class="hol"><span class="muted">نهاية الأسبوع</span><span class="tag tag--soft">الجمعة والسبت</span></div></div>';
   h+='<div class="card card--pad"><span class="card__title" style="margin-bottom:10px">'+I('clock')+' مواعيد العمل</span>'+
-     '<div class="info-row"><span class="l">الأحد – الخميس</span><b>٨:٠٠ ص – ٢:٠٠ م</b></div></div>';
+     '<div class="info-row"><span class="l">الأحد – الخميس</span><b>٨:٠٠ ص – ١:٠٠ م</b></div></div>';
   h+='<div class="card card--pad" style="margin-top:14px"><span class="card__title" style="margin-bottom:10px">'+I('pin')+' سجل الحضور والانصراف</span>';
   if(!S.attendance_history||!S.attendance_history.length) h+='<p class="muted" style="font-size:.92rem">لا توجد سجلات حضور بعد.</p>';
   else S.attendance_history.slice(0,12).forEach(function(a){

@@ -2,6 +2,7 @@ import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { LogIn } from "lucide-react";
 import { parentPortalUrl } from "@/lib/legacy-platform";
+import { siteFacts } from "@/lib/site-facts";
 
 export default function Footer() {
   const t = useTranslations("footer");
@@ -27,7 +28,7 @@ export default function Footer() {
             </div>
             <div>
               <div className="text-white font-bold">
-                {locale === "ar" ? "حضانة كوكب الطفل الحر" : "Planet of the Free Child"}
+                {locale === "ar" ? siteFacts.name.ar : siteFacts.name.en}
               </div>
               <div className="text-xs text-gray-400">
                 {locale === "ar" ? "مونتيسوري جدة" : "Montessori Jeddah"}
@@ -86,16 +87,16 @@ export default function Footer() {
             {locale === "ar" ? "تواصل معنا" : "Contact"}
           </h3>
           <ul className="space-y-2 text-sm text-gray-400">
-            <li>📍 {locale === "ar" ? "جدة، المملكة العربية السعودية" : "Jeddah, KSA"}</li>
-            <li>📞 +966 541558173</li>
-            <li>✉️ info@montessori-ksa.com</li>
+            <li>📍 {locale === "ar" ? siteFacts.address.ar : siteFacts.address.en}</li>
+            <li>📞 {siteFacts.contact.phoneDisplay}</li>
+            <li>✉️ {siteFacts.contact.email}</li>
           </ul>
           {/* Social */}
           <div className="flex gap-3 mt-5">
             {[
-              { label: "Instagram", icon: "📷", href: "https://www.instagram.com/montessori_nursery/" },
+              { label: "Instagram", icon: "📷", href: siteFacts.contact.instagram },
               { label: "Facebook", icon: "👍", href: "https://www.facebook.com/p/Montessori-nursery-100063063920027/" },
-              { label: "WhatsApp", icon: "💬", href: "https://wa.me/966541558173" },
+              { label: "WhatsApp", icon: "💬", href: siteFacts.contact.whatsapp },
             ].map(({ label, icon, href }) => (
               <a
                 key={label}
@@ -114,7 +115,7 @@ export default function Footer() {
       <div className="border-t border-gray-800 py-5">
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <span>
-            © {new Date().getFullYear()} {locale === "ar" ? "حضانة كوكب الطفل الحر" : "Planet of the Free Child Nursery"}. {t("rights")}.
+            © {new Date().getFullYear()} {locale === "ar" ? siteFacts.name.ar : siteFacts.name.en}. {t("rights")}.
           </span>
           <div className="flex gap-4">
             <a href="#" className="hover:text-gray-300 transition-colors">

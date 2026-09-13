@@ -130,6 +130,160 @@ NS.wa = function(phone,text){ var p=String(phone||'').replace(/[^0-9]/g,'');
   if(p.indexOf('0')===0) p='966'+p.slice(1); if(p.indexOf('966')!==0 && p.length===9) p='966'+p;
   return 'https://wa.me/'+p+(text?('?text='+encodeURIComponent(text)):''); };
 
+/* ---- xlsx export (single sheet, minimal OOXML zip) ---- */
+var XLSX_ENC = new TextEncoder();
+var XLSX_CRC_TABLE = (function(){
+  var table = new Uint32Array(256);
+  for(var i=0;i<256;i++){
+    var c = i;
+    for(var k=0;k<8;k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+    table[i] = c >>> 0;
+  }
+  return table;
+})();
+function xlsxBytes(value){ return XLSX_ENC.encode(String(value)); }
+function xlsxU16(value){ var b=new Uint8Array(2); new DataView(b.buffer).setUint16(0, value, true); return b; }
+function xlsxU32(value){ var b=new Uint8Array(4); new DataView(b.buffer).setUint32(0, value >>> 0, true); return b; }
+function xlsxConcat(parts){
+  var size = 0;
+  for(var i=0;i<parts.length;i++) size += parts[i].length;
+  var out = new Uint8Array(size), off = 0;
+  for(var j=0;j<parts.length;j++){ out.set(parts[j], off); off += parts[j].length; }
+  return out;
+}
+function xlsxCrc32(bytes){
+  var crc = 0xffffffff;
+  for(var i=0;i<bytes.length;i++) crc = XLSX_CRC_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
+}
+function xlsxEscapeXml(value){
+  return String(value)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&apos;');
+}
+function xlsxColumnName(index){
+  var n = index + 1, name = '';
+  while(n > 0){ var rem = (n - 1) % 26; name = String.fromCharCode(65 + rem) + name; n = Math.floor((n - 1) / 26); }
+  return name;
+}
+function xlsxCleanSheetName(name){
+  var safe = String(name || 'Sheet1').replace(/[\\/?*[\]:]/g, ' ').trim();
+  return safe.slice(0, 31) || 'Sheet1';
+}
+function xlsxCellXml(value, ref){
+  if(value === null || value === undefined || value === '') return '<c r="'+ref+'" t="inlineStr"><is><t></t></is></c>';
+  if(typeof value === 'number' && isFinite(value)) return '<c r="'+ref+'"><v>'+value+'</v></c>';
+  if(value instanceof Date) return '<c r="'+ref+'" t="inlineStr"><is><t>'+xlsxEscapeXml(value.toISOString())+'</t></is></c>';
+  return '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+xlsxEscapeXml(value)+'</t></is></c>';
+}
+function xlsxBuildSheetXml(headers, rows){
+  var headerRow = '';
+  for(var i=0;i<headers.length;i++) headerRow += xlsxCellXml(headers[i], xlsxColumnName(i) + '1');
+  var body = '';
+  for(var r=0;r<rows.length;r++){
+    var cells = '';
+    for(var c=0;c<rows[r].length;c++) cells += xlsxCellXml(rows[r][c], xlsxColumnName(c) + (r + 2));
+    body += '<row r="'+(r + 2)+'">'+cells+'</row>';
+  }
+  var lastColumn = xlsxColumnName(Math.max(headers.length - 1, 0));
+  var lastRow = rows.length + 1;
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+    '<dimension ref="A1:' + lastColumn + lastRow + '"/>' +
+    '<sheetViews><sheetView workbookViewId="0"/></sheetViews>' +
+    '<sheetFormatPr defaultRowHeight="15"/>' +
+    '<sheetData><row r="1">' + headerRow + '</row>' + body + '</sheetData>' +
+    '</worksheet>';
+}
+function xlsxBuildWorkbookXml(sheetName){
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+    '<sheets><sheet name="' + xlsxEscapeXml(xlsxCleanSheetName(sheetName)) + '" sheetId="1" r:id="rId1"/></sheets>' +
+    '</workbook>';
+}
+function xlsxBuildWorkbookRelsXml(){
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+    '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+    '</Relationships>';
+}
+function xlsxBuildRelsXml(){
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+    '</Relationships>';
+}
+function xlsxBuildContentTypesXml(){
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+    '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+    '</Types>';
+}
+function xlsxBuildStylesXml(){
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="1"><fill><patternFill patternType="none"/></fill></fills>' +
+    '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>' +
+    '</styleSheet>';
+}
+function xlsxZipStore(files){
+  var localParts = [], centralParts = [], offset = 0;
+  for(var i=0;i<files.length;i++){
+    var nameBytes = xlsxBytes(files[i].name);
+    var contentBytes = xlsxBytes(files[i].content);
+    var crc = xlsxCrc32(contentBytes);
+    var local = xlsxConcat([
+      xlsxU32(0x04034b50), xlsxU16(20), xlsxU16(0), xlsxU16(0), xlsxU16(0), xlsxU16(0),
+      xlsxU32(crc), xlsxU32(contentBytes.length), xlsxU32(contentBytes.length),
+      xlsxU16(nameBytes.length), xlsxU16(0), nameBytes, contentBytes
+    ]);
+    localParts.push(local);
+    centralParts.push(xlsxConcat([
+      xlsxU32(0x02014b50), xlsxU16(20), xlsxU16(20), xlsxU16(0), xlsxU16(0), xlsxU16(0), xlsxU16(0),
+      xlsxU32(crc), xlsxU32(contentBytes.length), xlsxU32(contentBytes.length),
+      xlsxU16(nameBytes.length), xlsxU16(0), xlsxU16(0), xlsxU16(0), xlsxU16(0), xlsxU32(0),
+      xlsxU32(offset), nameBytes
+    ]));
+    offset += local.length;
+  }
+  var central = xlsxConcat(centralParts);
+  var end = xlsxConcat([
+    xlsxU32(0x06054b50), xlsxU16(0), xlsxU16(0), xlsxU16(files.length), xlsxU16(files.length),
+    xlsxU32(central.length), xlsxU32(offset), xlsxU16(0)
+  ]);
+  return new Blob(localParts.concat([central, end]), {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+}
+NS.downloadXlsx = function(opt){
+  opt = opt || {};
+  var blob = xlsxZipStore([
+    { name: '[Content_Types].xml', content: xlsxBuildContentTypesXml() },
+    { name: '_rels/.rels', content: xlsxBuildRelsXml() },
+    { name: 'xl/workbook.xml', content: xlsxBuildWorkbookXml(opt.sheetName || 'Sheet1') },
+    { name: 'xl/_rels/workbook.xml.rels', content: xlsxBuildWorkbookRelsXml() },
+    { name: 'xl/worksheets/sheet1.xml', content: xlsxBuildSheetXml(opt.headers || [], opt.rows || []) },
+    { name: 'xl/styles.xml', content: xlsxBuildStylesXml() }
+  ]);
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (opt.filename || 'export.xlsx').replace(/[\\/:*?"<>|]+/g, '_');
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+};
+
 /* ---- skeleton helpers ---- */
 NS.skelLines = function(n){ var h=''; for(var i=0;i<(n||3);i++){ h+='<div class="skel skel-line" style="width:'+(60+Math.round((i*37)%38))+'%"></div>'; } return h; };
 NS.skelCard = function(){ return '<div class="card card--pad"><div class="skel skel-line" style="width:40%;height:20px"></div>'+NS.skelLines(3)+'</div>'; };
@@ -222,6 +376,7 @@ var ICONS = {
   chart:'<path d="M4 20V4"/><path d="M4 20h16"/><rect x="7" y="11" width="3" height="6" rx="1" fill="currentColor" stroke="none"/><rect x="12" y="7" width="3" height="10" rx="1" fill="currentColor" stroke="none"/><rect x="17" y="13" width="3" height="4" rx="1" fill="currentColor" stroke="none"/>',
   logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><polyline points="10 8 14 12 10 16"/><line x1="14" y1="12" x2="4" y2="12"/>',
   pin:'<path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+  download:'<path d="M12 3v11"/><polyline points="7 10 12 15 17 10"/><path d="M5 19h14"/>',
   phone:'<path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 5 5L14 12l5 2v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3 6.2 2 2 0 0 1 5 4z"/>',
   whatsapp:'<path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.3A9 9 0 1 0 12 3z"/><path d="M8.8 8.4c.8 2.6 2.2 4 4.8 4.8.6-.9 1-.9 2-.4l1 .8-.4 1.3c-2.6.7-6.6-2.8-6.9-5.9l1.3-.5z" fill="currentColor" stroke="none"/>',
   star:'<path d="M12 4l2.3 4.7 5.2.8-3.8 3.7.9 5.2L12 16.9 7.4 18l.9-5.2L4.5 9.5l5.2-.8z"/>',

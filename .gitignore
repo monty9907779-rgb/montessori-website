@@ -50,3 +50,12 @@ next-env.d.ts
 # OS
 .DS_Store
 Thumbs.db
+
+# consolidation 2026-09-13: local-only archive of salvaged copies (may hold secrets) + junk
+/archive/
+**/node_modules/
+.next/
+*.bak
+*.bak.*
+*.bak-*
+tsconfig.tsbuildinfo

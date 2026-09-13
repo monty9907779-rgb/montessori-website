@@ -6,6 +6,8 @@ import { execFileSync } from 'node:child_process';
 const root = path.resolve(import.meta.dirname, '..');
 const destination = path.resolve(process.argv[2]);
 const files = {};
+const revision = execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+const cacheName = `mk-shell-${revision}`;
 for (const entry of fs.readdirSync(path.join(root, 'public'), { withFileTypes: true })) {
   if (entry.isDirectory() && fs.existsSync(path.join(root, 'public', entry.name, 'index.html'))) {
     for (const name of fs.readdirSync(path.join(root, 'public', entry.name))) {
@@ -13,20 +15,27 @@ for (const entry of fs.readdirSync(path.join(root, 'public'), { withFileTypes: t
     }
   }
 }
-for (const name of ['app.js', 'app-admin.css', 'dashboard.css', 'install.js', 'whatsapp-admin.css', 'whatsapp-admin.js', 'enrollment-transfer.css', 'enrollment-transfer.js', 'students-transfer.js', 'sw-update.js']) {
+for (const name of ['app.js', 'app-admin.css', 'bot.css', 'bot.js', 'dashboard.css', 'fees-2026-2027.jpeg', 'install.js', 'logo-nav.webp', 'whatsapp-admin.css', 'whatsapp-admin.js', 'enrollment-transfer.css', 'enrollment-transfer.js', 'students-transfer.js', 'sw-update.js']) {
   files[`assets/${name}`] = '';
 }
 for (const name of ['sw.js', 'offline.html', 'manifest-staff.webmanifest', 'manifest-me.webmanifest', 'icon-maskable-512.png']) files[name] = '';
 for (const name of Object.keys(files)) {
-  const content = fs.readFileSync(path.join(root, 'public', name));
-  files[name] = crypto.createHash('sha256').update(content).digest('hex');
+  const raw = fs.readFileSync(path.join(root, 'public', name));
+  let buffer = raw;
+  if (name === 'sw.js') {
+    const content = raw.toString('utf8');
+    if (!content.includes('mk-shell-__RELEASE__')) {
+      throw new Error('public/sw.js is missing the release cache placeholder');
+    }
+    buffer = Buffer.from(content.replace('mk-shell-__RELEASE__', cacheName), 'utf8');
+  }
+  files[name] = crypto.createHash('sha256').update(buffer).digest('hex');
   const target = path.join(destination, 'public', name);
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, content);
+  fs.writeFileSync(target, buffer);
 }
 for (const [source, name] of [['scripts/deploy-static.py', 'deploy-static.py'], ['ops/nginx/montessori-ksa.conf', 'montessori-ksa.conf']]) {
   fs.copyFileSync(path.join(root, source), path.join(destination, name));
 }
-const revision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
-fs.writeFileSync(path.join(destination, 'release.json'), JSON.stringify({ revision, files }, null, 2) + '\n');
-console.log(`Packaged ${Object.keys(files).length} static files from public/ at ${revision}`);
+fs.writeFileSync(path.join(destination, 'release.json'), JSON.stringify({ revision, cacheName, files }, null, 2) + '\n');
+console.log(`Packaged ${Object.keys(files).length} static files from public/ at ${revision} with cache ${cacheName}`);

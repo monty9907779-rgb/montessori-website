@@ -278,7 +278,14 @@ def _build_dashboard_data(env):
         by_month = {}   # month -> {income, salaries, other}
 
         def _slot(k):
-            by_month.setdefault(k, {'income': 0.0, 'salaries': 0.0, 'other': 0.0})
+            by_month.setdefault(k, {
+                'income': 0.0, 'student_income': 0.0, 'extra_income': 0.0,
+                'salaries': 0.0, 'other': 0.0, 'cash': 0.0, 'transfer': 0.0,
+                'books': 0.0, 'remaining_total': 0.0,
+                'student_count': 0, 'payment_rows': None,
+                'on_hand_randa': 0.0,
+                'randa_on_hand': 0.0, 'delta': 0.0,
+            })
             return by_month[k]
 
         for p in pays:
@@ -286,6 +293,7 @@ def _build_dashboard_data(env):
                 k = p.date.strftime('%Y-%m')
                 if k >= START:
                     _slot(k)['income'] += p.amount
+                    _slot(k)['student_income'] += p.amount
         for e in exps:
             if e.date and e.value > 0:
                 k = e.date.strftime('%Y-%m')
@@ -303,11 +311,34 @@ def _build_dashboard_data(env):
             ext = json.loads(icp0.get_param('nursery.ext_fin', '') or '{}')
             for k, v in (ext.items() if isinstance(ext, dict) else []):
                 if k >= START and isinstance(v, dict):
-                    by_month[k] = {
+                    current = _slot(k)
+                    payment_rows = v.get('payment_rows')
+                    current.update({
+                        'ym': k,
                         'income': float(v.get('income', 0) or 0),
+                        'student_income': float(v.get('student_income', v.get('income', 0)) or 0),
+                        'extra_income': float(v.get('extra_income', 0) or 0),
                         'salaries': float(v.get('salaries', 0) or 0),
                         'other': float(v.get('other', 0) or 0),
-                    }
+                        'expenses': float(v.get('expenses', v.get('other', 0)) or 0),
+                        'cash': float(v.get('cash', 0) or 0),
+                        'transfer': float(v.get('transfer', 0) or 0),
+                        'books': float(v.get('books', 0) or 0),
+                        # This is the workbook's explicit remaining total.
+                        # Do not derive it from billed or collected amounts.
+                        'remaining_total': float(v.get('remaining_total', 0) or 0),
+                        'student_count': int(v.get('student_count', 0) or 0),
+                        'payment_rows': (int(payment_rows)
+                                         if payment_rows is not None else None),
+                        'on_hand_randa': float(v.get('on_hand_randa', 0) or 0),
+                        'randa_on_hand': float(v.get('randa_on_hand', 0) or 0),
+                        'delta': float(v.get('delta', 0) or 0),
+                        'opening_balance': float(v.get('opening_balance', 0) or 0),
+                        'opening_source': v.get('opening_source') or '',
+                        'expenses_paid_out': float(v.get('expenses_paid_out', 0) or 0),
+                        'cash_closing': float(v.get('cash_closing', v.get('on_hand_randa', 0)) or 0),
+                        'cash_after_salaries': float(v.get('cash_after_salaries', 0) or 0),
+                    })
         except Exception:
             pass
 
@@ -321,7 +352,22 @@ def _build_dashboard_data(env):
         net_total = income_total - salary_total - expense_total
 
         # ---- الطلاب والدفع ----
-        students = Stu.search([])
+        students = Stu.search([('active', '=', True)])
+        excel_summary = by_month.get(today.strftime('%Y-%m'), {})
+        # Excel is the monthly master. A named row without a serial may carry
+        # a payment, but it is not part of the numbered student roster.
+        master_has_student_count = 'student_count' in excel_summary
+        if master_has_student_count:
+            students = students.filtered(lambda student: bool(student.serial))
+            roster_student_count = int(excel_summary.get('student_count') or 0)
+        else:
+            roster_student_count = len(students)
+        paid_student_count = len(students.filtered('paid'))
+        if master_has_student_count:
+            # Payment rows are independent from the numbered roster because
+            # the workbook can contain paid rows without a serial.
+            if excel_summary.get('payment_rows') is not None:
+                paid_student_count = int(excel_summary.get('payment_rows') or 0)
         overdue = []
         for s in students:
             if s.paid_until and s.paid_until < today:
@@ -395,10 +441,11 @@ def _build_dashboard_data(env):
                 'income_today': sum(pays_today.mapped('amount')),
                 'count_today': len(pays_today),
                 'by_month': [{'label': k, **by_month[k]} for k in months],
+                'excel_summary': excel_summary,
             },
             'students': {
-                'total': len(students),
-                'paid': len(students.filtered('paid')),
+                'total': roster_student_count,
+                'paid': paid_student_count,
                 'overdue_count': len(overdue),
                 'overdue': overdue[:12],
             },

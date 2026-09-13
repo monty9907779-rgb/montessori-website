@@ -42,8 +42,8 @@
   wrap.id = 'mk-wa';
   wrap.innerHTML =
     '<div id="mk-wa-tip">💬 عندك سؤال؟ <b>راسلينا الآن</b></div>' +
-    '<a id="mk-wa-fab" aria-label="تواصلي معنا على واتساب" target="_blank" rel="noopener" href="' + href + '">' +
-      '<span id="mk-wa-badge">1</span>' +
+    '<a id="mk-wa-fab" aria-label="1 رسالة جديدة، تواصلي معنا على واتساب" target="_blank" rel="noopener" href="' + href + '">' +
+      '<span id="mk-wa-badge" aria-hidden="true">1</span>' +
       '<svg viewBox="0 0 32 32"><path d="' + path + '"/></svg>' +
     '</a>';
   document.body.appendChild(wrap);
