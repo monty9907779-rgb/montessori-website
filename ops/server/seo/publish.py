@@ -824,6 +824,36 @@ def repair_published_articles(q, today):
             render_article(a, d.isoformat(), d, allslugs | set(a.get('related') or []), titles),
             encoding='utf-8')
 
+def shadowing_redirect(slug):
+    """Return the redirect target when the site sends this slug elsewhere.
+
+    A slug can carry an nginx redirect added while it was only a link target.
+    Publishing into it would write a page the redirect hides: visitors and
+    crawlers follow the 301 and never see it, while the run reports success.
+    Checked over HTTP so it reflects what a visitor actually gets.
+    """
+    import urllib.request, urllib.error
+    url = 'https://montessori-ksa.com/blog/%s/' % slug
+    req = urllib.request.Request(url, method='HEAD')
+
+    class _NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *args, **kwargs):
+            return None
+
+    opener = urllib.request.build_opener(_NoRedirect)
+    try:
+        with opener.open(req, timeout=10) as resp:
+            code, target = resp.status, resp.headers.get('Location')
+    except urllib.error.HTTPError as exc:
+        code, target = exc.code, exc.headers.get('Location')
+    except Exception:
+        # A network failure must not stop publishing; the fact gate still ran.
+        return None
+    if code in (301, 302, 307, 308) and target:
+        return target
+    return None
+
+
 def main():
     today=datetime.date.today(); iso=today.isoformat()
     raw_q=json.loads(QUEUE.read_text())
@@ -877,6 +907,14 @@ def main():
             cand['blocked']=True; cand['blocked_reasons']=why
             blocked.append((cand.get('slug','?'), why))
             log(f"blocked {cand.get('slug','?')}: {'; '.join(why)}")
+            continue
+        target=shadowing_redirect(cand.get('slug',''))
+        if target:
+            why=['الموقع يحوّل هذا الرابط إلى %s، فالمقال سيُنشر محجوباً. '
+                 'احذف قاعدة التحويل من nginx قبل نشره.' % target]
+            cand['blocked']=True; cand['blocked_reasons']=why
+            blocked.append((cand.get('slug','?'), why))
+            log(f"blocked {cand.get('slug','?')}: shadowed by redirect -> {target}")
             continue
         cand.pop('blocked', None); cand.pop('blocked_reasons', None)
         a=cand; break
