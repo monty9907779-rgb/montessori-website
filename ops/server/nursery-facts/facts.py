@@ -105,6 +105,8 @@ ATTRIBUTION_CUES = ('رسومنا', 'أسعارنا', 'سعرنا', 'تكلفت�
                     'حضانتنا', 'روضتنا', 'كوكب الطفل')
 # نفي صريح لاستقبال الرضّع — جملة رافضة مش ادعاء (قاعدة ٢ تطلب قولها)
 _NEGATED = re.compile(r'(?:لا نستقبل|لا نقبل|لا نستقبلهم|نعتذر عن استقبال|دون السنتين|غير مشمول)')
+# نسبة سعرية صريحة إلينا: «سعر الروضة»، «رسوم الحضانة»… (غير «برنامج الروضة»)
+_PRICE_OF_OURS = re.compile(r'(?:سعر|أسعار|رسوم|تكلفة)\s+ال(?:روضة|حضانة)\b')
 _PRICE = re.compile(r'(\d[\d,\.]{2,})\s*(ريال|ر\.س|SAR)')
 
 BANS = [
@@ -136,6 +138,7 @@ def normalize(text):
     t = re.sub(r'ما\s*قبل\s*ال(?:روضة|تمهيدي)', 'PREKG', t)
     t = re.sub(r'\bPre[\s-]?KG\b', 'PREKG', t, flags=re.I)
     return t
+
 
 
 def _check_stage_ages(t):
@@ -178,6 +181,29 @@ def _check_orphan_stage_ages(t):
     return out
 
 
+# وصف سوق الحضانات في جدة يحتفظ بتسميته الشائعة (قرار المالك 2026-09-13):
+# سلّم المراحل الجديد يخصّ مراحلنا نحن فقط، لا وصف السوق.
+MARKET_CUES = ('الحضانات', 'حضانات', 'الروضات', 'السوق', 'بشكل عام',
+               'غالباً', 'عادةً', 'تتراوح', 'معظم', 'أغلب', 'في المملكة',
+               'في السعودية', 'المتعارف عليه', 'المعتاد')
+
+
+def _is_market_sentence(sent):
+    """جملة تصف السوق ولا تنسب الكلام إلينا."""
+    return (any(c in sent for c in MARKET_CUES)
+            and not any(c in sent for c in ATTRIBUTION_CUES))
+
+
+def _ours_only(t, fn):
+    """يشغّل فحص المراحل على الجمل المنسوبة إلينا فقط."""
+    out = []
+    for sent in re.split(r'[.؟!]', t):
+        if _is_market_sentence(sent):
+            continue
+        out.extend(fn(sent))
+    return out
+
+
 def _check_invented_price(t):
     """سعر مذكور مسموح فقط لو الجملة عامة عن سوق جدة وبلا نسبته إلينا.
 
@@ -189,9 +215,11 @@ def _check_invented_price(t):
         m = _PRICE.search(sent)
         if not m:
             continue
-        general = any(c in sent for c in GENERALITY_CUES)
-        attributed = any(c in sent for c in ATTRIBUTION_CUES)
-        if general and not attributed:
+        # نفس قاعدة المراحل: جملة تصف السوق ولا تنسب الكلام إلينا مسموحة —
+        # لكن «سعر/رسوم الروضة» نسبة سعرية إلينا مهما كان ظرف الجملة.
+        if _PRICE_OF_OURS.search(sent):
+            pass
+        elif _is_market_sentence(sent):
             continue
         out.append('سعر مخترع: «%s»' % m.group(0)[:45])
     return out
@@ -217,8 +245,8 @@ def check_text(text):
             bad.append('%s: «%s»' % (name, m.group(0)[:45]))
     bad = [b for b in bad if not (b.startswith('ادعاء عمر غلط') and _NEGATED.search(t))]
     bad.extend(_check_invented_price(t))
-    bad.extend(_check_stage_ages(t))
-    bad.extend(_check_orphan_stage_ages(t))
+    bad.extend(_ours_only(t, _check_stage_ages))
+    bad.extend(_ours_only(t, _check_orphan_stage_ages))
     bad.extend(_check_program_count(t))
     if not MUST.search(t):
         bad.append('ما ذكرش نطاق أعمارنا (٢–٥) صراحةً')
@@ -231,7 +259,8 @@ def check_article(a):
              a.get('bodyHtml') or '', a.get('seoTitle') or '']
     for x in (a.get('faq') or []):
         parts.append('%s %s' % (x.get('q', ''), x.get('a', '')))
-    return check_text(' '.join(parts))
+    # نقطة فاصلة بين الحقول حتى لا تتسرّب كلمات العنوان إلى جملة المتن
+    return check_text(' . '.join(parts))
 
 
 def check_html(html):
