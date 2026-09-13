@@ -2,6 +2,7 @@
 'use strict';
 
 var ENDPOINT='/api/manager/excel/import';
+var SHEET_ENDPOINT='/api/manager/excel/sheet';
 var MAX_FILE_SIZE=12*1024*1024;
 var MAX_TOTAL_SIZE=24*1024*1024;
 
@@ -151,6 +152,75 @@ function open(token){
   input.click();
 }
 
+
+/* ---- مزامنة من لينك Google Sheets -----------------------------------
+   الشيت بيتسحب من الخادم كملف xlsx، وبعدها بيعدّي على نفس مسار
+   المعاينة والاعتماد بتاع Excel — مفيش منطق استيراد مكرر. */
+function askSheetUrl(token,current){
+  return new Promise(function(resolve){
+    var m=NS.modal(
+      '<div class="modal__icon">'+NS.icon('ledger')+'</div>'+
+      '<h3>لينك جوجل شيت</h3>'+
+      '<p class="excel-review__intro">الصقي رابط الشيت مرة واحدة وهيتحفظ. لازم يكون مشاركته <strong>أي شخص لديه الرابط — مُشاهد</strong>.</p>'+
+      '<input type="url" dir="ltr" id="sheet-url-input" class="input" placeholder="https://docs.google.com/spreadsheets/d/..." value="'+NS.attr(current||'')+'" style="width:100%"/>'+
+      '<div class="actions">'+
+        '<button class="btn btn--primary" data-save>'+NS.icon('check')+' حفظ ومزامنة</button>'+
+        '<button class="btn btn--ghost" data-cancel>إلغاء</button>'+
+      '</div>'
+    );
+    var done=false;
+    var input=m.el.querySelector('#sheet-url-input');
+    var save=m.el.querySelector('[data-save]');
+    var cancel=m.el.querySelector('[data-cancel]');
+    function finish(value){ if(done) return; done=true; m.close(); resolve(value); }
+    if(cancel) cancel.addEventListener('click',function(){ finish(null); });
+    if(save) save.addEventListener('click',function(){
+      var url=(input&&input.value||'').trim();
+      if(!url){ NS.toast('الصقي رابط الشيت أولاً','err'); return; }
+      save.disabled=true;
+      save.innerHTML=NS.icon('refresh')+' جاري الحفظ...';
+      NS.api(SHEET_ENDPOINT,{mt:token,action:'save',url:url}).then(function(res){
+        if(!res||!res.ok) throw new Error((res&&res.error)||'تعذر حفظ الرابط');
+        finish(res.url);
+      }).catch(function(err){
+        save.disabled=false;
+        save.innerHTML=NS.icon('check')+' حفظ ومزامنة';
+        NS.toast(err.message||'تعذر حفظ الرابط','err');
+      });
+    });
+    if(input) input.focus();
+  });
+}
+
+function syncSheet(token,button){
+  NS.toast('جاري سحب الشيت من جوجل ومقارنته بالبيانات الحالية...','ok');
+  return NS.api(SHEET_ENDPOINT,{mt:token,action:'fetch'}).then(function(res){
+    if(!res||!res.ok) throw new Error((res&&res.error)||'تعذر سحب الشيت');
+    var files=res.files||[];
+    if(!files.length) throw new Error('الشيت رجع فاضياً');
+    return NS.api(ENDPOINT,{mt:token,mode:'preview',files:files}).then(function(result){
+      if(!result||!result.ok) throw new Error((result&&result.error)||'تعذر قراءة الشيت');
+      renderPreview(result,files);
+    });
+  });
+}
+
+function openSheet(token){
+  var button=document.getElementById('sheet-sync-btn');
+  if(button) button.disabled=true;
+  function release(){ if(button) button.disabled=false; }
+  NS.api(SHEET_ENDPOINT,{mt:token,action:'get'}).then(function(res){
+    if(!res||!res.ok) throw new Error((res&&res.error)||'تعذر قراءة إعدادات الشيت');
+    if(res.url) return syncSheet(token,button);
+    return askSheetUrl(token,'').then(function(url){
+      if(!url) return null;
+      return syncSheet(token,button);
+    });
+  }).catch(function(err){
+    NS.toast(err.message||'تعذر مزامنة الشيت','err');
+  }).then(release,release);
+}
+
 function exportAll(token){
   var button=document.getElementById('excel-export-btn');
   if(button) button.disabled=true;
@@ -166,5 +236,5 @@ function exportAll(token){
   }).catch(function(err){ NS.toast(err.message||'تعذر التصدير','err'); }).finally(function(){ if(button) button.disabled=false; });
 }
 
-NS.excelSync={open:open,exportAll:exportAll};
+NS.excelSync={open:open,openSheet:openSheet,exportAll:exportAll,setSheetUrl:askSheetUrl};
 })();

@@ -166,7 +166,7 @@ function render(){
       '<div class="page-head between u-wrap">'+
       '<div><h1>مرحباً '+NS.esc(D.name||'')+'</h1>'+
       '<div class="sub">نظرة عامة على أداء الحضانة اليوم</div></div>'+
-      '<div class="head-actions">'+'<a class="btn btn--primary" href="/ai/">'+I('sparkle')+' ذكاء الحضانة</a>'+'<button class="btn btn--soft" id="excel-sync-btn" type="button">'+I('wallet')+' مزامنة Excel</button>'+'<a class="btn btn--soft" href="/whatsapp/">'+I('whatsapp')+' واتساب</a>'+'<a class="btn btn--soft" href="https://crm.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDCAC صندوق الرسائل (CRM)</a>'+'<a class="btn btn--soft" data-owner="1" data-sso-api="/api/manager/beszel_sso" href="https://mon.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDDA5\uFE0F حالة السيرفر</a>'+'</div>'+
+      '<div class="head-actions">'+'<a class="btn btn--primary" href="/ai/">'+I('sparkle')+' ذكاء الحضانة</a>'+'<button class="btn btn--soft" id="excel-sync-btn" type="button">'+I('wallet')+' مزامنة Excel</button>'+'<button class="btn btn--soft" id="sheet-sync-btn" type="button">'+I('ledger')+' مزامنة لينك الشيت</button>'+'<a class="btn btn--soft" href="/whatsapp/">'+I('whatsapp')+' واتساب</a>'+'<a class="btn btn--soft" href="https://crm.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDCAC صندوق الرسائل (CRM)</a>'+'<a class="btn btn--soft" data-owner="1" data-sso-api="/api/manager/beszel_sso" href="https://mon.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDDA5\uFE0F حالة السيرفر</a>'+'</div>'+
       '</div>'+
       '<div id="stale"></div>'+
       periodBar()+
@@ -234,12 +234,15 @@ function render(){
   wirePeriod();
   var exportBtn=document.getElementById('excel-export-btn');
   if(!exportBtn){
-    var syncBtn=document.getElementById('excel-sync-btn');
+    /* بعد زرار لينك الشيت عشان زرارَي المزامنة يفضلوا جنب بعض */
+    var syncBtn=document.getElementById('sheet-sync-btn')||document.getElementById('excel-sync-btn');
     if(syncBtn){ exportBtn=document.createElement('button'); exportBtn.className='btn btn--soft'; exportBtn.id='excel-export-btn'; exportBtn.type='button'; exportBtn.innerHTML=I('download')+' تصدير Excel'; syncBtn.parentNode.insertBefore(exportBtn,syncBtn.nextSibling); }
   }
   if(exportBtn&&NS.excelSync) exportBtn.addEventListener('click',function(){ NS.excelSync.exportAll(TOKEN); });
   var excelBtn=document.getElementById('excel-sync-btn');
   if(excelBtn&&NS.excelSync) excelBtn.addEventListener('click',function(){ NS.excelSync.open(TOKEN); });
+  var sheetBtn=document.getElementById('sheet-sync-btn');
+  if(sheetBtn&&NS.excelSync) sheetBtn.addEventListener('click',function(){ NS.excelSync.openSheet(TOKEN); });
   window.__refreshDashboard=function(){ fetchData().then(function(d){ if(d&&d.ok){ D=d; render(); } }); };
 }
 

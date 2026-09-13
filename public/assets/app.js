@@ -345,10 +345,20 @@ NS.appbar = function(opts){
     ? '<button class="navtoggle" id="ns-navtoggle" aria-label="القائمة" aria-expanded="false" aria-controls="ns-appnav">'+
       NS.icon('menu')+'</button>'
     : '';
+  /* مدخل المساعد الذكي — يظهر في شريط كل صفحات الإدارة، وبنتخطاه على
+     صفحة /ai/ نفسها عشان مايبقاش رابط لنفس المكان. */
+  var ai = '';
+  if(opts.nav && opts.nav.length){
+    var here=''; try{ here=location.pathname||''; }catch(e){}
+    if(here.indexOf('/ai/')!==0){
+      ai='<a class="ns-ai-assistant" href="/ai/" title="ذكاء الحضانة">'+
+         NS.icon('sparkle')+'<span>ذكاء الحضانة</span></a>';
+    }
+  }
   return '<header class="appbar"><div class="appbar__in">'+ toggle +
     '<a class="brand" href="/"><img src="/logo.png" alt="روضة كوكب الطفل الحر"/>'+
       '<span>روضة كوكب الطفل الحر'+(opts.sub?'<small class="b-sub">'+NS.esc(opts.sub)+'</small>':'')+'</span></a>'+
-    '<div class="spacer"></div>'+ nav + (opts.right||'') +
+    '<div class="spacer"></div>'+ nav + (opts.right||'') + ai +
     '<button class="btn icon-btn" id="ns-logout" aria-label="تسجيل الخروج">'+NS.icon('logout')+'</button>'+
   '</div></header>';
 };

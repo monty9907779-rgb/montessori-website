@@ -516,9 +516,13 @@ html.ns-admin-shell .appnav a.on{background:var(--sand);color:var(--forest);box-
 html.ns-admin-shell .appnav a.on:before{content:"";position:absolute;top:10px;bottom:10px;right:0;width:4px;border-radius:999px;background:var(--clay)}
 html.ns-admin-shell .appnav a.on svg{color:var(--clay)}
 html.ns-admin-shell .appnav a:not(.on):hover{background:var(--sand);color:var(--forest)}
-html.ns-admin-shell .head-actions a[href="/ai/"]{display:none}
-html.ns-admin-shell .ns-ai-assistant{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:42px;padding:8px 12px;border-radius:10px;white-space:nowrap;font-size:.82rem;font-weight:800;color:var(--forest)}
+/* زرار «ذكاء الحضانة» في الرئيسية. كان مخفياً استعداداً لبديل في شريط
+   التطبيق (.ns-ai-assistant) لم يُبنَ أبداً — فبقيت الحضانة بلا أي مدخل
+   للمساعد الذكي. نرجّعه لحد ما البديل يتبني فعلاً. */
+html.ns-admin-shell .ns-ai-assistant{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:42px;padding:8px 12px;border-radius:10px;white-space:nowrap;font-size:.82rem;font-weight:800;color:var(--forest);text-decoration:none;border:1px solid var(--line,#dfe7e2);background:var(--sand,#f1f6f2)}
+html.ns-admin-shell .ns-ai-assistant:hover,html.ns-admin-shell .ns-ai-assistant:focus-visible{background:#e4efe8;border-color:var(--forest,#184e3e);outline:0}
 html.ns-admin-shell .ns-ai-assistant svg{width:18px;height:18px;flex:none}
 html.ns-admin-shell #ns-logout{margin-top:0;align-self:auto;width:42px;height:42px;border-radius:14px}
 html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none}
 @media(max-width:640px){html.ns-admin-shell .appbar__in{padding:9px 12px;gap:10px}html.ns-admin-shell .brand span{font-size:.9rem}html.ns-admin-shell .brand .b-sub{display:none}html.ns-admin-shell .ns-ai-assistant{min-height:40px;padding:7px 9px;gap:5px;font-size:.72rem}html.ns-admin-shell .ns-ai-assistant svg{width:17px;height:17px}html.ns-admin-shell #ns-logout{width:40px;height:40px}html.ns-admin-shell .appnav{width:min(320px,88vw)}}
+@media(max-width:480px){html.ns-admin-shell .ns-ai-assistant span{display:none}html.ns-admin-shell .ns-ai-assistant{padding:7px 9px}}
