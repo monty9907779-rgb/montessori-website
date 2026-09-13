@@ -3,6 +3,12 @@
 
 var ENDPOINT='/api/manager/excel/import';
 var SHEET_ENDPOINT='/api/manager/excel/sheet';
+var SEASON=[
+  ['2026-09','سبتمبر 2026'],['2026-10','أكتوبر 2026'],['2026-11','نوفمبر 2026'],
+  ['2026-12','ديسمبر 2026'],['2027-01','يناير 2027'],['2027-02','فبراير 2027'],
+  ['2027-03','مارس 2027'],['2027-04','أبريل 2027'],['2027-05','مايو 2027']
+];
+var CURRENT_YM='';
 var MAX_FILE_SIZE=12*1024*1024;
 var MAX_TOTAL_SIZE=24*1024*1024;
 
@@ -89,6 +95,20 @@ function classChoicesHtml(choices){
   }).join('')+'</div>';
 }
 
+function monthPickerHtml(targetYm){
+  var options=SEASON.map(function(item){
+    return '<option value="'+NS.esc(item[0])+'"'+(item[0]===targetYm?' selected':'')+'>'+NS.esc(item[1])+'</option>';
+  }).join('');
+  return '<label class="excel-review__month"><span>الشهر المستهدف</span>'+
+    '<select data-target-ym>'+options+'</select></label>';
+}
+
+function paymentsOnlyNoteHtml(targetYm){
+  if(!targetYm||!CURRENT_YM||targetYm===CURRENT_YM) return '';
+  return '<div class="excel-review__warning">'+NS.icon('alert')+
+    ' شهر سابق: هيتم تحديث الدفعات والمصروفات فقط. بيانات الطلاب (الفصل، الرسوم، ولي الأمر) والكشف الحالي لن تتغير.</div>';
+}
+
 function renderPreview(result, files){
   var changes=result.changes||[];
   var choices=result.class_choices||[];
@@ -97,7 +117,9 @@ function renderPreview(result, files){
   var m=NS.modal(
     '<div class="modal__icon">'+NS.icon('wallet')+'</div>'+
     '<h3>مراجعة تحديث Excel</h3>'+
-    '<p class="excel-review__intro">الشهر المستهدف: <strong>'+text(result.target_label||result.target_ym)+'</strong>. لن يتغير أي شيء قبل الضغط على اعتماد التحديث.</p>'+
+    '<p class="excel-review__intro">لن يتغير أي شيء قبل الضغط على اعتماد التحديث.</p>'+
+    monthPickerHtml(result.target_ym)+
+    paymentsOnlyNoteHtml(result.target_ym)+
     '<div class="excel-review__meta"><span>'+NS.icon('book')+' '+files.length+' ملف</span><span>'+NS.icon('users')+' '+(result.summary&&result.summary.rows||0)+' صف مقروء</span><span>'+NS.icon('refresh')+' '+changes.length+' تغيير</span></div>'+
     warningsHtml(result.warnings)+
     classChoicesHtml(choices)+
@@ -109,7 +131,21 @@ function renderPreview(result, files){
   );
   var commit=m.el.querySelector('[data-commit]');
   var cancel=m.el.querySelector('[data-cancel]');
+  var monthSelect=m.el.querySelector('[data-target-ym]');
   if(cancel) cancel.addEventListener('click',m.close);
+  if(monthSelect) monthSelect.addEventListener('change',function(){
+    var ym=monthSelect.value;
+    monthSelect.disabled=true;
+    NS.api(ENDPOINT,{mt:NS.token('mt'),mode:'preview',files:files,target_ym:ym}).then(function(next){
+      if(!next||!next.ok) throw new Error((next&&next.error)||'تعذر قراءة الشهر المطلوب');
+      m.close();
+      renderPreview(next,files);
+    }).catch(function(err){
+      monthSelect.disabled=false;
+      monthSelect.value=result.target_ym||CURRENT_YM;
+      NS.toast(err.message||'تعذر قراءة الشهر المطلوب','err');
+    });
+  });
   var selects=Array.prototype.slice.call(m.el.querySelectorAll('[data-class-student]'));
   function selectedClasses(){
     var map={};
@@ -122,7 +158,7 @@ function renderPreview(result, files){
   if(commit&&baseCanCommit) commit.addEventListener('click',function(){
     commit.disabled=true;
     commit.innerHTML=NS.icon('refresh')+' جاري الاعتماد...';
-    NS.api(ENDPOINT,{mt:NS.token('mt'),mode:'commit',files:files,class_map:selectedClasses()}).then(function(done){
+    NS.api(ENDPOINT,{mt:NS.token('mt'),mode:'commit',files:files,class_map:selectedClasses(),target_ym:(result.target_ym||CURRENT_YM)}).then(function(done){
       if(!done||done.ok===false) throw new Error((done&&done.error)||'تعذر اعتماد التحديث');
       m.close();
       NS.toast('تم تحديث '+(done.target_label||done.target_ym||'الشهر')+' بنجاح','ok');
@@ -145,6 +181,8 @@ function open(token){
       NS.toast('جاري قراءة الملفات ومقارنتها بالبيانات الحالية...','ok');
       return NS.api(ENDPOINT,{mt:token,mode:'preview',files:files}).then(function(result){
         if(!result||!result.ok) throw new Error((result&&result.error)||'تعذر قراءة ملف Excel');
+        // أول معاينة بترجع الشهر الجاري من الخادم — هو المرجع لتحديد «شهر سابق».
+        CURRENT_YM=result.target_ym||CURRENT_YM;
         renderPreview(result,files);
       });
     }).catch(function(err){ NS.toast(err.message||'تعذر قراءة الملف','err'); });
