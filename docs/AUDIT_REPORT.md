@@ -314,7 +314,7 @@ const GallerySection = dynamic(() => import("@/components/sections/GallerySectio
 
 ### للـ Build المحلي:
 ```bash
-cd "/Users/mohamedmontaser/Documents/Claude/Projects/montessori website"
+cd "/Users/mohamedmontaser/Documents/Codex/montessori-website"
 npm install
 npm run build
 npm run start

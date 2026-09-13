@@ -467,7 +467,7 @@ npm install next@latest next-intl@latest
 
 ### خطوة 1: إنشاء ملف .env
 ```bash
-cd "/Users/mohamedmontaser/Documents/Claude/Projects/montessori website"
+cd "/Users/mohamedmontaser/Documents/Codex/montessori-website"
 cp .env.example .env.local
 ```
 

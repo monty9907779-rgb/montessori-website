@@ -677,7 +677,7 @@ curl -I https://montessori-ksa.com | grep -E "(X-Frame|X-Content|X-XSS|Strict-Tr
 
 ### 2. Build Status
 ```bash
-cd "/Users/mohamedmontaser/Documents/Claude/Projects/montessori website"
+cd "/Users/mohamedmontaser/Documents/Codex/montessori-website"
 npm run build
 npm run type-check
 npm run security-audit

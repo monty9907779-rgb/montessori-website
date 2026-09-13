@@ -169,7 +169,7 @@ npm >= 9.0.0
 
 ```bash
 # 1. انتقل لمجلد المشروع
-cd "/Users/mohamedmontaser/Documents/Claude/Projects/montessori website"
+cd "/Users/mohamedmontaser/Documents/Codex/montessori-website"
 
 # 2. تثبيت المكتبات (إذا لم يتم بالفعل)
 npm install
@@ -207,7 +207,7 @@ npm run lint            # ESLint
 #### 1. Push للـ GitHub (إذا لم يكن مرفوعاً)
 
 ```bash
-cd "/Users/mohamedmontaser/Documents/Claude/Projects/montessori website"
+cd "/Users/mohamedmontaser/Documents/Codex/montessori-website"
 
 # Initialize git (إذا لم يكن موجوداً)
 git init

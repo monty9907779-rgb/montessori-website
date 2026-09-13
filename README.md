@@ -43,7 +43,7 @@
 افتح Terminal وشغّل:
 
 ```bash
-cd "/Users/mohamedmontaser/Documents/Claude/Projects/montessori website"
+cd "/Users/mohamedmontaser/Documents/Codex/montessori-website"
 npm install
 npm run dev
 ```
@@ -311,7 +311,7 @@ deploy.sh
 يوجد نظام منفصل قديم في:
 
 ```text
-/Users/mohamedmontaser/Documents/Codex/2026-08-21/new-chat-6/montessori-deploy
+/Users/mohamedmontaser/Documents/Codex/montessori-website/archive/codex-2026-08-21/new-chat-6/montessori-deploy
 ```
 
 هذه النسخة مبنية على Python وOdoo، وتحتوي على:
