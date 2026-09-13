@@ -369,7 +369,13 @@ def faq_block(faq):
 def related_block(a, allslugs, titles):
     rel=[s for s in (a.get('related') or []) if s in allslugs and s!=a['slug']][:3]
     if len(rel)<3:
-        for s in allslugs:
+        # allslugs is a set, so iterating it directly picked different fillers
+        # on every run: 42 published articles had their internal links
+        # reshuffled daily. Order by a hash of (this slug, candidate) so the
+        # choice is stable per article yet still spreads links across the site.
+        fillers=sorted(allslugs, key=lambda s: hashlib.sha1(
+            (a['slug']+'|'+s).encode('utf-8')).hexdigest())
+        for s in fillers:
             if s!=a['slug'] and s not in rel: rel.append(s)
             if len(rel)>=3: break
     rel=rel[:3]
@@ -397,12 +403,18 @@ def jsonld(a, iso):
             f'<script type="application/ld+json">{j(fq)}</script>\n'
             f'<script type="application/ld+json">{j(bc)}</script>')
 
+# وسم جوجل أناليتكس — منسوخ حرفياً من صفحات الموقع كي تنطبق عليه
+# بصمات CSP الموجودة في mk-csp-parts.conf دون أي تعديل عليها.
+GA_TAG = '<!-- Google tag (gtag.js) -->\n<script>addEventListener("load",function(){setTimeout(function(){var s=document.createElement("script");s.async=1;s.src="https://www.googletagmanager.com/gtag/js?id=G-H0856C2N0T";document.head.appendChild(s);},1500);});</script>\n<script>\nwindow.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}\ngtag(\'js\',new Date());gtag(\'config\',\'G-H0856C2N0T\');\naddEventListener(\'click\',function(e){var a=e.target.closest&&e.target.closest(\'a\');if(!a)return;var h=a.getAttribute(\'href\')||\'\';if(h.indexOf(\'wa.me\')>-1||h.indexOf(\'whatsapp\')>-1){gtag(\'event\',\'whatsapp_click\',{transport_type:\'beacon\'});}else if(h.indexOf(\'#register\')>-1){gtag(\'event\',\'book_visit_click\');}},true);\naddEventListener(\'submit\',function(e){if(e.target&&e.target.id===\'regform\'){gtag(\'event\',\'lead_form_submit\');}},true);\n</script>\n<!-- end Google tag -->'
+
+
 def render_article(a, iso, d, allslugs, titles):
     cat=CATN.get(a['cat'],''); url=f"{SITE}/blog/{a['slug']}/"
     kws=[a.get('targetKeyword','')]+(a.get('secondaryKeywords') or [])
     rt=max(4, round((a.get('wordCount') or 1100)/180))
     return f'''<!doctype html>
 <html lang="ar" dir="rtl"><head>
+{GA_TAG}
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>{esc(a['seoTitle'])}</title>
 <meta name="description" content="{esc(a['metaDescription'])}"/>

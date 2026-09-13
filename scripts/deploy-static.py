@@ -71,7 +71,11 @@ def refresh_csp():
     policy = HEADERS.read_text()
     required_sources = {
         'img-src': ['https://www.google.de'],
-        'connect-src': ['https://ad.doubleclick.net', 'https://stats.g.doubleclick.net', 'https://www.google.com'],
+        # analytics.google.com is where gtag actually sends hits. The policy
+        # listed only *.analytics.google.com, which does not match the apex
+        # host, so every GA beacon was refused and the blog reported nothing.
+        'connect-src': ['https://ad.doubleclick.net', 'https://stats.g.doubleclick.net',
+                        'https://www.google.com', 'https://analytics.google.com'],
     }
     for directive, sources in required_sources.items():
         match = re.search(r'(' + re.escape(directive) + r' [^;]+)', policy)
