@@ -357,7 +357,7 @@ def footer():
 def cta(kw):
     return (f'<aside class="cta-card"><div class="cta-card__glow"></div>'
       f'<h2>هل تبحثين عن {esc(kw)}؟</h2>'
-      f'<p>كوكب الطفل الحر في حي الفيصلية بجدة — بيئة تعليمية آمنة مع القرآن والعربية والإنجليزية، بتقييم <strong>4.7★</strong> من 71 مراجعة. احجزي جولة تعريفية وشاهدي بيئتنا المُعدّة عن قرب.</p>'
+      f'<p>كوكب الطفل الحر في حي الفيصلية بجدة، نستقبل الأطفال من سنتين إلى ٥ سنوات — بيئة تعليمية آمنة مع القرآن والعربية والإنجليزية، بتقييم <strong>4.7★</strong> على خرائط جوجل. احجزي جولة تعريفية وشاهدي بيئتنا المُعدّة عن قرب.</p>'
       f'<div class="cta-card__btns"><a class="btn btn--primary btn--lg" href="/#register">احجزوا زيارة</a>'
       f'<a class="btn btn--soft btn--lg" href="https://wa.me/966541558173" target="_blank" rel="noopener">تواصل واتساب</a></div></aside>')
 
