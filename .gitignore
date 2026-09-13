@@ -59,3 +59,6 @@ Thumbs.db
 *.bak.*
 *.bak-*
 tsconfig.tsbuildinfo
+
+# Claude Code worktrees and session scratch
+/.claude/
