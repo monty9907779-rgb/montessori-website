@@ -107,6 +107,17 @@ class TestExistingBansStillWork(unittest.TestCase):
         reasons = facts.check_text('رسومنا تبدأ من 1500 ريال شهرياً.' + INTAKE)
         self.assertTrue(reasons)
 
+    def test_review_count_in_digits_glued_to_arabic_rejected(self):
+        # «71 تقييماً» أفلت من الحاجز لأن \\b لا يقع بعد حرف عربي
+        self.assertTrue(facts.check_text('من 71 تقييماً على خرائط جوجل.' + INTAKE))
+
+    def test_review_count_written_in_words_rejected(self):
+        # «واحدٍ وسبعين مراجعة» أفلت لأن القاعدة كانت تطلب رقماً، والتنوين ليس \\w
+        self.assertTrue(facts.check_text('من واحدٍ وسبعين مراجعة على جوجل.' + INTAKE))
+
+    def test_rating_without_a_count_is_accepted(self):
+        self.assertEqual([], facts.check_text('بتقييم 4.7★ على خرائط جوجل.' + INTAKE))
+
     def test_review_count_rejected(self):
         reasons = facts.check_text('لدينا 70 مراجعة على خرائط جوجل.' + INTAKE)
         self.assertTrue(reasons)
