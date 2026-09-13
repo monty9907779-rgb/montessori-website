@@ -5,6 +5,11 @@ var app=document.getElementById('app');
 /* ---------- period (calendar) state — persisted ---------- */
 var P={mode:'all',from:null,to:null};
 try{ var _p=JSON.parse(localStorage.getItem('ns.dash.period')||'null'); if(_p&&_p.mode) P=_p; }catch(e){}
+/* «هذا الشهر» = الشهر التقويمي الحالي بتوقيت الرياض (من السيرفر) — مش آخر شهر فيه بيانات.
+   دفعة واحدة بتاريخ غلط في شهر قادم كانت بتخلّي اللوحة تقول «أكتوبر» وهي في سبتمبر. */
+var CUR_YM=(function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); })();
+try{ NS.api('/api/today',{}).then(function(d){ if(d&&d.date&&/^\d{4}-\d{2}/.test(d.date)){ var ym=d.date.slice(0,7); if(ym!==CUR_YM){ CUR_YM=ym; if(mounted) render(); } } }).catch(function(){}); }catch(e){}
+function curRows(rows){ return rows.filter(function(r){ return r.label===CUR_YM; }); }
 function savePeriod(){ try{ localStorage.setItem('ns.dash.period',JSON.stringify(P)); }catch(e){} }
 
 var AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -16,25 +21,29 @@ function mShort(k){ var p=String(k||'').split('-'); if(p.length<2) return k;
 /* filtered by_month rows according to P */
 function fRows(){
   var rows=((D&&D.money)||{}).by_month||[];
-  if(P.mode==='last3') return rows.slice(-3);
-  if(P.mode==='cur')   return rows.slice(-1);
+  if(P.mode==='last3') return rows.filter(function(r){ return r.label<=CUR_YM; }).slice(-3);
+  if(P.mode==='cur')   return curRows(rows);
   if(P.mode==='custom'&&(P.from||P.to))
     return rows.filter(function(r){ return (!P.from||r.label>=P.from)&&(!P.to||r.label<=P.to); });
   return rows;
 }
 function finSums(rows){
-  var s={income:0,student_income:0,extra_income:0,salaries:0,other:0,net:0};
+  var s={income:0,student_income:0,extra_income:0,salaries:0,other:0,net:0,
+    cash:0,transfer:0,books:0,remaining_total:0,on_hand_randa:0,randa_on_hand:0,delta:0};
   rows.forEach(function(r){
     var inc=Number(r.income)||0, stu=(r.student_income!=null?Number(r.student_income):inc)||0;
     s.income+=inc; s.student_income+=stu; s.extra_income+=(r.extra_income!=null?Number(r.extra_income):(inc-stu))||0;
     s.salaries+=(r.salaries||0); s.other+=(r.other||0);
+    s.cash+=(r.cash||0); s.transfer+=(r.transfer||0); s.books+=(r.books||0);
+    s.remaining_total+=(r.remaining_total||0);
+    s.on_hand_randa+=(r.on_hand_randa||0); s.randa_on_hand+=(r.randa_on_hand||0); s.delta+=(r.delta||0);
   });
   s.net=s.income-s.salaries-s.other;
   return s;
 }
 function periodShort(rows){
   if(P.mode==='last3') return 'آخر ٣ أشهر';
-  if(P.mode==='cur')   return rows.length?mLabel(rows[rows.length-1].label):'هذا الشهر';
+  if(P.mode==='cur')   return mLabel(CUR_YM)+(rows.length?'':' · لا بيانات بعد');
   if(P.mode==='custom'&&(P.from||P.to)){
     if(!rows.length) return 'لا بيانات في الفترة';
     var a=mLabel(rows[0].label), b=mLabel(rows[rows.length-1].label);
@@ -144,6 +153,7 @@ function render(){
   mounted=true;
   var m=D.money||{}, st=D.students||{}, at=D.att_today||{}, sf=D.staff||{};
   var FR=fRows(), F=finSums(FR), ptxt=periodShort(FR);
+  var EX=m.excel_summary||{};
 
   var right='<span class="live" title="تُحدَّث تلقائياً كل دقيقة"><span class="dot"></span>'+
             '<span class="live-txt">تُحدَّث تلقائياً</span></span>';
@@ -156,7 +166,7 @@ function render(){
       '<div class="page-head between u-wrap">'+
       '<div><h1>مرحباً '+NS.esc(D.name||'')+'</h1>'+
       '<div class="sub">نظرة عامة على أداء الحضانة اليوم</div></div>'+
-      '<div class="head-actions">'+'<a class="btn btn--primary" href="/ai/">'+I('sparkle')+' ذكاء الحضانة</a>'+'<a class="btn btn--soft" href="/whatsapp/">'+I('whatsapp')+' واتساب</a>'+'<a class="btn btn--soft" href="https://crm.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDCAC صندوق الرسائل (CRM)</a>'+'<a class="btn btn--soft" data-owner="1" data-sso-api="/api/manager/beszel_sso" href="https://mon.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDDA5\uFE0F حالة السيرفر</a>'+'</div>'+ 
+      '<div class="head-actions">'+'<a class="btn btn--primary" href="/ai/">'+I('sparkle')+' ذكاء الحضانة</a>'+'<button class="btn btn--soft" id="excel-sync-btn" type="button">'+I('wallet')+' مزامنة Excel</button>'+'<a class="btn btn--soft" href="/whatsapp/">'+I('whatsapp')+' واتساب</a>'+'<a class="btn btn--soft" href="https://crm.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDCAC صندوق الرسائل (CRM)</a>'+'<a class="btn btn--soft" data-owner="1" data-sso-api="/api/manager/beszel_sso" href="https://mon.montessori-ksa.com" target="_blank" rel="noopener">\uD83D\uDDA5\uFE0F حالة السيرفر</a>'+'</div>'+
       '</div>'+
       '<div id="stale"></div>'+
       periodBar()+
@@ -166,7 +176,12 @@ function render(){
         stat('is-forest','wallet','إجمالي الإيرادات',NS.riyal(F.income),'الطلبة: '+NS.riyal(F.student_income)+' · دخل آخر: '+NS.riyal(F.extra_income),'/accounts/#source-income')+
         stat('is-clay','users','المرتبات',NS.riyal(F.salaries),ptxt,'/accounts/#source-salary')+
         stat('is-danger','wallet','مصاريف أخرى',NS.riyal(F.other),ptxt,'/accounts/#source-expense')+
-        stat(F.net>=0?'is-forest':'is-danger','chart','صافي الفترة',NS.riyal(F.net),ptxt,'/accounts/#source-income')+
+        stat(F.net>=0?'is-forest':'is-danger','chart','صافي الشيت (ليس رصيداً)',NS.riyal(F.net),ptxt,'/accounts/#source-income')+
+        stat('is-forest','wallet','Randa Cash',NS.riyal(F.cash),ptxt,'/accounts/#source-fees')+
+        stat('is-clay','wallet','تحويل بنكي',NS.riyal(F.transfer),ptxt,'/accounts/#source-fees')+
+        stat(F.remaining_total>0?'is-danger':'is-forest','alert','الباقي',NS.riyal(F.remaining_total),ptxt,'/accounts/#source-fees')+
+        stat('is-forest','chart','On hand Randa / الإغلاق النقدي',NS.riyal(F.on_hand_randa),ptxt,'/accounts/#source-expense')+
+        stat(F.delta>=0?'is-forest':'is-danger','alert','Delta الشيت (تدقيق فقط)',NS.riyal(F.delta),ptxt,'/accounts/#source-salary')+
         stat('is-forest','sparkle','دخل اليوم',NS.riyal(m.income_today),(Number(m.count_today)||0)+' دفعة اليوم','/accounts/#source-fees')+
         stat('is-forest','users','الطلاب',NS.fmtMoney(st.total),(Number(st.paid)||0)+' سدّدوا الرسوم','/students/')+
         stat(st.overdue_count?'is-amber':'is-forest','alert','متأخرو السداد',NS.fmtMoney(st.overdue_count),st.overdue_count?'بحاجة لمتابعة':'لا يوجد متأخرون','/receivables/')+
@@ -174,6 +189,8 @@ function render(){
         stat(sf.late_today?'is-amber':'is-forest','clock','تأخّر الموظفين',NS.fmtMoney(sf.late_today),sf.late_today?'اليوم':'الجميع في الموعد','/salaries/')+
         stat('is-forest','calendar','تسجيل السنة الجديدة',NS.fmtMoney(st.new_year_count||0),'طلب/طالب','/enrollments/')+
       '</div>'+
+
+      (EX.ym?excelLedgerCard(EX):'')+
 
       /* ---- charts + tables ---- */
       '<div class="dash-grid">'+
@@ -215,6 +232,15 @@ function render(){
   app.innerHTML=h;
   NS.wireLogout('mt');
   wirePeriod();
+  var exportBtn=document.getElementById('excel-export-btn');
+  if(!exportBtn){
+    var syncBtn=document.getElementById('excel-sync-btn');
+    if(syncBtn){ exportBtn=document.createElement('button'); exportBtn.className='btn btn--soft'; exportBtn.id='excel-export-btn'; exportBtn.type='button'; exportBtn.innerHTML=I('download')+' تصدير Excel'; syncBtn.parentNode.insertBefore(exportBtn,syncBtn.nextSibling); }
+  }
+  if(exportBtn&&NS.excelSync) exportBtn.addEventListener('click',function(){ NS.excelSync.exportAll(TOKEN); });
+  var excelBtn=document.getElementById('excel-sync-btn');
+  if(excelBtn&&NS.excelSync) excelBtn.addEventListener('click',function(){ NS.excelSync.open(TOKEN); });
+  window.__refreshDashboard=function(){ fetchData().then(function(d){ if(d&&d.ok){ D=d; render(); } }); };
 }
 
 /* ---------- small builders ---------- */
@@ -227,6 +253,25 @@ function stat(accent,icon,label,value,sub,href){
     (sub?'<div class="sub">'+NS.esc(sub)+'</div>':'')+close;
 }
 /* note: 'is-forest' is the default .stat accent (no override class needed); harmless if unstyled */
+
+function excelLedgerCard(x){
+  var rows=[
+    ['إجمالي المحصل',x.collected],['Randa Cash',x.randa_cash],
+    ['تحويل بنكي',x.bank_transfer],['الباقي',x.remaining_total],['حركة المصروفات بالشيت',x.expenses],
+    ['الرصيد النقدي المرحّل',x.on_hand_randa],['الرواتب',x.salaries],
+    ['الطلبة',x.student_count],['رسوم الكتب',x.books],
+    ['Randa on hand (بلوك التدقيق)',x.randa_on_hand],['Delta الشيت (تدقيق فقط)',x.delta],['Net الشيت (ليس رصيداً)',x.net]
+  ];
+  var h='<section class="card card--pad col-2 excel-ledger">'+
+    '<div class="card__head"><span class="card__title">'+I('file')+' مطابقة ملخص Excel — '+NS.esc(mLabel(x.ym))+'</span>'+
+    '<span class="tag tag--soft">المصدر: 2026-2027 Montessori</span></div>'+
+    '<div class="table-wrap"><table class="table"><tbody>';
+  rows.forEach(function(r){
+    var value=(r[0]==='الطلبة'?NS.fmtMoney(r[1]):NS.riyal(r[1]));
+    h+='<tr><td><b>'+NS.esc(r[0])+'</b></td><td class="tabnum">'+value+'</td></tr>';
+  });
+  return h+'</tbody></table></div></section>';
+}
 
 /* ================= إعلانات جوجل ================= */
 function adsCard(a){
