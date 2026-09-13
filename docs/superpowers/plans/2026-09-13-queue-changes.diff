@@ -1,3 +1,9 @@
+=== SECTION 1: queue-backed articles (/opt/seo/queue.json) ===
+
+nursery-al-naseem-jeddah [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
 nursery-al-naseem-jeddah [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
    + المستوى الأول (3–4 سنوات)
@@ -13,6 +19,10 @@ nursery-al-naseem-jeddah [bodyHtml]
 nursery-al-naseem-jeddah [bodyHtml]
    - الروضة (4-6 سنوات)
    + المستوى الثاني (4–5 سنوات)
+
+nursery-al-naseem-jeddah [faq.a]
+   - برنامجين: الحضانة (1-2)، والتمهيدي (2-4)، والروضة (4-6)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
 
 nursery-al-naseem-jeddah [faq.a]
    - التمهيدي (2-4)
@@ -27,6 +37,10 @@ nursery-al-naseem-jeddah [faq.a]
    + 
 
 nursery-as-salamah-jeddah [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+nursery-as-salamah-jeddah [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
    + المستوى الأول (3–4 سنوات)
 
@@ -43,6 +57,10 @@ nursery-as-salamah-jeddah [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-al-hamdaniyah-jeddah [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+nursery-al-hamdaniyah-jeddah [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
    + المستوى الأول (3–4 سنوات)
 
@@ -57,6 +75,10 @@ nursery-al-hamdaniyah-jeddah [bodyHtml]
 nursery-al-hamdaniyah-jeddah [bodyHtml]
    - الروضة (4-6 سنوات)
    + المستوى الثاني (4–5 سنوات)
+
+nursery-al-hamdaniyah-jeddah [faq.a]
+   - برنامجين: الحضانة (1-2)، والتمهيدي (2-4)، والروضة (4-6)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
 
 nursery-al-hamdaniyah-jeddah [faq.a]
    - التمهيدي (2-4)
@@ -91,8 +113,8 @@ nursery-an-naim-jeddah [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-an-naim-jeddah [faq.a]
-   - نقدّم برنامجين: الحضانة (1-2 سنة)، والتمهيدي (2-4 سنوات)، والروضة (4-6 سنوات)
-   + نقدّم أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
+   - برنامجين: الحضانة (1-2 سنة)، والتمهيدي (2-4 سنوات)، والروضة (4-6 سنوات)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
 
 nursery-an-naim-jeddah [faq.a]
    - التمهيدي (2-4 سنوات)
@@ -115,6 +137,10 @@ potty-training [bodyHtml]
    + المستوى الثاني (4–5)
 
 nursery-ar-rayyan-jeddah [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+nursery-ar-rayyan-jeddah [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
    + المستوى الأول (3–4 سنوات)
 
@@ -131,6 +157,10 @@ nursery-ar-rayyan-jeddah [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-ar-rayyan-jeddah [faq.a]
+   - برنامجين: الحضانة (1-2)، والتمهيدي (2-4)، والروضة (4-6)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
+
+nursery-ar-rayyan-jeddah [faq.a]
    - التمهيدي (2-4)
    + المستوى الأول (3–4)
 
@@ -141,6 +171,10 @@ nursery-ar-rayyan-jeddah [faq.a]
 nursery-ar-rayyan-jeddah [faq.a]
    - الحضانة (1-2)، 
    + 
+
+tantrums-management [bodyHtml]
+   - الروضة (من أربع إلى خمس سنوات)
+   + المستوى الثاني (من أربع إلى خمس سنوات)
 
 nursery-ar-rawdah-jeddah [bodyHtml]
    - التمهيدي (2-4 سنوات)
@@ -151,6 +185,10 @@ nursery-ar-rawdah-jeddah [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-ar-rawdah-jeddah [faq.a]
+   - برنامجين: الحضانة (1-2)، والتمهيدي (2-4)، والروضة (4-6)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
+
+nursery-ar-rawdah-jeddah [faq.a]
    - التمهيدي (2-4)
    + المستوى الأول (3–4)
 
@@ -161,6 +199,10 @@ nursery-ar-rawdah-jeddah [faq.a]
 nursery-ar-rawdah-jeddah [faq.a]
    - الحضانة (1-2)، 
    + 
+
+picky-eater-child [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
 
 picky-eater-child [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
@@ -177,6 +219,10 @@ picky-eater-child [bodyHtml]
 picky-eater-child [bodyHtml]
    - الروضة (4-6 سنوات)
    + المستوى الثاني (4–5 سنوات)
+
+nursery-az-zahraa-jeddah [bodyHtml]
+   - برنامج الحضانة (1–2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
 
 nursery-az-zahraa-jeddah [bodyHtml]
    - البرنامج التمهيدي (2–4 سنوات)
@@ -193,6 +239,10 @@ nursery-az-zahraa-jeddah [bodyHtml]
 nursery-az-zahraa-jeddah [bodyHtml]
    - الروضة (4–6 سنوات)
    + المستوى الثاني (4–5 سنوات)
+
+nursery-az-zahraa-jeddah [faq.a]
+   - برنامجين: الحضانة (1–2 سنة)، والتمهيدي (2–4 سنوات)، والروضة (4–6 سنوات)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
 
 nursery-az-zahraa-jeddah [faq.a]
    - التمهيدي (2–4 سنوات)
@@ -215,6 +265,10 @@ reading-to-children [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-al-bawadi-jeddah [bodyHtml]
+   - برنامج الحضانة (1–2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+nursery-al-bawadi-jeddah [bodyHtml]
    - البرنامج التمهيدي (2–4 سنوات)
    + المستوى الأول (3–4 سنوات)
 
@@ -231,8 +285,8 @@ nursery-al-bawadi-jeddah [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-al-bawadi-jeddah [faq.a]
-   - نقدّم برنامجين: الحضانة (1–2 سنة)، والتمهيدي (2–4 سنوات)، والروضة (4–6 سنوات)
-   + نقدّم أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
+   - برنامجين: الحضانة (1–2 سنة)، والتمهيدي (2–4 سنوات)، والروضة (4–6 سنوات)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
 
 nursery-al-bawadi-jeddah [faq.a]
    - التمهيدي (2–4 سنوات)
@@ -255,8 +309,8 @@ nursery-al-marwah-jeddah [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-al-marwah-jeddah [faq.a]
-   - نقدّم برنامجين: الحضانة (1-2 سنة)، والتمهيدي (2-4 سنوات)، والروضة (4-6 سنوات)
-   + نقدّم أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
+   - برنامجين: الحضانة (1-2 سنة)، والتمهيدي (2-4 سنوات)، والروضة (4-6 سنوات)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
 
 nursery-al-marwah-jeddah [faq.a]
    - التمهيدي (2-4 سنوات)
@@ -271,6 +325,10 @@ nursery-al-marwah-jeddah [faq.a]
    + 
 
 toddler-discipline [bodyHtml]
+   - برامجنا الثلاثة — الحضانة (1-2)، والتمهيدي (2-4)، والروضة (4-6) —
+   + مراحلنا الأربع — ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6) —
+
+toddler-discipline [bodyHtml]
    - التمهيدي (2-4 سنوات)
    + المستوى الأول (3–4 سنوات)
 
@@ -289,6 +347,10 @@ toddler-discipline [bodyHtml]
 toddler-discipline [bodyHtml]
    - الحضانة (1-2)، 
    + 
+
+nursery-ash-shati-jeddah [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
 
 nursery-ash-shati-jeddah [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
@@ -307,6 +369,10 @@ nursery-ash-shati-jeddah [bodyHtml]
    + المستوى الثاني (4–5 سنوات)
 
 nursery-ash-shati-jeddah [faq.a]
+   - برنامجين: الحضانة (1-2)، والتمهيدي (2-4)، والروضة (4-6)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
+
+nursery-ash-shati-jeddah [faq.a]
    - التمهيدي (2-4)
    + المستوى الأول (3–4)
 
@@ -325,6 +391,10 @@ nursery-24h-evening-jeddah [bodyHtml]
 nursery-24h-evening-jeddah [bodyHtml]
    - الروضة (4-6 سنوات)
    + المستوى الثاني (4–5 سنوات)
+
+infant-nursery-jeddah [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
 
 infant-nursery-jeddah [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
@@ -351,6 +421,10 @@ nursery-jobs-jeddah [bodyHtml]
    + معلمة المستوى الثاني (4–5 سنوات)
 
 kids-english-course-jeddah [bodyHtml]
+   - برنامج الحضانة (1-2 سنة):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+kids-english-course-jeddah [bodyHtml]
    - البرنامج التمهيدي (2-4 سنوات)
    + المستوى الأول (3–4 سنوات)
 
@@ -365,6 +439,10 @@ kids-english-course-jeddah [bodyHtml]
 kids-english-course-jeddah [bodyHtml]
    - الروضة (4-6 سنوات)
    + المستوى الثاني (4–5 سنوات)
+
+kids-english-course-jeddah [faq.a]
+   - برنامجين: الحضانة (1-2 سنة)، والتمهيدي (2-4 سنوات)، والروضة (4-6 سنوات)
+   + أربع مراحل: ما قبل الروضة (سنتان–3)، والمستوى الأول (3–4)، والمستوى الثاني (4–5)، والتمهيدي (5–6)
 
 kids-english-course-jeddah [faq.a]
    - التمهيدي (2-4 سنوات)
@@ -492,5 +570,362 @@ qualified-teachers-nursery-jeddah [bodyHtml]
 
 qualified-teachers-nursery-jeddah [bodyHtml]
    - الروضة (٤–٥ سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+
+=== SECTION 2: ORPHAN HTML FILES (not in queue.json, /var/www/montessori-ksa/blog/<slug>/index.html) ===
+
+# orphan HTML files found: 28
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - ما قبل التمهيدي (سنتان):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (من سنتين إلى ثلاث سنوات)
+   + ما قبل الروضة Pre-KG (من سنتين إلى ثلاث سنوات)
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (من سنتين إلى ثلاث سنوات)
+   + ما قبل الروضة Pre-KG (من سنتين إلى ثلاث سنوات)
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - التمهيدي (من ثلاث إلى أربع سنوات)
+   + المستوى الأول (من ثلاث إلى أربع سنوات)
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - التمهيدي (من ثلاث إلى أربع سنوات)
+   + المستوى الأول (من ثلاث إلى أربع سنوات)
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - التمهيدي (من ثلاث إلى أربع سنوات)
+   + المستوى الأول (من ثلاث إلى أربع سنوات)
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - الروضة (من أربع إلى خمس سنوات)
+   + المستوى الثاني (من أربع إلى خمس سنوات)
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - الروضة (من أربع إلى خمس سنوات)
+   + المستوى الثاني (من أربع إلى خمس سنوات)
+
+[ORPHAN] best-montessori-nursery-jeddah [html]
+   - الروضة (من أربع إلى خمس سنوات)
+   + المستوى الثاني (من أربع إلى خمس سنوات)
+
+[ORPHAN] best-nurseries-jeddah-2026 [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] best-nurseries-jeddah-2026 [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] bilingual-nursery-jeddah [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] bilingual-nursery-jeddah [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3 سنوات)
+   + ما قبل الروضة Pre-KG (2–3 سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3 سنوات)
+   + ما قبل الروضة Pre-KG (2–3 سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - التمهيدي (من ثلاث إلى أربع سنوات)
+   + المستوى الأول (من ثلاث إلى أربع سنوات)
+
+[ORPHAN] child-care-hourly-jeddah [html]
+   - الروضة (من أربع إلى خمس سنوات)
+   + المستوى الثاني (من أربع إلى خمس سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] difference-nursery-preschool-kindergarten [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] is-nursery-good-for-child [html]
+   - البرنامج التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] is-nursery-good-for-child [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] is-nursery-good-for-child [html]
+   - برنامج الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] is-nursery-good-for-child [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] learning-through-play [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] learning-through-play [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] licensed-accredited-nursery-jeddah [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] licensed-accredited-nursery-jeddah [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] montessori-activities-at-home [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] montessori-activities-at-home [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] motor-skills-development-children [html]
+   - التمهيدي (3-4)
+   + المستوى الأول (3–4)
+
+[ORPHAN] motor-skills-development-children [html]
+   - الروضة (4-5)
+   + المستوى الثاني (4–5)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - ما قبل التمهيدي (سنتان):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3)
+   + ما قبل الروضة Pre-KG (2–3 سنوات)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3)
+   + ما قبل الروضة Pre-KG (2–3 سنوات)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3)
+   + ما قبل الروضة Pre-KG (2–3)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3)
+   + ما قبل الروضة Pre-KG (2–3)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - التمهيدي (3-4)
+   + المستوى الأول (3–4)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - التمهيدي (3-4)
+   + المستوى الأول (3–4)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - الروضة (4-5)
+   + المستوى الثاني (4–5)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - الروضة (4-5)
+   + المستوى الثاني (4–5)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - التمهيدي (من ثلاث إلى أربع سنوات)
+   + المستوى الأول (من ثلاث إلى أربع سنوات)
+
+[ORPHAN] nursery-al-safa-jeddah [html]
+   - الروضة (من أربع إلى خمس سنوات)
+   + المستوى الثاني (من أربع إلى خمس سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - ما قبل التمهيدي (سنتان):
+   + ما قبل الروضة (سنتان–3 سنوات):
+
+[ORPHAN] nursery-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3 سنوات)
+   + ما قبل الروضة Pre-KG (2–3 سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - ما قبل التمهيدي Pre-KG (2-3 سنوات)
+   + ما قبل الروضة Pre-KG (2–3 سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - التمهيدي (من ثلاث إلى أربع سنوات)
+   + المستوى الأول (من ثلاث إلى أربع سنوات)
+
+[ORPHAN] nursery-jeddah [html]
+   - الروضة (من أربع إلى خمس سنوات)
+   + المستوى الثاني (من أربع إلى خمس سنوات)
+
+[ORPHAN] nursery-prices-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] nursery-prices-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] nursery-prices-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] nursery-prices-jeddah [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] nursery-prices-jeddah [html]
+   - برنامج الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] nursery-prices-jeddah [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] nursery-prices-jeddah [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] preparing-child-first-day-nursery [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] preparing-child-first-day-nursery [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] school-readiness-skills [html]
+   - التمهيدي (3-4)
+   + المستوى الأول (3–4)
+
+[ORPHAN] school-readiness-skills [html]
+   - الروضة (4-5)
+   + المستوى الثاني (4–5)
+
+[ORPHAN] separation-anxiety-in-nursery [html]
+   - التمهيدي (3-4)
+   + المستوى الأول (3–4)
+
+[ORPHAN] separation-anxiety-in-nursery [html]
+   - الروضة (4-5)
+   + المستوى الثاني (4–5)
+
+[ORPHAN] signs-child-ready-for-nursery [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] signs-child-ready-for-nursery [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] signs-child-ready-for-nursery [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] signs-child-ready-for-nursery [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] social-skills-in-children [html]
+   - التمهيدي (3-4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] social-skills-in-children [html]
+   - الروضة (4-5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] summer-program-jeddah [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] summer-program-jeddah [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] summer-program-jeddah [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] summer-program-jeddah [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] summer-program-jeddah [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] summer-program-jeddah [html]
+   - الروضة (4–5 سنوات)
+   + المستوى الثاني (4–5 سنوات)
+
+[ORPHAN] what-is-kindergarten-stages-goals-saudi [html]
+   - التمهيدي (3–4 سنوات)
+   + المستوى الأول (3–4 سنوات)
+
+[ORPHAN] what-is-kindergarten-stages-goals-saudi [html]
+   - الروضة (4–5 سنوات)
    + المستوى الثاني (4–5 سنوات)
 
