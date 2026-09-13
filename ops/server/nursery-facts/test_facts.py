@@ -103,6 +103,26 @@ class TestIntakeRangeRequired(unittest.TestCase):
 
 
 class TestExistingBansStillWork(unittest.TestCase):
+    def test_nursery_word_as_a_stage_with_an_age_is_rejected(self):
+        """«الحضانة (3-4)» مرحلة مخترعة: كانت تمرّ لأن القواعد تعرف
+        «الروضة» فقط، فسلّم صفحة الأسعار الحيّة عدّى بلا اعتراض."""
+        bad = 'نقدّم برامجنا: الحضانة (3-4 سنوات) ثم المستوى الثاني (4-5 سنوات)'
+        self.assertTrue(facts._ours_only(facts.normalize(bad),
+                                         facts._check_orphan_stage_ages))
+
+    def test_nursery_word_without_an_age_still_passes(self):
+        """اسم النشاط نفسه مسموح — الاقتران بعمر هو المخالفة."""
+        good = ('حضانتنا في حي الفيصلية بجدة نستقبل الأطفال من سنتين إلى ٥ سنوات '
+                'عبر المستوى الأول (3-4 سنوات) والتمهيدي (5-6 سنوات).')
+        self.assertEqual(facts._ours_only(facts.normalize(good),
+                                          facts._check_orphan_stage_ages), [])
+
+    def test_market_nursery_prices_keep_their_common_wording(self):
+        """وصف السوق يحتفظ بتسميته (قرار المالك) فلا يُرفض."""
+        market = 'أسعار الحضانات في جدة عموماً بين 800 و1500 ريال شهرياً.'
+        self.assertEqual(facts._ours_only(facts.normalize(market),
+                                          facts._check_orphan_stage_ages), [])
+
     def test_invented_price_rejected(self):
         reasons = facts.check_text('رسومنا تبدأ من 1500 ريال شهرياً.' + INTAKE)
         self.assertTrue(reasons)
@@ -128,6 +148,17 @@ class TestExistingBansStillWork(unittest.TestCase):
 
 
 class TestHtmlAndArticleWrappers(unittest.TestCase):
+    def test_check_article_strips_tags_before_matching(self):
+        """أرقام أسماء الوسوم ليست أرقام محتوى: «رسوم حضانتنا …</h2>»
+        كانت تُقرأ سعراً مخترعاً لأن «2» في اسم الوسم أشبعت القاعدة."""
+        art = {'title': 'رسوم الحضانة', 'seoTitle': 'رسوم الحضانة',
+               'metaDescription': 'نستقبل من سنتين إلى ٥ سنوات.',
+               'bodyHtml': '<h2>رسوم حضانتنا في حي الفيصلية</h2>'
+                           '<p>نستقبل الأطفال من سنتين إلى ٥ سنوات، '
+                           'والرسوم تُحدَّد بمكالمة أو زيارة.</p>',
+               'faq': []}
+        self.assertEqual([x for x in facts.check_article(art) if 'سعر' in x], [])
+
     def test_check_html_strips_tags(self):
         html = ('<html><body><p>برنامج الروضة (4-6 سنوات)</p>'
                 '<script>var x = 1;</script></body></html>' + INTAKE)
