@@ -101,6 +101,35 @@ def refresh_csp():
     atomic(HEADERS, policy.encode())
 
 
+def refresh_tamper_baseline():
+    """Keep the daily security scanner's pristine copies in step with this release.
+
+    /opt/montessori/security_scan.py restores /etc/nginx/sites-enabled/montessori-ksa
+    and snippets/mk-headers.conf from baseline/pristine whenever their sha256
+    differs from baseline/hashes.txt. Without this step every deploy that touches
+    nginx is silently reverted at 06:00 the next morning (seen 2026-09-09..13).
+    """
+    base = Path('/opt/montessori/baseline')
+    hashes = base / 'hashes.txt'
+    pristine = base / 'pristine'
+    if not hashes.exists() or not pristine.exists():
+        return
+    lines = hashes.read_text().splitlines()
+    out = []
+    for line in lines:
+        parts = line.split(None, 1)
+        if len(parts) == 2 and parts[1] in (str(NGINX), str(HEADERS)):
+            target = Path(parts[1])
+            digest = hashlib.sha256(target.read_bytes()).hexdigest()
+            copy = pristine / target.relative_to('/')
+            copy.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(target, copy)
+            out.append(digest + '  ' + parts[1])
+        else:
+            out.append(line)
+    atomic(hashes, ('\n'.join(out) + '\n').encode())
+
+
 def main():
     release = Path(sys.argv[1]).resolve()
     manifest = json.loads((release / 'release.json').read_text())
@@ -133,6 +162,7 @@ def main():
         for name, digest in manifest['files'].items():
             if hashlib.sha256((SITE / name).read_bytes()).hexdigest() != digest:
                 raise RuntimeError('Installed checksum mismatch: ' + name)
+        refresh_tamper_baseline()
     except Exception:
         for name in manifest['files']:
             if name in existed:
