@@ -255,9 +255,13 @@ function stat(accent,icon,label,value,sub,href){
 /* note: 'is-forest' is the default .stat accent (no override class needed); harmless if unstyled */
 
 function excelLedgerCard(x){
+  /* صف الشهر جوّه by_month بييجي من nursery.ext_fin بمفاتيح income/cash/transfer —
+     مش collected/randa_cash/bank_transfer زي ملخص excel_month. نقرأ الاتنين. */
   var rows=[
-    ['إجمالي المحصل',x.collected],['Randa Cash',x.randa_cash],
-    ['تحويل بنكي',x.bank_transfer],['الباقي',x.remaining_total],['حركة المصروفات بالشيت',x.expenses],
+    ['إجمالي المحصل',(x.collected!=null?x.collected:(x.student_income!=null?x.student_income:x.income))],
+    ['Randa Cash',(x.randa_cash!=null?x.randa_cash:x.cash)],
+    ['تحويل بنكي',(x.bank_transfer!=null?x.bank_transfer:x.transfer)],
+    ['الباقي',x.remaining_total],['حركة المصروفات بالشيت',(x.expenses!=null?x.expenses:x.other)],
     ['الرصيد النقدي المرحّل',x.on_hand_randa],['الرواتب',x.salaries],
     ['الطلبة',x.student_count],['رسوم الكتب',x.books],
     ['Randa on hand (بلوك التدقيق)',x.randa_on_hand],['Delta الشيت (تدقيق فقط)',x.delta],['Net الشيت (ليس رصيداً)',x.net]
