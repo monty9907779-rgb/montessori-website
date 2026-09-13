@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+"""اختبارات مرجع الحقائق — جمل حقيقية من مقالات منشورة على montessori-ksa.com"""
+import os
+import sys
+import unittest
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import facts
+
+INTAKE = ' نستقبل الأطفال من عمر سنتين إلى 5 سنوات. '
+
+BAD = [
+    ('السلّم المغلوط كاملاً',
+     'نقدّم برنامجين: الحضانة (1-2 سنة)، والتمهيدي (2-4 سنوات)، والروضة (4-6 سنوات)'),
+    ('التمهيدي بعمر خاطئ',
+     'البرنامج التمهيدي (2-4 سنوات): بناء الاستقلالية والمهارات الاجتماعية.'),
+    ('الروضة بعمر خاطئ',
+     'برنامج الروضة (4-6 سنوات): تهيئة أكاديمية متكاملة قبل المدرسة.'),
+    ('التسمية القديمة بعد قرار 13/9',
+     'التمهيدي (٣–٤ سنوات) والروضة (٤–٥ سنوات) لكل مرحلة معلّماتها.'),
+    ('وظيفة بمرحلة خاطئة',
+     'معلمة تمهيدي (2–4 سنوات): تنمية المهارات الحركية واللغوية.'),
+]
+
+GOOD = [
+    ('مدى الاستقبال الكلي على الرئيسية',
+     'تمهيدي وروضة للأطفال 2–5 سنوات في بيئة آمنة ومُعدّة بعناية.'),
+    ('السلّم السعودي الصحيح',
+     'ما قبل الروضة (سنتان–3)، المستوى الأول (3–4)، المستوى الثاني (4–5)، '
+     'والتمهيدي (5–6).'),
+    ('التمهيدي كسنة أخيرة',
+     'التمهيدي: السنة الأخيرة قبل الابتدائي (5–6 سنوات) — تهيئة أكاديمية مباشرة.'),
+    ('صيغة الاستقبال الرسمية',
+     'نستقبل الأطفال من عمر سنتين إلى 5 سنوات في حي الفيصلية بجدة.'),
+]
+
+
+class TestBadContentRejected(unittest.TestCase):
+    def test_each_bad_sentence_is_rejected(self):
+        for label, text in BAD:
+            reasons = facts.check_text(text + INTAKE)
+            self.assertTrue(reasons, 'كان يجب رفض: %s' % label)
+
+    def test_program_count_mismatch_is_named(self):
+        text = ('نقدّم برنامجين: الحضانة (1-2 سنة)، والتمهيدي (2-4 سنوات)، '
+                'والروضة (4-6 سنوات).') + INTAKE
+        reasons = ' '.join(facts.check_text(text))
+        self.assertIn('عدد البرامج', reasons)
+
+
+class TestGoodContentAccepted(unittest.TestCase):
+    def test_each_good_sentence_passes(self):
+        for label, text in GOOD:
+            reasons = facts.check_text(text + INTAKE)
+            self.assertEqual([], reasons, 'رفض محتوى صحيح (%s): %s' % (label, reasons))
+
+    def test_arabic_indic_digits_are_understood(self):
+        self.assertEqual([], facts.check_text('التمهيدي (٥–٦ سنوات).' + INTAKE))
+
+
+class TestIntakeRangeRequired(unittest.TestCase):
+    def test_missing_intake_range_is_rejected(self):
+        reasons = ' '.join(facts.check_text('مرحبا بكم في روضتنا بجدة.'))
+        self.assertIn('نطاق أعمارنا', reasons)
+
+
+class TestExistingBansStillWork(unittest.TestCase):
+    def test_invented_price_rejected(self):
+        reasons = facts.check_text('رسومنا تبدأ من 1500 ريال شهرياً.' + INTAKE)
+        self.assertTrue(reasons)
+
+    def test_review_count_rejected(self):
+        reasons = facts.check_text('لدينا 70 مراجعة على خرائط جوجل.' + INTAKE)
+        self.assertTrue(reasons)
+
+    def test_infant_claim_rejected(self):
+        reasons = facts.check_text('نستقبل الرضّع من عمر سنة.' + INTAKE)
+        self.assertTrue(reasons)
+
+
+class TestHtmlAndArticleWrappers(unittest.TestCase):
+    def test_check_html_strips_tags(self):
+        html = ('<html><body><p>برنامج الروضة (4-6 سنوات)</p>'
+                '<script>var x = 1;</script></body></html>' + INTAKE)
+        self.assertTrue(facts.check_html(html))
+
+    def test_check_article_reads_all_text_fields(self):
+        article = {
+            'title': 'دليل الحضانات',
+            'metaDescription': 'وصف عادي',
+            'bodyHtml': '<p>البرنامج التمهيدي (2-4 سنوات)</p>' + INTAKE,
+            'faq': [{'q': 'سؤال', 'a': 'جواب'}],
+        }
+        self.assertTrue(facts.check_article(article))
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
