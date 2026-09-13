@@ -81,6 +81,20 @@ class TestGoodContentAccepted(unittest.TestCase):
     def test_arabic_indic_digits_are_understood(self):
         self.assertEqual([], facts.check_text('التمهيدي (٥–٦ سنوات).' + INTAKE))
 
+    def test_sleep_hours_range_is_not_read_as_stage_age(self):
+        reasons = facts.check_text('طفل التمهيدي ينام 10-13 ساعة يومياً.' + INTAKE)
+        self.assertEqual([], reasons)
+
+    def test_correct_stage_age_with_range_still_accepted(self):
+        reasons = facts.check_text('التمهيدي (5–6 سنوات) مرحلة التهيئة.' + INTAKE)
+        self.assertEqual([], reasons)
+
+
+class TestNonAgeUnitDoesNotMaskWrongAge(unittest.TestCase):
+    def test_wrong_stage_age_is_still_rejected(self):
+        reasons = facts.check_text('التمهيدي (3–4 سنوات) مرحلة التهيئة.' + INTAKE)
+        self.assertTrue(reasons)
+
 
 class TestIntakeRangeRequired(unittest.TestCase):
     def test_missing_intake_range_is_rejected(self):

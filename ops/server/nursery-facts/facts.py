@@ -66,6 +66,12 @@ WORD_NUMS = {
 _NUM = r'(?:\d{1,2}|سنتين|سنتان|عامين|ثلاث|أربع|خمس|ست)'
 _RANGE = r'[^\w؀-ۿ]{0,12}(' + _NUM + r')\s*(?:إلى|الى|حتى|[-–—])\s*(' + _NUM + r')'
 
+# مدى متبوع بوحدة زمن غير العمر (ساعات نوم، دقائق نشاط...) مش عمر مرحلة.
+# مثال حقيقي: «طفل التمهيدي ينام 10-13 ساعة يومياً» — رقمان بعد اسم مرحلة
+# لكنهما ساعات نوم لا أعمار، وبدون هذا الاستثناء يرفضهما الحاجز للأبد.
+_NON_AGE_UNIT = re.compile(
+    r'^\s*(?:ساعة|ساعات|دقائق|دقيقة|أشهر|شهر|أيام|يوم)\b')
+
 
 def _num(s):
     """يحوّل حد المدى (رقم أو كلمة) إلى عدد صحيح."""
@@ -137,6 +143,8 @@ def _check_stage_ages(t):
             r = re.match(_RANGE, tail)
             if not r:
                 continue
+            if _NON_AGE_UNIT.match(tail[r.end():]):
+                continue
             got = (_num(r.group(1)), _num(r.group(2)))
             if got != (lo, hi):
                 out.append('عمر مرحلة خاطئ — %s: وجد %s-%s والصحيح %d-%d'
@@ -154,6 +162,8 @@ def _check_orphan_stage_ages(t):
             tail = tail[:nxt.start()]
         r = re.match(_RANGE, tail)
         if not r:
+            continue
+        if _NON_AGE_UNIT.match(tail[r.end():]):
             continue
         got = (_num(r.group(1)), _num(r.group(2)))
         if got != (2, 5):  # مدى الاستقبال الكلي مسموح
