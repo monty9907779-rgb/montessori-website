@@ -159,6 +159,18 @@ class TestHtmlAndArticleWrappers(unittest.TestCase):
                'faq': []}
         self.assertEqual([x for x in facts.check_article(art) if 'سعر' in x], [])
 
+    def test_closing_hour_written_without_minutes_is_rejected(self):
+        """«8 صباحاً - 2 ظهراً» فاتت القاعدة: كانت تعرف «الثانية ظهر»
+        و«2:00 ظهر» فقط. الدوام ينتهي الواحدة ظهراً."""
+        self.assertTrue([x for x in facts.check_text(
+            'دوامنا من الأحد إلى الخميس، 8 صباحاً - 2 ظهراً، '
+            'ونستقبل من سنتين إلى ٥ سنوات.') if 'دوام' in x])
+
+    def test_correct_closing_hour_passes(self):
+        self.assertEqual([x for x in facts.check_text(
+            'دوامنا من الثامنة صباحاً حتى الواحدة ظهراً، '
+            'ونستقبل من سنتين إلى ٥ سنوات.') if 'دوام' in x], [])
+
     def test_check_html_strips_tags(self):
         html = ('<html><body><p>برنامج الروضة (4-6 سنوات)</p>'
                 '<script>var x = 1;</script></body></html>' + INTAKE)
