@@ -17,7 +17,12 @@ import hashlib
 import json, re, html as H, datetime, pathlib, subprocess, urllib.request, sys
 
 sys.path.insert(0, "/opt/nursery-facts")
-import facts  # مرجع الحقائق المشترك — يُستخدم قبل نشر أي مقال
+try:
+    import facts  # مرجع الحقائق المشترك — يُستخدم قبل نشر أي مقال
+    FACTS_IMPORT_ERROR = None
+except Exception as _facts_ex:
+    facts = None
+    FACTS_IMPORT_ERROR = str(_facts_ex)
 
 ROOT   = pathlib.Path("/var/www/montessori-ksa")
 OPT    = pathlib.Path("/opt/seo")
@@ -520,22 +525,26 @@ def seo_healthcheck():
     # 6) فحص الحقائق على المقالات المنشورة — نفس قواعد الحاجز قبل النشر
     # ثلاث حالات (قرار 2026-09-13 رقم 1): فشل فقط لو فئات أعمار المراحل باقية،
     # تحذير للفئات المؤجلة (سعر/دوام/مراجعات...) بلا إنذار يومي دائم
-    IN_SCOPE_MARKERS = ('عمر مرحلة خاطئ', '«الروضة» مقترنة بعمر مرحلة',
-                         'مرحلة غير موجودة', 'عدد البرامج')
-    viol = facts.audit_dir(str(ROOT/'blog'))
-    in_scope = [(p, w) for p, w in viol
-                if any(any(mk in r for mk in IN_SCOPE_MARKERS) for r in w)]
-    deferred = [(p, w) for p, w in viol if (p, w) not in in_scope]
-    if in_scope:
+    if facts is None:
         add('فحص الحقائق', 'fail',
-            '%d مقالاً يخالف حقائق المنشأة (أعمار المراحل): %s'
-            % (len(in_scope), ', '.join(pathlib.Path(p).parent.name for p, _ in in_scope[:5])))
-    elif deferred:
-        add('فحص الحقائق', 'warn',
-            '%d مقالاً قديماً بمخالفات مؤجلة (سعر/دوام/مراجعات) — لا حاجة لتدخّل يومي'
-            % len(deferred))
+            'تعذّر تحميل موديول الحقائق: %s — النشر متوقف' % FACTS_IMPORT_ERROR)
     else:
-        add('فحص الحقائق', 'ok', 'كل المقالات المنشورة مطابقة')
+        IN_SCOPE_MARKERS = ('عمر مرحلة خاطئ', '«الروضة» مقترنة بعمر مرحلة',
+                             'مرحلة غير موجودة', 'عدد البرامج')
+        viol = facts.audit_dir(str(ROOT/'blog'))
+        in_scope = [(p, w) for p, w in viol
+                    if any(any(mk in r for mk in IN_SCOPE_MARKERS) for r in w)]
+        deferred = [(p, w) for p, w in viol if (p, w) not in in_scope]
+        if in_scope:
+            add('فحص الحقائق', 'fail',
+                '%d مقالاً يخالف حقائق المنشأة (أعمار المراحل): %s'
+                % (len(in_scope), ', '.join(pathlib.Path(p).parent.name for p, _ in in_scope[:5])))
+        elif deferred:
+            add('فحص الحقائق', 'warn',
+                '%d مقالاً قديماً بمخالفات مؤجلة (سعر/دوام/مراجعات) — لا حاجة لتدخّل يومي'
+                % len(deferred))
+        else:
+            add('فحص الحقائق', 'ok', 'كل المقالات المنشورة مطابقة')
     worst={0:'ok',1:'warn',2:'fail'}[max((rank[s] for _,s,_ in rows), default=0)]
     return rows, worst
 
@@ -851,6 +860,15 @@ def main():
         return
 
     # حاجز الحقائق — لا يُكتب أي ملف قبل اجتيازه (تصميم 2026-09-13)
+    if facts is None:
+        log(f"facts module unavailable — publishing suspended: {FACTS_IMPORT_ERROR}")
+        email("🚨 [kawkab] حاجز الحقائق غير متاح — النشر متوقف",
+              '<div dir="rtl" style="font-family:Tahoma,sans-serif;line-height:1.9">'
+              '<h2 style="color:#c0392b">⛔ تعذّر تحميل حاجز الحقائق</h2>'
+              f'<p>خطأ الاستيراد: {esc(FACTS_IMPORT_ERROR)}</p>'
+              '<p>تم إيقاف نشر أي مقال هذا التشغيل حفاظاً على السلامة، '
+              'مع استمرار إصلاحات الموقع وفحص السيو كالمعتاد.</p></div>')
+        return
     blocked=[]
     a=None
     for cand in pending:
@@ -912,6 +930,8 @@ def main():
     except Exception as e: live=str(e)
     inx=indexnow(url)
     remaining=len([x for x in q if not x.get('published')])
+    a_idx=pending.index(a)
+    next_up=next((c for c in pending[a_idx+1:] if not c.get('blocked')), None)
 
     st={"last_run":iso,"published_count":len([x for x in q if x.get('published')]),"remaining":remaining}
     STATE.write_text(json.dumps(st,ensure_ascii=False,indent=1))
@@ -925,7 +945,7 @@ def main():
       f'<h3 style="color:#184e3e">✅ نُشر اليوم</h3><p><a href="{url}">{esc(a["title"])}</a><br/>الكلمة المستهدفة: {esc(a.get("targetKeyword",""))} — الحالة: {live} — IndexNow: {inx}</p>'
       f'{seo_sec}'
       f'<h3 style="color:#184e3e">🩺 فحص الوصول (HTTP)</h3><p>{"✅ الموقع والمدوّنة والخريطة و robots سليمة (200)" if hz_ok else "⚠️ "+esc(json.dumps(hz,ensure_ascii=False))}</p>'
-      f'<h3 style="color:#184e3e">📋 المتبقّي في الطابور</h3><p>{remaining} مقال — ' + (f'التالي: {esc(pending[1]["title"])}' if remaining>0 else 'الطابور على وشك الانتهاء — يُنصح بالتزويد') + '</p>'
+      f'<h3 style="color:#184e3e">📋 المتبقّي في الطابور</h3><p>{remaining} مقال — ' + ((f'التالي: {esc(next_up["title"])}' if next_up else 'لا يوجد مقال آخر جاهز للنشر حالياً') if remaining>0 else 'الطابور على وشك الانتهاء — يُنصح بالتزويد') + '</p>'
       f'<hr style="border:none;border-top:1px solid #e9e0cf"/><p style="color:#79857c;font-size:13px">كوكب الطفل الحر · montessori-ksa.com · ناشِر آلي على السيرفر</p></div>')
 
 if __name__=="__main__":
