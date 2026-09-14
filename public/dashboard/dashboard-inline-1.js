@@ -454,7 +454,7 @@ function donutChart(paid, remaining){
 
 function overdueTable(rows){
   if(!rows.length) return NS.empty('checkCircle','لا يوجد متأخرون في السداد','جميع الأسر محدّثة في رسومها — عمل رائع.');
-  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+  var h='<div class="table-wrap"><table class="table overdue-table"><thead><tr>'+
     '<th>الطالب</th><th>الرسوم</th><th>التأخّر</th><th></th></tr></thead><tbody>';
   rows.forEach(function(r){
     var phone=r.parent_phone||r.phone||r.whatsapp||r.parent_whatsapp||'';
@@ -483,7 +483,7 @@ function absentList(at){
 
 function staffTable(rows){
   if(!rows.length) return NS.empty('users','لا يوجد موظفون اليوم','ستظهر هنا سجلّات حضور فريق العمل.');
-  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+  var h='<div class="table-wrap"><table class="table staff-today"><thead><tr>'+
     '<th>الموظف</th><th>حضور</th><th>انصراف</th><th>الحالة</th></tr></thead><tbody>';
   rows.forEach(function(r){
     var status = r.exempt ? '<span class="tag tag--soft">معفى</span>'
@@ -572,7 +572,7 @@ function wireAttendance(){
 
 function deductionsTable(rows){
   if(!rows.length) return NS.empty('checkCircle','لا توجد خصومات هذا الشهر','لا غياب ولا تأخير يستوجب خصماً.');
-  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+  var h='<div class="table-wrap"><table class="table att-summary"><thead><tr>'+
     '<th>الموظف</th><th>غياب</th><th>تأخير</th><th>أيام الخصم</th></tr></thead><tbody>';
   rows.forEach(function(r){
     h+='<tr><td class="od-name">'+NS.esc(r.name)+'</td>'+

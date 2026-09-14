@@ -237,6 +237,25 @@ table.table{width:100%;border-collapse:collapse;font-size:.94rem;min-width:min(1
 .att-summary .tag,.att-days .tag{padding:3px 8px;font-size:.78rem;white-space:nowrap}
 .att-summary .od-name{display:inline}
 
+/* الموظفون اليوم — نفس فكرة الجدول الثابت: اسم + وقتين + حالة */
+.staff-today{table-layout:fixed;min-width:0}
+.staff-today th,.staff-today td{padding:9px 6px;font-size:.86rem;white-space:normal}
+.staff-today th:first-child,.staff-today td:first-child{width:30%;text-align:start;word-break:break-word}
+.staff-today th:nth-child(2),.staff-today td:nth-child(2),.staff-today th:nth-child(3),.staff-today td:nth-child(3){width:18%;text-align:center}
+.staff-today th:last-child,.staff-today td:last-child{width:34%;text-align:center}
+.staff-today .tag{padding:3px 8px;font-size:.78rem;white-space:nowrap}
+
+/* متأخرو السداد — عمود أخير فيه زرار تذكير واتساب بدل حالة، فمحتاج مساحة أكبر شوية */
+.overdue-table{table-layout:fixed;min-width:0}
+.overdue-table th,.overdue-table td{padding:9px 6px;font-size:.86rem;white-space:normal}
+.overdue-table th:first-child,.overdue-table td:first-child{width:24%;text-align:start;word-break:break-word}
+.overdue-table th:nth-child(2),.overdue-table td:nth-child(2){width:20%;text-align:center}
+.overdue-table th:nth-child(3),.overdue-table td:nth-child(3){width:20%;text-align:center}
+.overdue-table th:last-child,.overdue-table td:last-child{width:36%;text-align:center}
+.overdue-table .tag{padding:3px 8px;font-size:.78rem;white-space:nowrap}
+.overdue-table .btn{min-height:34px;padding:0 10px;font-size:.78rem;gap:4px}
+.overdue-table .btn svg{width:14px;height:14px}
+
 /* ---------- Toast ---------- */
 #toast-wrap{position:fixed;inset-block-start:auto;inset-block-end:24px;inset-inline:0;display:flex;flex-direction:column;
   align-items:center;gap:10px;z-index:1000;pointer-events:none;padding-inline:16px}
