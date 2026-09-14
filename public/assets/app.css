@@ -141,10 +141,10 @@ h1,h2,h3,h4{font-weight:800;line-height:1.22;letter-spacing:-.01em;color:var(--f
   border:2.5px solid currentColor;border-top-color:transparent;animation:spin .7s linear infinite;
 }
 .btn.is-loading > *{visibility:hidden}
-.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--pill);
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border-radius:var(--pill);
   color:var(--forest);transition:background var(--dur),transform var(--dur)}
 .icon-btn:hover{background:var(--sand)}
-.icon-btn svg{width:22px;height:22px}
+.icon-btn svg{width:22px;height:22px;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ---------- Cards ---------- */
