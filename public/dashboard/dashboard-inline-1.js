@@ -222,6 +222,8 @@ function render(){
         card('','users','الموظفون اليوم','',
           staffTable(sf.today||[]))+
 
+        attCard()+
+
         card('col-2','clock','خصومات الموظفين','هذا الشهر',
           deductionsTable(sf.deductions||[]))+
 
@@ -232,6 +234,7 @@ function render(){
   app.innerHTML=h;
   NS.wireLogout('mt');
   wirePeriod();
+  wireAttendance();
   var exportBtn=document.getElementById('excel-export-btn');
   if(!exportBtn){
     /* بعد زرار لينك الشيت عشان زرارَي المزامنة يفضلوا جنب بعض */
@@ -493,6 +496,78 @@ function staffTable(rows){
        '<td>'+status+'</td></tr>';
   });
   return h+'</tbody></table></div>';
+}
+
+/* ================= سجل حضور الموظفين (تاريخي) =================
+   بيانات من /api/manager/attendance — صف لكل (موظف × يوم عمل).
+   الضغط على اسم الموظف يفتح أيامه. بلا style= ولا onclick (CSP). */
+var ATT={days:14,data:null,open:null,loading:false};
+function attCard(){
+  return card('col-2','calendar','سجل حضور الموظفين','',
+    '<div class="att-bar" id="att-bar">'+
+      [7,14,30].map(function(n){ return '<button type="button" class="btn '+(ATT.days===n?'':'btn--soft')+'" data-att-days="'+n+'">آخر '+n+' يوم</button>'; }).join(' ')+
+    '</div><div id="att-body">'+attBody()+'</div>');
+}
+function attBody(){
+  if(ATT.loading&&!ATT.data) return NS.empty('clock','جارٍ تحميل السجل…','');
+  var d=ATT.data; if(!d) return NS.empty('users','لا يوجد سجل بعد','');
+  if(d.error) return NS.empty('alert','تعذّر تحميل السجل',String(d.error));
+  var s=d.summary||[];
+  if(!s.length) return NS.empty('users','لا يوجد موظفون بحسابات دخول','لا يمكن تسجيل الحضور بدون حساب.');
+  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+    '<th>الموظف</th><th>حضور</th><th>تأخير</th><th>غياب</th></tr></thead><tbody>';
+  s.forEach(function(r){
+    var open=(ATT.open===r.emp_id);
+    h+='<tr class="att-row" data-att-emp="'+NS.esc(r.emp_id)+'"><td class="od-name">'+NS.esc(r.name)+
+       (r.exempt?' <span class="tag tag--soft">معفى</span>':'')+'</td>'+
+       '<td class="tabnum">'+NS.esc(r.present)+'</td>'+
+       '<td class="tabnum">'+(r.late?'<span class="tag tag--warn">'+NS.esc(r.late)+'</span>':'0')+'</td>'+
+       '<td class="tabnum">'+(r.absent?'<span class="tag tag--none">'+NS.esc(r.absent)+'</span>':'0')+'</td></tr>';
+    if(open){
+      var rows=(d.rows||[]).filter(function(x){ return x.emp_id===r.emp_id; }).slice().reverse();
+      h+='<tr class="att-detail"><td colspan="4"><table class="table"><thead><tr>'+
+         '<th>اليوم</th><th>حضور</th><th>انصراف</th><th>الحالة</th></tr></thead><tbody>';
+      rows.forEach(function(x){
+        var st = x.exempt ? '<span class="tag tag--soft">معفى</span>'
+          : x.absent ? '<span class="tag tag--none">غائب</span>'
+          : !x.check_in ? '<span class="tag tag--soft">—</span>'
+          : x.late_min>0 ? '<span class="tag tag--warn">متأخّر '+NS.esc(x.late_min)+' د</span>'
+          : '<span class="tag tag--ok">في الموعد</span>';
+        h+='<tr><td>'+NS.esc(x.day)+'</td><td class="tabnum">'+NS.esc(x.check_in||'—')+'</td>'+
+           '<td class="tabnum">'+NS.esc(x.check_out||'—')+'</td><td>'+st+'</td></tr>';
+      });
+      h+='</tbody></table></td></tr>';
+    }
+  });
+  h+='</tbody></table></div>';
+  h+='<p class="att-note">'+NS.esc(d.work_days)+' يوم عمل من '+NS.esc(d.from)+' إلى '+NS.esc(d.to)+
+     ' · بداية الدوام '+NS.esc(d.work_start)+' · سماح '+NS.esc(d.grace)+' د · اضغط على اسم الموظف لعرض أيامه.</p>';
+  if((d.no_login||[]).length) h+='<p class="att-note">بلا حساب دخول (لا يمكنهم تسجيل الحضور): '+NS.esc(d.no_login.join('، '))+'</p>';
+  return h;
+}
+function attPaint(){
+  var b=document.getElementById('att-body'); if(b) b.innerHTML=attBody();
+  var bar=document.getElementById('att-bar');
+  if(bar) Array.prototype.forEach.call(bar.querySelectorAll('[data-att-days]'),function(btn){
+    var n=+btn.getAttribute('data-att-days'); btn.className='btn '+(ATT.days===n?'':'btn--soft'); });
+}
+function attLoad(){
+  ATT.loading=true; attPaint();
+  NS.api('/api/manager/attendance',{mt:TOKEN,days:ATT.days})
+    .then(function(d){ ATT.data=d||{error:'رد فارغ'}; },
+          function(e){ ATT.data={error:(e&&e.message)||'خطأ'}; })
+    .then(function(){ ATT.loading=false; attPaint(); });
+}
+function wireAttendance(){
+  var bar=document.getElementById('att-bar');
+  if(bar) bar.addEventListener('click',function(ev){
+    var t=ev.target.closest('[data-att-days]'); if(!t) return;
+    var n=+t.getAttribute('data-att-days'); if(n&&n!==ATT.days){ ATT.days=n; ATT.data=null; attLoad(); } });
+  var body=document.getElementById('att-body');
+  if(body) body.addEventListener('click',function(ev){
+    var tr=ev.target.closest('tr.att-row'); if(!tr) return;
+    var id=+tr.getAttribute('data-att-emp'); ATT.open=(ATT.open===id?null:id); attPaint(); });
+  if(!ATT.data&&!ATT.loading) attLoad();
 }
 
 function deductionsTable(rows){
