@@ -200,7 +200,7 @@ function askSheetUrl(token,current){
       '<div class="modal__icon">'+NS.icon('ledger')+'</div>'+
       '<h3>لينك جوجل شيت</h3>'+
       '<p class="excel-review__intro">الصقي رابط الشيت مرة واحدة وهيتحفظ. لازم يكون مشاركته <strong>أي شخص لديه الرابط — مُشاهد</strong>.</p>'+
-      '<input type="url" dir="ltr" id="sheet-url-input" class="input" placeholder="https://docs.google.com/spreadsheets/d/..." value="'+NS.attr(current||'')+'" style="width:100%"/>'+
+      '<input type="url" dir="ltr" id="sheet-url-input" class="input" placeholder="https://docs.google.com/spreadsheets/d/..." value="'+NS.attr(current||'')+'"/>'+
       '<div class="actions">'+
         '<button class="btn btn--primary" data-save>'+NS.icon('check')+' حفظ ومزامنة</button>'+
         '<button class="btn btn--ghost" data-cancel>إلغاء</button>'+

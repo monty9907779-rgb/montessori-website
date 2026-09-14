@@ -133,8 +133,8 @@ function startTimer(){
 
 /* ---------- first-load skeleton ---------- */
 function firstSkeleton(){
-  var kp=''; for(var i=0;i<8;i++){ kp+='<div class="stat"><div class="skel skel-line" style="width:55%"></div>'+
-    '<div class="skel skel-line" style="width:70%;height:26px;margin-top:8px"></div></div>'; }
+  var kp=''; for(var i=0;i<8;i++){ kp+='<div class="stat"><div class="skel skel-line skel-line--kpi-a"></div>'+
+    '<div class="skel skel-line skel-line--kpi-b"></div></div>'; }
   document.getElementById('boot').innerHTML=
     '<div class="kpis">'+kp+'</div>'+
     '<div class="dash-grid">'+NS.skelCard()+NS.skelCard()+NS.skelCard()+NS.skelCard()+'</div>';
@@ -197,8 +197,8 @@ function render(){
 
         card('col-2','chart','الملخّص المالي الشهري',ptxt,
           incomeExpenseChart(FR)+
-          '<div class="legend"><span><i style="background:'+C_FOREST6+'"></i>الإيرادات</span>'+
-          '<span><i style="background:'+C_CLAY+'"></i>المرتبات + المصاريف</span></div>'+
+          '<div class="legend"><span><i class="chip-forest6"></i>الإيرادات</span>'+
+          '<span><i class="chip-clay"></i>المرتبات + المصاريف</span></div>'+
           finTable(FR))+
 
         card('','pin','حضور آخر ١٤ يوماً','',
@@ -206,8 +206,8 @@ function render(){
 
         card('','wallet','نسبة السداد','',
           donutChart(Number(st.paid)||0, Math.max(0,(Number(st.total)||0)-(Number(st.paid)||0)))+
-          '<div class="legend"><span><i style="background:'+C_FOREST6+'"></i>سدّدوا '+(Number(st.paid)||0)+'</span>'+
-          '<span><i style="background:'+C_LINE+'"></i>متبقّي '+Math.max(0,(Number(st.total)||0)-(Number(st.paid)||0))+'</span></div>')+
+          '<div class="legend"><span><i class="chip-forest6"></i>سدّدوا '+(Number(st.paid)||0)+'</span>'+
+          '<span><i class="chip-line"></i>متبقّي '+Math.max(0,(Number(st.total)||0)-(Number(st.paid)||0))+'</span></div>')+
 
         card('col-2','chart','إعلانات جوجل',
           ((D.ads&&D.ads.configured)?((D.ads.problems||[]).length?'يحتاج انتباه':(D.ads.partial?'أرقام فقط':'سليم')):'غير مربوط'),
@@ -229,7 +229,7 @@ function render(){
 
       '</div>'+
     '</main>'+
-    '<footer style="text-align:center;color:var(--muted);font-size:.82rem;padding:18px">روضة كوكب الطفل الحر · جدة</footer>';
+    '<footer class="dash-footer">روضة كوكب الطفل الحر · جدة</footer>';
 
   app.innerHTML=h;
   NS.wireLogout('mt');
@@ -287,7 +287,7 @@ function excelLedgerCard(x){
 function adsCard(a){
   a = a || {};
   if(!a.configured){
-    return '<div class="muted" style="padding:6px 2px;line-height:1.9">'+
+    return '<div class="muted ads-empty">'+
       'لم يُربط حساب الإعلانات بعد.<br/><small>شغّلي سكربت الفحص داخل Google Ads مرة واحدة، '+
       'وستظهر الحالة هنا تلقائياً كل ساعة.</small></div>';
   }
@@ -297,45 +297,42 @@ function adsCard(a){
   var h = '';
 
   if(a.stale){
-    h += '<div style="background:#fef3c7;color:#b45309;border-radius:9px;padding:8px 12px;'+
-         'font-size:12.5px;font-weight:700;margin-bottom:10px">⚠️ آخر تحديث '+
+    h += '<div class="ads-banner-stale">⚠️ آخر تحديث '+
          NS.esc(a.received_at||'—')+' — لم يصل تحديث جديد منذ أكثر من ٣ ساعات</div>';
   }
 
   if(probs.length){
-    h += '<div style="background:#fdecea;border-radius:9px;padding:10px 14px;margin-bottom:10px">'+
-         '<b style="color:#c0392b">'+probs.length+' بند يحتاج انتباه</b><ul style="margin:6px 0 0;padding-inline-start:18px">';
-    for(var i=0;i<probs.length && i<5;i++) h += '<li style="font-size:12.5px">'+NS.esc(probs[i])+'</li>';
+    h += '<div class="ads-banner-error">'+
+         '<b>'+probs.length+' بند يحتاج انتباه</b><ul>';
+    for(var i=0;i<probs.length && i<5;i++) h += '<li>'+NS.esc(probs[i])+'</li>';
     h += '</ul></div>';
   } else if(a.partial){
     /* مراقبة جزئية: الأرقام موجودة لكن صحة الحملات مش مقروءة —
        فممنوع نقول «كل الحملات سليمة»، دي طمأنة مش مبنية على حاجة. */
     var notes = a.notes || [];
-    h += '<div style="background:var(--sand);border-radius:9px;padding:9px 13px;'+
-         'margin-bottom:10px;font-size:12.5px;line-height:1.85">'+
-         '<b style="color:var(--ink-2)">مراقبة جزئية</b>'+
-         (notes.length?'<ul style="margin:5px 0 0;padding-inline-start:18px">'+
+    h += '<div class="ads-banner-partial">'+
+         '<b>مراقبة جزئية</b>'+
+         (notes.length?'<ul>'+
            notes.map(function(n){ return '<li>'+NS.esc(n)+'</li>'; }).join('')+'</ul>':'')+
          '</div>';
   } else {
-    h += '<div style="background:#eaf5ef;color:#15803d;border-radius:9px;padding:8px 12px;'+
-         'font-size:12.5px;font-weight:700;margin-bottom:10px">✅ كل الحملات سليمة</div>';
+    h += '<div class="ads-banner-ok">✅ كل الحملات سليمة</div>';
   }
 
   if(cams.length){
-    h += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'+
-         '<tr style="color:#79857c;font-size:11.5px"><th style="text-align:right;padding:0 6px 8px">الحملة</th>'+
+    h += '<div class="ads-table-wrap"><table class="ads-table">'+
+         '<tr class="ads-thead"><th class="ads-th-first">الحملة</th>'+
          '<th>الحالة</th><th>الصرف</th><th>نقرات</th><th>تحويلات</th></tr>';
     cams.forEach(function(c){
       var on = c.state === 'شغّالة';
-      h += '<tr><td style="padding:7px 6px;border-top:1px solid var(--line-2)">'+NS.esc(c.name||'')+'</td>'+
-        '<td style="text-align:center;border-top:1px solid var(--line-2);color:'+(on?'#15803d':'#b45309')+'">'+NS.esc(c.state||'')+'</td>'+
-        '<td style="text-align:center;border-top:1px solid var(--line-2)" class="tabnum">'+(Number(c.cost)||0).toFixed(0)+'</td>'+
-        '<td style="text-align:center;border-top:1px solid var(--line-2)" class="tabnum">'+(c.clicks||0)+'</td>'+
-        '<td style="text-align:center;border-top:1px solid var(--line-2)" class="tabnum">'+(c.conv||0)+'</td></tr>';
+      h += '<tr><td>'+NS.esc(c.name||'')+'</td>'+
+        '<td class="center '+(on?'state-on':'state-off')+'">'+NS.esc(c.state||'')+'</td>'+
+        '<td class="center tabnum">'+(Number(c.cost)||0).toFixed(0)+'</td>'+
+        '<td class="center tabnum">'+(c.clicks||0)+'</td>'+
+        '<td class="center tabnum">'+(c.conv||0)+'</td></tr>';
     });
     h += '</table></div>';
-    h += '<div class="muted" style="font-size:11px;margin-top:8px">آخر ٧ أيام · '+NS.esc(cur)+
+    h += '<div class="muted ads-table-note">آخر ٧ أيام · '+NS.esc(cur)+
          ' · تحديث '+NS.esc(a.received_at||'—')+'</div>';
   }
   return h;
@@ -380,7 +377,7 @@ function incomeExpenseChart(rows){
 /* monthly breakdown table (accounts-app style): إيرادات − مرتبات − مصاريف = صافي */
 function finTable(rows){
   if(!rows.length) return '';
-  var h='<div class="table-wrap" style="margin-top:14px"><table class="table"><thead><tr>'+
+  var h='<div class="table-wrap u-mt14"><table class="table"><thead><tr>'+
     '<th>الشهر</th><th>الإيرادات</th><th>من الطلبة</th><th>دخل آخر</th><th>المرتبات</th><th>مصاريف أخرى</th><th>صافي الشهر</th></tr></thead><tbody>';
   rows.forEach(function(r){
     var net=(r.income||0)-(r.salaries||0)-(r.other||0);
@@ -392,7 +389,7 @@ function finTable(rows){
       '<td class="tabnum">'+NS.riyal(extraIncome)+'</td>'+
       '<td class="tabnum">'+NS.riyal(r.salaries||0)+'</td>'+
       '<td class="tabnum">'+NS.riyal(r.other||0)+'</td>'+
-      '<td class="tabnum"><b style="color:'+(net>=0?'var(--ok)':'var(--danger)')+'">'+NS.riyal(net)+'</b></td></tr>';
+      '<td class="tabnum"><b class="'+(net>=0?'u-ok':'u-danger')+'">'+NS.riyal(net)+'</b></td></tr>';
   });
   h+='</tbody></table></div>';
   return h;
@@ -438,7 +435,7 @@ function donutChart(paid, remaining){
   var pct=total>0?paid/total:0;
   var r=52,c=2*Math.PI*r, cx=70,cy=70, dash=c*pct;
   var pctTxt=Math.round(pct*100)+'%';
-  var s='<div class="donut-wrap"><svg viewBox="0 0 140 140" style="max-width:180px" role="img" '+
+  var s='<div class="donut-wrap"><svg viewBox="0 0 140 140" role="img" '+
     'aria-label="نسبة السداد '+pctTxt+' من إجمالي الطلاب">'+
     '<title>نسبة السداد</title>'+
     '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+C_LINE+'" stroke-width="15"/>'+
@@ -464,7 +461,7 @@ function overdueTable(rows){
     h+='<tr><td class="od-name">'+NS.esc(r.name)+'</td>'+
        '<td class="tabnum">'+NS.riyal(r.fees)+'</td>'+
        '<td><span class="tag tag--none">'+NS.esc(r.days)+' يوم</span></td>'+
-       '<td style="text-align:left">'+reminder+'</td></tr>';
+       '<td class="ta-left">'+reminder+'</td></tr>';
   });
   return h+'</tbody></table></div>';
 }

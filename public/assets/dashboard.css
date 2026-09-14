@@ -23,6 +23,18 @@
 .legend i{width:11px;height:11px;border-radius:4px;display:inline-block}
 .chart-svg{width:100%;height:auto;display:block;overflow:visible}
 .donut-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.donut-wrap svg{max-width:180px}
+
+/* Legend dot colors used to be set with style="background:..." per instance.
+   CSP's style-src-attr only allow-lists specific pre-known hashes, and this
+   markup is built client-side (never seen by the deploy-time hash scanner
+   that scans .html files), so every one of those was silently dropped. */
+.legend i.chip-forest6{background:#2a7d61}
+.legend i.chip-clay{background:#c67c54}
+.legend i.chip-line{background:#e9e0cf}
+
+.skel-line--kpi-a{width:55%}
+.skel-line--kpi-b{width:70%;height:26px;margin-top:8px}
 
 .absent-list{display:flex;flex-direction:column;gap:9px}
 .absent-list .row-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:var(--r-sm);
@@ -33,6 +45,29 @@
 .card-scroll{max-height:none}
 .stat .v small{font-size:1rem;font-weight:700;color:var(--muted)}
 .mini-note{font-size:.82rem;color:var(--muted);margin-top:2px}
+
+.dash-footer{text-align:center;color:var(--muted);font-size:.82rem;padding:18px}
+
+/* ---- Google Ads card (same style-src-attr problem as the legend dots above) ---- */
+.ads-empty{padding:6px 2px;line-height:1.9}
+.ads-banner-stale{background:#fef3c7;color:#b45309;border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:700;margin-bottom:10px}
+.ads-banner-error{background:#fdecea;border-radius:9px;padding:10px 14px;margin-bottom:10px}
+.ads-banner-error b{color:#c0392b}
+.ads-banner-error ul{margin:6px 0 0;padding-inline-start:18px}
+.ads-banner-error li{font-size:12.5px}
+.ads-banner-partial{background:var(--sand);border-radius:9px;padding:9px 13px;margin-bottom:10px;font-size:12.5px;line-height:1.85}
+.ads-banner-partial b{color:var(--ink-2)}
+.ads-banner-partial ul{margin:5px 0 0;padding-inline-start:18px}
+.ads-banner-ok{background:#eaf5ef;color:#15803d;border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:700;margin-bottom:10px}
+.ads-table-wrap{overflow-x:auto}
+.ads-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ads-table .ads-thead{color:#79857c;font-size:11.5px}
+.ads-table .ads-th-first{text-align:right;padding:0 6px 8px}
+.ads-table td{padding:7px 6px;border-top:1px solid var(--line-2)}
+.ads-table td.center{text-align:center}
+.ads-table .state-on{color:#15803d}
+.ads-table .state-off{color:#b45309}
+.ads-table-note{font-size:11px;margin-top:8px}
 
 /* ---- period calendar bar ---- */
 .pbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--paper,#fff);

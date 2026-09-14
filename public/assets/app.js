@@ -201,9 +201,14 @@ NS.wa = function(phone,text){ var p=String(phone||'').replace(/[^0-9]/g,'');
   if(p.indexOf('0')===0) p='966'+p.slice(1); if(p.indexOf('966')!==0 && p.length===9) p='966'+p;
   return 'https://wa.me/'+p+(text?('?text='+encodeURIComponent(text)):''); };
 
-/* ---- skeleton helpers ---- */
-NS.skelLines = function(n){ var h=''; for(var i=0;i<(n||3);i++){ h+='<div class="skel skel-line" style="width:'+(60+Math.round((i*37)%38))+'%"></div>'; } return h; };
-NS.skelCard = function(){ return '<div class="card card--pad"><div class="skel skel-line" style="width:40%;height:20px"></div>'+NS.skelLines(3)+'</div>'; };
+/* ---- skeleton helpers ----
+   Widths used to be set via el.style (or a style="width:.." string) computed
+   per index. CSP's style-src-attr can only allow-list a fixed set of hashes,
+   so a value computed at runtime can never be pre-approved — every one of
+   these was silently dropped by the browser. Cycle through CSS classes
+   instead; the widths live in app-admin.css. */
+NS.skelLines = function(n){ var w=['w1','w2','w3']; var h=''; for(var i=0;i<(n||3);i++){ h+='<div class="skel skel-line '+w[i%w.length]+'"></div>'; } return h; };
+NS.skelCard = function(){ return '<div class="card card--pad"><div class="skel skel-line skel-line--title"></div>'+NS.skelLines(3)+'</div>'; };
 
 /* ---- empty state ---- */
 NS.empty = function(icon,title,hint){
@@ -223,8 +228,8 @@ NS.gate = function(mount, opt){
      '<p>'+NS.esc(opt.body||'سجّل دخولك للمتابعة')+'</p>'+
      '<a class="btn btn--primary btn--block btn--lg" href="'+NS.attr(NS.LOGIN)+'">'+NS.icon('google')+' '+NS.esc(opt.cta||'الدخول عبر Google')+'</a>'+ 
      (opt.altHtml||'')+
-     '<div style="margin-top:10px"><a class="btn btn--ghost btn--block" href="/login/">'+NS.icon('logout')+' دخول بالبريد وكلمة المرور</a></div>'+ 
-     '<div style="margin-top:14px"><a class="btn btn--ghost btn--block" href="/">'+NS.icon('home')+' رجوع للموقع</a></div>'+ 
+     '<div class="u-mt10"><a class="btn btn--ghost btn--block" href="/login/">'+NS.icon('logout')+' دخول بالبريد وكلمة المرور</a></div>'+
+     '<div class="u-mt14"><a class="btn btn--ghost btn--block" href="/">'+NS.icon('home')+' رجوع للموقع</a></div>'+
    '</div>';
 };
 
@@ -345,20 +350,10 @@ NS.appbar = function(opts){
     ? '<button class="navtoggle" id="ns-navtoggle" aria-label="القائمة" aria-expanded="false" aria-controls="ns-appnav">'+
       NS.icon('menu')+'</button>'
     : '';
-  /* مدخل المساعد الذكي — يظهر في شريط كل صفحات الإدارة، وبنتخطاه على
-     صفحة /ai/ نفسها عشان مايبقاش رابط لنفس المكان. */
-  var ai = '';
-  if(opts.nav && opts.nav.length){
-    var here=''; try{ here=location.pathname||''; }catch(e){}
-    if(here.indexOf('/ai/')!==0){
-      ai='<a class="ns-ai-assistant" href="/ai/" title="ذكاء الحضانة">'+
-         NS.icon('sparkle')+'<span>ذكاء الحضانة</span></a>';
-    }
-  }
   return '<header class="appbar"><div class="appbar__in">'+ toggle +
     '<a class="brand" href="/"><img src="/logo.png" alt="روضة كوكب الطفل الحر"/>'+
       '<span>روضة كوكب الطفل الحر'+(opts.sub?'<small class="b-sub">'+NS.esc(opts.sub)+'</small>':'')+'</span></a>'+
-    '<div class="spacer"></div>'+ nav + (opts.right||'') + ai +
+    '<div class="spacer"></div>'+ nav + (opts.right||'') +
     '<button class="btn icon-btn" id="ns-logout" aria-label="تسجيل الخروج">'+NS.icon('logout')+'</button>'+
   '</div></header>';
 };

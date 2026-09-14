@@ -252,6 +252,7 @@ table.table{width:100%;border-collapse:collapse;font-size:.94rem;min-width:min(1
 .overdue-table th:nth-child(2),.overdue-table td:nth-child(2){width:20%;text-align:center}
 .overdue-table th:nth-child(3),.overdue-table td:nth-child(3){width:20%;text-align:center}
 .overdue-table th:last-child,.overdue-table td:last-child{width:36%;text-align:center}
+.overdue-table td.ta-left{text-align:left!important}
 .overdue-table .tag{padding:3px 8px;font-size:.78rem;white-space:nowrap}
 .overdue-table .btn{min-height:34px;padding:0 10px;font-size:.78rem;gap:4px}
 .overdue-table .btn svg{width:14px;height:14px}
@@ -290,6 +291,10 @@ table.table{width:100%;border-collapse:collapse;font-size:.94rem;min-width:min(1
   background-size:200% 100%;animation:shimmer 1.3s infinite;border-radius:var(--r-sm)}
 @keyframes shimmer{to{background-position:-200% 0}}
 .skel-line{height:14px;margin:9px 0;border-radius:7px}
+.skel-line--title{width:40%;height:20px}
+.skel-line.w1{width:60%}
+.skel-line.w2{width:97%}
+.skel-line.w3{width:96%}
 
 /* ---------- Empty state ---------- */
 .empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:44px 20px;color:var(--muted)}
@@ -495,6 +500,7 @@ body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:
 .u-mb10{margin-bottom:10px!important}
 .u-mb20{margin-bottom:20px!important}
 .u-mt0{margin-top:0!important}
+.u-mt10{margin-top:10px!important}
 .u-mt12{margin-top:12px!important}
 .u-mt14{margin-top:14px!important}
 .u-mt16{margin-top:16px!important}
