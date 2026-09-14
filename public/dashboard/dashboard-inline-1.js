@@ -506,6 +506,7 @@ function attCard(){
   return card('col-2','calendar','سجل حضور الموظفين','',
     '<div class="att-bar" id="att-bar">'+
       [7,14,30].map(function(n){ return '<button type="button" class="btn '+(ATT.days===n?'':'btn--soft')+'" data-att-days="'+n+'">آخر '+n+' يوم</button>'; }).join(' ')+
+      ' <button type="button" class="btn btn--soft" id="att-export-btn">'+I('download')+' تصدير Excel</button>'+
     '</div><div id="att-body">'+attBody()+'</div>');
 }
 function attBody(){
@@ -567,7 +568,26 @@ function wireAttendance(){
   if(body) body.addEventListener('click',function(ev){
     var tr=ev.target.closest('tr.att-row'); if(!tr) return;
     var id=+tr.getAttribute('data-att-emp'); ATT.open=(ATT.open===id?null:id); attPaint(); });
+  var exp=document.getElementById('att-export-btn');
+  if(exp) exp.addEventListener('click',function(){ attExport(exp); });
   if(!ATT.data&&!ATT.loading) attLoad();
+}
+function attExport(button){
+  if(button) button.disabled=true;
+  NS.toast('جارٍ تجهيز ملف حضور الموظفين...','ok');
+  fetch('/api/manager/attendance/export?mt='+encodeURIComponent(TOKEN)+'&days='+ATT.days,{credentials:'same-origin'})
+    .then(function(response){
+      if(!response.ok) throw new Error('تعذّر تصدير سجل الحضور');
+      return response.blob();
+    })
+    .then(function(blob){
+      var url=URL.createObjectURL(blob), a=document.createElement('a');
+      a.href=url; a.download='attendance-'+new Date().toISOString().slice(0,10)+'.xlsx';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      NS.toast('تم تنزيل ملف حضور الموظفين','ok');
+    })
+    .catch(function(err){ NS.toast(err.message||'تعذّر التصدير','err'); })
+    .finally(function(){ if(button) button.disabled=false; });
 }
 
 function deductionsTable(rows){
