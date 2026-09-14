@@ -514,7 +514,7 @@ function attBody(){
   if(d.error) return NS.empty('alert','تعذّر تحميل السجل',String(d.error));
   var s=d.summary||[];
   if(!s.length) return NS.empty('users','لا يوجد موظفون بحسابات دخول','لا يمكن تسجيل الحضور بدون حساب.');
-  var h='<div class="table-wrap"><table class="table"><thead><tr>'+
+  var h='<div class="table-wrap"><table class="table att-summary"><thead><tr>'+
     '<th>الموظف</th><th>حضور</th><th>تأخير</th><th>غياب</th></tr></thead><tbody>';
   s.forEach(function(r){
     var open=(ATT.open===r.emp_id);
@@ -525,7 +525,7 @@ function attBody(){
        '<td class="tabnum">'+(r.absent?'<span class="tag tag--none">'+NS.esc(r.absent)+'</span>':'0')+'</td></tr>';
     if(open){
       var rows=(d.rows||[]).filter(function(x){ return x.emp_id===r.emp_id; }).slice().reverse();
-      h+='<tr class="att-detail"><td colspan="4"><table class="table"><thead><tr>'+
+      h+='<tr class="att-detail"><td colspan="4"><table class="table att-days"><thead><tr>'+
          '<th>اليوم</th><th>حضور</th><th>انصراف</th><th>الحالة</th></tr></thead><tbody>';
       rows.forEach(function(x){
         var st = x.exempt ? '<span class="tag tag--soft">معفى</span>'
