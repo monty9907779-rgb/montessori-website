@@ -6,7 +6,7 @@ var CONTEXT=null, SUGGESTIONS=[], HISTORY=[], BUSY=false;
 if(!TOKEN){ gate(); } else { render(); loadContext(false); }
 
 function gate(){
-  document.body.style.overflow='auto';
+  document.body.classList.add('ai-scroll');
   app.innerHTML='';
   var mount=document.createElement('div'); app.appendChild(mount);
   NS.gate(mount,{title:'ذكاء الحضانة',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة.'});
@@ -53,15 +53,21 @@ function skeletonKpis(){
   var h=''; for(var i=0;i<4;i++) h+='<div class="ai-kpi"><div class="ai-skel" style="width:70%"></div><div class="ai-skel" style="width:42%;margin-top:10px;height:22px"></div></div>';
   return h;
 }
+/* CSP blocks inline style="" writes (style-src-attr), so growing the
+   textarea uses the "rows" attribute instead of a pixel style.height —
+   the CSS max-height+overflow:auto already caps and scrolls past 4 rows. */
+function autoGrowInput(el){
+  el.rows=1;
+  var lineHeight=parseFloat(getComputedStyle(el).lineHeight)||23;
+  el.rows=Math.min(4,Math.max(1,Math.round((el.scrollHeight-24)/lineHeight)));
+}
 function wire(){
   var form=document.getElementById('compose'), input=document.getElementById('prompt');
   form.addEventListener('submit',function(ev){ev.preventDefault();ask(input.value);});
   input.addEventListener('keydown',function(ev){
     if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();form.requestSubmit();}
   });
-  input.addEventListener('input',function(){
-    input.style.height='48px'; input.style.height=Math.min(input.scrollHeight,128)+'px';
-  });
+  input.addEventListener('input',function(){ autoGrowInput(input); });
   document.getElementById('refresh-data').addEventListener('click',function(){loadContext(true);});
   document.getElementById('new-chat').addEventListener('click',function(){
     if(BUSY)return; HISTORY=[]; document.getElementById('messages').innerHTML='';
@@ -129,7 +135,7 @@ function paintQuestions(){
   if(freeBtn)freeBtn.addEventListener('click',function(){
     if(BUSY)return;
     var input=document.getElementById('prompt'); if(!input)return;
-    input.value=''; input.style.height='48px';
+    input.value=''; input.rows=1;
     input.placeholder='اكتبي سؤالك الحر هنا ثم اضغطي إرسال…';
     var compose=document.querySelector('.ai-compose');
     if(compose&&compose.scrollIntoView)compose.scrollIntoView({behavior:'smooth',block:'center'});
@@ -162,7 +168,7 @@ function ask(raw){
   if(!question||BUSY)return;
   var prior=HISTORY.slice(-8);
   HISTORY.push({role:'user',content:question}); addMessage('user',question,'');
-  input.value=''; input.style.height='48px'; busy(true); addTyping();
+  input.value=''; input.rows=1; busy(true); addTyping();
   NS.api('/api/manager/ai/ask',{mt:TOKEN,prompt:question,history:prior}).then(function(data){
     var typing=document.getElementById('typing'); if(typing)typing.remove();
     if(!data||!data.ok){
