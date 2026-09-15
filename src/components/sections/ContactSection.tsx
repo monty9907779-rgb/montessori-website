@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { ArrowUpRight, Clock, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { siteFacts } from "@/lib/site-facts";
 
 type FormState = {
@@ -110,11 +110,7 @@ export default function ContactSection() {
           {/* ── Left: Info ── */}
           <div>
             {/* Badge */}
-            <div className="flex mb-4">
-              <span className="badge" style={{ background: "#f0f7e6", color: "#2d5016" }}>
-                📍 {t("badge")}
-              </span>
-            </div>
+            <span className="badge surface-warm text-primary-700">{t("badge")}</span>
 
             <h2 className="section-title text-gray-900 mb-4 animate-slide-up">
               {t("title")}
@@ -207,11 +203,8 @@ export default function ContactSection() {
             </div>
 
             {/* Map Placeholder */}
-            <div
-              className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-3 py-10 px-6 text-center"
-              style={{ background: "#f0f7e6", minHeight: "180px" }}
-            >
-              <span className="text-5xl">📍</span>
+            <div className="surface-warm rounded-3xl overflow-hidden border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-3 py-10 px-6 text-center min-h-[180px]">
+              <MapPin size={40} className="text-primary-700" aria-hidden="true" />
               <p className="font-bold text-base" style={{ color: "#2d5016" }}>
                 {isAr ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery"}
               </p>
@@ -247,11 +240,8 @@ export default function ContactSection() {
             {submitted ? (
               /* Success State */
               <div className="flex flex-col items-center justify-center text-center py-12 gap-4">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg"
-                  style={{ background: "linear-gradient(135deg, #2d5016, #5aa01e)" }}
-                >
-                  ✅
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-700 text-white shadow-lg">
+                  <CheckCircle2 size={36} />
                 </div>
                 <h3 className="text-2xl font-black" style={{ color: "#2d5016" }}>
                   {isAr ? "تم الإرسال بنجاح!" : "Message Sent!"}
