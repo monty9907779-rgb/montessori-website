@@ -36,6 +36,7 @@
   <script>
     addEventListener('online', () => location.reload());
     setInterval(() => { if (navigator.onLine) location.reload(); }, 15000);
+    document.addEventListener('click', (e) => { if (e.target.closest('[data-reload]')) location.reload(); });
   </script>
 </body>
 </html>

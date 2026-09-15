@@ -614,6 +614,12 @@ NS.wireCrmSso = function(){
   }, false);
 };
 
+/* شاشات الخطأ اللي بتستخدم data-reload="1" بدل onclick (CSP-safe) */
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('[data-reload]');
+  if(b) location.reload();
+});
+
 function lateInit(){
   var run=function(){ NS.refreshNav(); NS.notifBell(); NS.wireCrmSso(); };
   if('requestIdleCallback' in window) requestIdleCallback(run,{timeout:2000});
