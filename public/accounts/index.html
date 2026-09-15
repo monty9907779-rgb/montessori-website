@@ -310,7 +310,11 @@ function renderLedger(B, closed, t){
   var excelSummary=M.excel_summary||{};
   var remaining=(t.due_minus_collected!=null?t.due_minus_collected:
     (excelSummary.remaining_total!=null?excelSummary.remaining_total:(paymentTarget-studentCollected)))||0;
-  var excelStudentCount=excelSummary.student_count||M.fees.length;
+  // 15/9: كان بياخد student_count المجمّد من آخر استيراد إكسل (بيفضل عالق
+  // على رقم قديم لحد ما حد يعمل «مزامنة Excel» تاني). دلوقتي بياخد العدّ
+  // الحيّ من السيرفر (active_student_count) اللي بيستثني الطلاب المؤرشفين
+  // (زي taleen/yamen/aser اللي سابوا) ومطابق لعدّاد الشيت الجديد.
+  var excelStudentCount=(typeof M.active_student_count==='number'?M.active_student_count:(excelSummary.student_count||M.fees.length));
   var excelPaymentRows=excelSummary.payment_rows||0;
   var cashClosing=(t.cash_closing!=null?t.cash_closing:(excelSummary.cash_closing!=null?excelSummary.cash_closing:0));
   var expensesPaidOut=(t.expenses_paid_out!=null?t.expenses_paid_out:(excelSummary.expenses_paid_out||0));
