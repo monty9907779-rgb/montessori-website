@@ -56,8 +56,8 @@ export default function CurriculumSection() {
         {/* Badge + heading */}
         <div className="text-center mb-14">
           <div className="flex justify-center mb-4">
-            <span className="badge" style={{ background: "#f0f7e6", color: "#2d5016" }}>
-              📚 {t("badge")}
+            <span className="badge surface-warm text-primary-700">
+              {t("badge")}
             </span>
           </div>
           <h2 className="section-title text-gray-900 mb-4">
@@ -114,10 +114,7 @@ export default function CurriculumSection() {
 
         {/* 4 Core Principles */}
         <div>
-          <h3
-            className="text-2xl font-bold text-center mb-8"
-            style={{ color: "#2d5016" }}
-          >
+          <h3 className="text-2xl font-bold text-center mb-8 text-primary-700">
             {t("principlesTitle")}
           </h3>
           <div className="grid sm:grid-cols-2 gap-5">
@@ -125,7 +122,6 @@ export default function CurriculumSection() {
               <div
                 key={key}
                 className="flex items-start gap-4 p-5 rounded-2xl border border-gray-100 bg-primary-50 card-hover"
-                style={{ background: "#f0f7e6" }}
               >
                 {(() => {
                   const Icon = principleIcons[key];
@@ -136,10 +132,7 @@ export default function CurriculumSection() {
                   );
                 })()}
                 <div>
-                  <h4
-                    className="font-bold text-base mb-1"
-                    style={{ color: "#2d5016" }}
-                  >
+                  <h4 className="font-bold text-base mb-1 text-primary-700">
                     {t(`principles.${key}.title`)}
                   </h4>
                   <p className="text-gray-500 text-sm leading-relaxed">

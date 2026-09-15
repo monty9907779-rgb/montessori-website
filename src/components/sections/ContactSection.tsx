@@ -123,11 +123,8 @@ export default function ContactSection() {
             <div className="space-y-5 mb-10">
               {/* Address */}
               <div className="flex gap-4 items-start">
-                <div
-                  className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm"
-                  style={{ background: "#f0f7e6" }}
-                >
-                  <MapPin size={20} style={{ color: "#2d5016" }} />
+                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
+                  <MapPin size={20} className="text-primary-700" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -141,11 +138,8 @@ export default function ContactSection() {
 
               {/* Phone */}
               <div className="flex gap-4 items-start">
-                <div
-                  className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm"
-                  style={{ background: "#f0f7e6" }}
-                >
-                  <Phone size={20} style={{ color: "#2d5016" }} />
+                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
+                  <Phone size={20} className="text-primary-700" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -153,8 +147,7 @@ export default function ContactSection() {
                   </p>
                   <a
                     href={`tel:${siteFacts.contact.phone}`}
-                    className="text-sm font-medium hover:underline"
-                    style={{ color: "#2d5016" }}
+                    className="text-sm font-medium hover:underline text-primary-700"
                   >
                     {siteFacts.contact.phoneDisplay}
                   </a>
@@ -163,11 +156,8 @@ export default function ContactSection() {
 
               {/* Email */}
               <div className="flex gap-4 items-start">
-                <div
-                  className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm"
-                  style={{ background: "#f0f7e6" }}
-                >
-                  <Mail size={20} style={{ color: "#2d5016" }} />
+                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
+                  <Mail size={20} className="text-primary-700" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -175,8 +165,7 @@ export default function ContactSection() {
                   </p>
                   <a
                     href={`mailto:${siteFacts.contact.email}`}
-                    className="text-sm font-medium hover:underline"
-                    style={{ color: "#2d5016" }}
+                    className="text-sm font-medium hover:underline text-primary-700"
                   >
                     {siteFacts.contact.email}
                   </a>
@@ -185,11 +174,8 @@ export default function ContactSection() {
 
               {/* Hours */}
               <div className="flex gap-4 items-start">
-                <div
-                  className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm"
-                  style={{ background: "#f0f7e6" }}
-                >
-                  <Clock size={20} style={{ color: "#2d5016" }} />
+                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
+                  <Clock size={20} className="text-primary-700" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -205,7 +191,7 @@ export default function ContactSection() {
             {/* Map Placeholder */}
             <div className="surface-warm rounded-3xl overflow-hidden border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-3 py-10 px-6 text-center min-h-[180px]">
               <MapPin size={40} className="text-primary-700" aria-hidden="true" />
-              <p className="font-bold text-base" style={{ color: "#2d5016" }}>
+              <p className="font-bold text-base text-primary-700">
                 {isAr ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery"}
               </p>
               <p className="text-gray-500 text-sm">
@@ -216,15 +202,13 @@ export default function ContactSection() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={isAr ? "افتح الموقع في خرائط جوجل" : "Open location in Google Maps"}
-                className="mt-1 text-xs font-semibold px-4 py-2 rounded-full border transition-all hover:scale-105 min-h-[44px] flex items-center justify-center"
-                style={{ borderColor: "#2d5016", color: "#2d5016" }}
+                className="mt-1 text-xs font-semibold px-4 py-2 rounded-full border transition-all hover:scale-105 min-h-[44px] flex items-center justify-center border-primary-700 text-primary-700"
               >
                 {t("mapLink")}
               </a>
               <Link
                 href="/wa/"
-                className="mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all hover:scale-105"
-                style={{ borderColor: "#2d5016", color: "#2d5016", background: "#fff" }}
+                className="mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all hover:scale-105 border-primary-700 text-primary-700 bg-white"
               >
                 {isAr ? "صفحة التواصل الكاملة" : "Full contact page"}
                 <ArrowUpRight size={14} />
@@ -233,17 +217,14 @@ export default function ContactSection() {
           </div>
 
           {/* ── Right: Form ── */}
-          <div
-            className="rounded-3xl p-8 md:p-10 shadow-xl border border-gray-100"
-            style={{ background: "#fafafa" }}
-          >
+          <div className="rounded-3xl p-8 md:p-10 shadow-xl border border-gray-100 bg-gray-50">
             {submitted ? (
               /* Success State */
               <div className="flex flex-col items-center justify-center text-center py-12 gap-4">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-700 text-white shadow-lg">
                   <CheckCircle2 size={36} />
                 </div>
-                <h3 className="text-2xl font-black" style={{ color: "#2d5016" }}>
+                <h3 className="text-2xl font-black text-primary-700">
                   {isAr ? "تم الإرسال بنجاح!" : "Message Sent!"}
                 </h3>
                 <p className="text-gray-500 text-sm max-w-xs leading-relaxed">
@@ -253,8 +234,7 @@ export default function ContactSection() {
                 </p>
                 <button
                   onClick={() => { setForm(initialForm); setSubmitted(false); }}
-                  className="mt-4 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105"
-                  style={{ background: "#f5a623" }}
+                  className="pill-btn pill-btn--primary mt-4 !px-6 !py-3 text-sm"
                 >
                   {isAr ? "إرسال رسالة أخرى" : "Send Another Message"}
                 </button>
@@ -391,8 +371,7 @@ export default function ContactSection() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 rounded-2xl text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-                    style={{ background: loading ? "#c07d10" : "#f5a623" }}
+                    className={`w-full py-4 rounded-2xl text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed ${loading ? "bg-accent-dark" : "bg-accent"}`}
                   >
                     {loading
                       ? (isAr ? "جارٍ الإرسال..." : "Sending...")

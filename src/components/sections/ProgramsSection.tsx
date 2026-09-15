@@ -53,22 +53,18 @@ export default function ProgramsSection() {
   return (
     <section
       id="programs"
-      className="section-padding"
-      style={{ background: "#f0f7e6" }}
+      className="section-padding surface-warm"
     >
       <div className="max-w-7xl mx-auto">
         {/* Badge */}
         <div className="flex justify-center mb-4">
-          <span
-            className="badge"
-            style={{ background: "#dff0c8", color: "#2d5016" }}
-          >
-            🎓 {t("badge")}
+          <span className="badge surface-warm text-primary-700">
+            {t("badge")}
           </span>
         </div>
 
         {/* Heading */}
-        <h2 className="section-title text-center mb-4" style={{ color: "#2d5016" }}>
+        <h2 className="section-title text-center mb-4 text-primary-700">
           {t("title")}
         </h2>
         <p className="text-center text-gray-600 text-lg max-w-2xl mx-auto mb-14 leading-relaxed">
@@ -163,11 +159,8 @@ export default function ProgramsSection() {
               key={key}
               className="flex items-center gap-3 bg-white rounded-2xl px-5 py-4 shadow-sm border border-green-100"
             >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: "#dff0c8" }}
-              >
-                <Icon size={18} style={{ color: "#2d5016" }} />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 surface-warm">
+                <Icon size={18} className="text-primary-700" />
               </div>
               <span className="text-sm font-semibold text-gray-700">
                 {t(`features.${key}`)}
