@@ -210,6 +210,18 @@ NS.wa = function(phone,text){ var p=String(phone||'').replace(/[^0-9]/g,'');
 NS.skelLines = function(n){ var w=['w1','w2','w3']; var h=''; for(var i=0;i<(n||3);i++){ h+='<div class="skel skel-line '+w[i%w.length]+'"></div>'; } return h; };
 NS.skelCard = function(){ return '<div class="card card--pad"><div class="skel skel-line skel-line--title"></div>'+NS.skelLines(3)+'</div>'; };
 
+/* ---- auto-growing textarea ----
+   Same CSP reason as above: el.style.height=... is silently dropped. Uses
+   the "rows" attribute instead (not a style write), so pair this with CSS
+   that sets min-height/max-height (not a fixed height) plus overflow:auto
+   on the textarea, so growth past maxRows still scrolls internally. */
+NS.autoGrowInput = function(el, maxRows){
+  el.rows=1;
+  var lineHeight=parseFloat(getComputedStyle(el).lineHeight)||23;
+  var padding=(parseFloat(getComputedStyle(el).paddingTop)||0)+(parseFloat(getComputedStyle(el).paddingBottom)||0);
+  el.rows=Math.min(maxRows||4,Math.max(1,Math.round((el.scrollHeight-padding)/lineHeight)));
+};
+
 /* ---- empty state ---- */
 NS.empty = function(icon,title,hint){
   return '<div class="empty"><div class="empty__icon">'+NS.icon(icon||'leaf')+'</div>'+
@@ -398,12 +410,12 @@ NS.refreshNav = function(){
     var nav=document.querySelector('.appnav');
     if(nav){ nav.querySelectorAll('a').forEach(function(a){
       var key=(a.getAttribute('href')||'').replace(/\//g,'');
-      a.style.display = h.indexOf(key)>=0 ? 'none' : '';
+      a.classList.toggle('u-hide', h.indexOf(key)>=0);
     }); }
     var isOwner = (r.is_stats !== undefined) ? !!r.is_stats : !!r.is_owner;
     try{ localStorage.setItem('ns_is_owner', isOwner?'1':'0'); }catch(e){}
     NS._isOwner = isOwner;
-    document.querySelectorAll('[data-owner]').forEach(function(el){ el.style.display = isOwner ? '' : 'none'; });
+    document.querySelectorAll('[data-owner]').forEach(function(el){ el.classList.toggle('u-hide', !isOwner); });
   }).catch(function(){});
 };
 /* ---- درج القائمة على الموبايل ----
@@ -430,7 +442,6 @@ NS.refreshNav = function(){
     var s = scrim(false); if(s) s.classList.remove('on');
     var b = document.getElementById('ns-navtoggle');
     if(b) b.setAttribute('aria-expanded','false');
-    document.body.style.overflow='';
   }
   function open(){
     var n = nav(); if(n) n.classList.add('open');
@@ -438,7 +449,6 @@ NS.refreshNav = function(){
     scrim(true).classList.add('on');
     var b = document.getElementById('ns-navtoggle');
     if(b) b.setAttribute('aria-expanded','true');
-    document.body.style.overflow='hidden';
   }
   NS.closeNav = close;
 
@@ -580,14 +590,14 @@ NS.wireCrmSso = function(){
       if(!mts){ if(NS.isStandalone()) location.href=fb; else window.open(fb,'_blank','noopener'); return; }
       var standalone = NS.isStandalone();
       var ws = standalone ? null : window.open('about:blank','_blank');
-      st.style.opacity='.5';
+      st.classList.add('is-busy');
       NS.api(st.getAttribute('data-sso-api'),{mt:mts}).then(function(r){
-        st.style.opacity='';
+        st.classList.remove('is-busy');
         var dest=(r && r.ok && r.url) ? r.url : fb;
         if(standalone) location.href=dest;
         else if(ws) ws.location.href=dest; else window.open(dest,'_blank','noopener');
       }).catch(function(){
-        st.style.opacity='';
+        st.classList.remove('is-busy');
         if(standalone) location.href=fb;
         else if(ws) ws.location.href=fb; else window.open(fb,'_blank','noopener');
       });
@@ -603,14 +613,14 @@ NS.wireCrmSso = function(){
     // نفتح نافذة فوراً (قبل الـawait) حتى لا يحجبها المتصفح، ثم نوجّهها للرابط اللحظي
     // — إلا في التطبيق المثبَّت (standalone): لا تبويبات هناك، فننتقل بنفس الصفحة
     var w = standalone2 ? null : window.open('about:blank','_blank');
-    a.style.opacity='.5';
+    a.classList.add('is-busy');
     NS.api('/api/manager/crm_sso',{mt:mt}).then(function(r){
-      a.style.opacity='';
+      a.classList.remove('is-busy');
       var dest2=(r && r.ok && r.url) ? r.url : fallback;
       if(standalone2) location.href=dest2;
       else if(r && r.ok && r.url){ if(w) w.location.href=r.url; else window.open(r.url,'_blank','noopener'); }
       else { if(w) w.location.href=fallback; else window.open(fallback,'_blank','noopener'); NS.toast((r&&r.error)||'يُفتح تسجيل الدخول العادي','err'); }
-    }, function(){ a.style.opacity=''; if(standalone2) location.href=fallback; else if(w) w.location.href=fallback; else window.open(fallback,'_blank','noopener'); });
+    }, function(){ a.classList.remove('is-busy'); if(standalone2) location.href=fallback; else if(w) w.location.href=fallback; else window.open(fallback,'_blank','noopener'); });
   }, false);
 };
 

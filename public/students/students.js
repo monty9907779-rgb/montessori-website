@@ -17,7 +17,7 @@ function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appe
 function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
   m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
   '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
-  '<button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+  '<button class="btn btn--primary btn--block btn--lg" data-reload="1">'+I('refresh')+' إعادة المحاولة</button></div>'; }
 
 function boot(){
   document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();
@@ -297,16 +297,6 @@ function fitClass(value){
   var n=(value||'').trim().length;
   return n>34?' is-xxl':(n>25?' is-xl':(n>17?' is-long':''));
 }
-function fitStudentNames(){
-  [].forEach.call(document.querySelectorAll('.name-fit'),function(el){
-    el.style.fontSize='';
-    var size=parseFloat(getComputedStyle(el).fontSize)||18;
-    while(el.scrollWidth>el.clientWidth && size>9){
-      size-=.5;
-      el.style.fontSize=size+'px';
-    }
-  });
-}
 function studentName(name){
   return '<b class="name-fit'+fitClass(name)+'" title="'+NS.attr(name||'')+'">'+NS.esc(name||'—')+'</b>';
 }
@@ -369,7 +359,6 @@ function renderList(){
   bind(L,'data-edit',function(id){ edit(get(id)); });
   bind(L,'data-wa',function(id){ remind(get(id)); });
   L.querySelectorAll('[data-level-select]').forEach(function(select){select.onchange=function(){saveLevel(get(select.dataset.levelSelect),select.value,select);};});
-  fitStudentNames();
 }
 function bind(root,attr,fn){ [].forEach.call(root.querySelectorAll('['+attr+']'),function(b){ b.addEventListener('click',function(){ fn(b.getAttribute(attr)); }); }); }
 function get(id){ return (DATA.students||[]).filter(function(s){return String(s.id)===String(id);})[0]; }

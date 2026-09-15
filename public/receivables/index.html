@@ -16,7 +16,7 @@
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css?v=2"/>
-<link rel="stylesheet" href="/assets/app-admin.css?v=11"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
 <style>
 .ar-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
 .ar-summary button.stat{border:0;width:100%;text-align:inherit;font-family:inherit;cursor:pointer}
@@ -64,7 +64,7 @@ function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appe
   NS.gate(m,{title:'الذمم المدينة',body:'سجّلي دخولك كمديرة لعرض المستحقات على أولياء الأمور.'}); }
 function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
   m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
-  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><button class="btn btn--primary btn--block btn--lg" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div>'; }
+  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><button class="btn btn--primary btn--block btn--lg" data-reload="1">'+I('refresh')+' إعادة المحاولة</button></div>'; }
 
 function boot(){
   document.getElementById('boot').innerHTML=NS.skelCard()+NS.skelCard();

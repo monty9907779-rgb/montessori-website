@@ -53,21 +53,13 @@ function skeletonKpis(){
   var h=''; for(var i=0;i<4;i++) h+='<div class="ai-kpi"><div class="ai-skel ai-skel--kpi-label"></div><div class="ai-skel ai-skel--kpi-value"></div></div>';
   return h;
 }
-/* CSP blocks inline style="" writes (style-src-attr), so growing the
-   textarea uses the "rows" attribute instead of a pixel style.height —
-   the CSS max-height+overflow:auto already caps and scrolls past 4 rows. */
-function autoGrowInput(el){
-  el.rows=1;
-  var lineHeight=parseFloat(getComputedStyle(el).lineHeight)||23;
-  el.rows=Math.min(4,Math.max(1,Math.round((el.scrollHeight-24)/lineHeight)));
-}
 function wire(){
   var form=document.getElementById('compose'), input=document.getElementById('prompt');
   form.addEventListener('submit',function(ev){ev.preventDefault();ask(input.value);});
   input.addEventListener('keydown',function(ev){
     if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();form.requestSubmit();}
   });
-  input.addEventListener('input',function(){ autoGrowInput(input); });
+  input.addEventListener('input',function(){ NS.autoGrowInput(input,4); });
   document.getElementById('refresh-data').addEventListener('click',function(){loadContext(true);});
   document.getElementById('new-chat').addEventListener('click',function(){
     if(BUSY)return; HISTORY=[]; document.getElementById('messages').innerHTML='';

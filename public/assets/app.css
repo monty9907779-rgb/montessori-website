@@ -293,6 +293,7 @@ table.table{width:100%;border-collapse:collapse;font-size:.94rem;min-width:min(1
 /* الهيدر عليه backdrop-filter، وده بيخلي أي fixed جوّاه يتموضع بالنسبة له
    مش للشاشة، وبيحبسه في سياق تكديس أقل من الطبقة الرمادية.
    وقت فتح الدرج بنشيل الفلتر ونرفع الهيدر فوق الطبقة. */
+body.nav-open{overflow:hidden}
 body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:130}
 .appnav a svg{width:17px;height:17px}
 .appnav a.on{background:var(--paper);color:var(--forest);box-shadow:var(--sh-1)}
@@ -409,6 +410,9 @@ body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:
   padding:11px 18px;border-radius:var(--r-sm);font-weight:700;transition:top .2s var(--ease)}
 .skip:focus{top:12px}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.u-hide{display:none!important}
+.is-busy{opacity:.5}
+.mb-14{margin-bottom:14px}
 
 /* ---------- Reveal on scroll ---------- */
 .rev{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}

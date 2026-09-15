@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest-manage.webmanifest"/>
 <link rel="icon" href="/logo.png"/>
 <link rel="stylesheet" href="/assets/fonts.css?v=2"/>
-<link rel="stylesheet" href="/assets/app-admin.css?v=11"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
 <title>طلبات السنة الجديدة | روضة كوكب الطفل الحر</title>
 <style>
 .en-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
@@ -89,7 +89,7 @@ function error(){
     '<main class="app-main app-narrow"><div class="card card--pad" style="text-align:center">'+
     '<div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
     '<h3>تعذّر الاتصال</h3><p class="muted" style="margin:8px 0 18px">حاولي مرة أخرى.</p>'+
-    '<button class="btn btn--primary" onclick="location.reload()">'+I('refresh')+' إعادة المحاولة</button></div></main>';
+    '<button class="btn btn--primary" data-reload="1">'+I('refresh')+' إعادة المحاولة</button></div></main>';
 }
 function stat(accent,icon,label,value,key){
   return '<button type="button" data-stat="'+NS.attr(key||'all')+'" class="stat '+accent+'" title="عرض مصدر الرقم">'+
