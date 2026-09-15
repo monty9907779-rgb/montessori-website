@@ -1,23 +1,15 @@
 import { useTranslations, useLocale } from "next-intl";
+import { UserCog, GraduationCap, Handshake, Award, ClipboardList, Briefcase } from "lucide-react";
 
 type RoleKey = "director" | "lead_teacher" | "assistant" | "specialist" | "coordinator" | "admin";
 
-const roleEmojis: Record<RoleKey, string> = {
-  director: "👩‍💼",
-  lead_teacher: "👩‍🏫",
-  assistant: "🤝",
-  specialist: "🎓",
-  coordinator: "📋",
-  admin: "💼",
-};
-
-const roleGradients: Record<RoleKey, string> = {
-  director:    "linear-gradient(135deg, #2d5016 0%, #3d6b20 100%)",
-  lead_teacher:"linear-gradient(135deg, #3d6b20 0%, #5aa01e 100%)",
-  assistant:   "linear-gradient(135deg, #5aa01e 0%, #73bf27 100%)",
-  specialist:  "linear-gradient(135deg, #f5a623 0%, #c07d10 100%)",
-  coordinator: "linear-gradient(135deg, #2d5016 0%, #5aa01e 100%)",
-  admin:       "linear-gradient(135deg, #c07d10 0%, #f5a623 100%)",
+const roleIcons: Record<RoleKey, typeof UserCog> = {
+  director: UserCog,
+  lead_teacher: GraduationCap,
+  assistant: Handshake,
+  specialist: Award,
+  coordinator: ClipboardList,
+  admin: Briefcase,
 };
 
 const roleKeys: RoleKey[] = ["director", "lead_teacher", "assistant", "specialist", "coordinator", "admin"];
@@ -30,90 +22,52 @@ export default function RolesSection() {
   return (
     <section id="team" className="section-padding bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        {/* Badge */}
-        <div className="flex justify-center mb-4">
-          <span className="badge" style={{ background: "#f0f7e6", color: "#2d5016" }}>
-            🌿 {t("badge")}
-          </span>
-        </div>
+        <span className="badge surface-warm text-primary-700">{t("badge")}</span>
 
-        {/* Title */}
-        <h2 className="section-title text-center text-gray-900 mb-4 animate-slide-up">
-          {t("title")}
-        </h2>
-
-        {/* Subtitle */}
-        <p className="text-center text-gray-500 text-lg max-w-2xl mx-auto mb-14 animate-fade-in">
+        <h2 className="section-title mt-4 text-center text-gray-900">{t("title")}</h2>
+        <p className="text-center text-gray-500 text-lg max-w-2xl mx-auto mb-14 mt-4">
           {t("subtitle")}
         </p>
 
-        {/* Team Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {roleKeys.map((key) => (
-            <div
-              key={key}
-              className="card-hover bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col items-center text-center"
-            >
-              {/* Avatar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {roleKeys.map((key) => {
+            const Icon = roleIcons[key];
+            return (
               <div
-                className="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg mb-5"
-                style={{ background: roleGradients[key] }}
-                aria-hidden="true"
+                key={key}
+                className="card-hover flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
               >
-                {roleEmojis[key]}
+                <div className="icon-tile icon-tile--lg">
+                  <Icon size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-primary-700">
+                    {t(`items.${key}.title`)}
+                  </h3>
+                  <p
+                    className="mt-1 text-gray-500 text-sm leading-relaxed"
+                    dir={isAr ? "rtl" : "ltr"}
+                  >
+                    {t(`items.${key}.desc`)}
+                  </p>
+                </div>
               </div>
-
-              {/* Name / Title */}
-              <h3
-                className="text-xl font-bold mb-1"
-                style={{ color: "#2d5016" }}
-              >
-                {t(`items.${key}.title`)}
-              </h3>
-
-              {/* Decorative divider */}
-              <div className="flex items-center gap-2 my-3">
-                <span className="block w-8 h-0.5 rounded-full" style={{ background: "#f5a623" }} />
-                <span className="text-xs" style={{ color: "#f5a623" }}>✦</span>
-                <span className="block w-8 h-0.5 rounded-full" style={{ background: "#f5a623" }} />
-              </div>
-
-              {/* Description */}
-              <p
-                className="text-gray-500 text-sm leading-relaxed"
-                dir={isAr ? "rtl" : "ltr"}
-              >
-                {t(`items.${key}.desc`)}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* We Are Hiring Banner */}
-        <div
-          className="mt-16 rounded-3xl px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg"
-          style={{
-            background: "linear-gradient(135deg, #2d5016 0%, #3d6b20 60%, #5aa01e 100%)",
-          }}
-        >
+        <div className="surface-forest mt-16 flex flex-col items-center justify-between gap-6 rounded-3xl px-8 py-10 shadow-lg md:flex-row">
           <div className="text-center md:text-start">
-            <p className="text-green-200 text-sm font-medium uppercase tracking-widest mb-2">
-              Join Our Team
+            <p className="text-white/70 text-sm font-medium uppercase tracking-widest mb-2">
+              {t("hiring.eyebrow")}
             </p>
             <h3 className="text-2xl md:text-3xl font-black text-white">
-              We&apos;re Hiring Passionate Educators 🌱
+              {t("hiring.title")}
             </h3>
-            <p className="text-green-100 mt-2 text-sm max-w-md">
-              If you love children and believe in the Montessori philosophy, we&apos;d love to meet you.
-              Reach out and be part of our growing family in Jeddah.
-            </p>
+            <p className="text-white/80 mt-2 text-sm max-w-md">{t("hiring.body")}</p>
           </div>
-          <a
-            href="#contact"
-            className="shrink-0 px-8 py-4 rounded-2xl text-base font-bold text-white shadow-2xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
-            style={{ background: "#f5a623" }}
-          >
-            Apply Now →
+          <a href="#contact" className="pill-btn pill-btn--primary shrink-0 whitespace-nowrap">
+            {t("hiring.cta")}
           </a>
         </div>
       </div>

@@ -179,10 +179,10 @@
     "title": "Behind Every Happy Child Is an Exceptional Team",
     "subtitle": "Our team of professional teachers and specialists places the child at the center of everything.",
     "hiring": {
-      "title": "Join Our Team",
-      "headline": "We're Hiring Passionate Educators 🌱",
-      "description": "Do you believe in the power of early education? We're looking for certified Montessori teachers and teaching assistants who love children and seek to make a real difference in their lives. Join the Planet of the Free Child family!",
-      "cta": "Apply Now →"
+      "eyebrow": "Join Our Team",
+      "title": "We're Hiring Passionate Educators",
+      "body": "If you love children and believe in the Montessori philosophy, we'd love to meet you. Reach out and be part of our growing family in Jeddah.",
+      "cta": "Apply Now"
     },
     "items": {
       "director": {
