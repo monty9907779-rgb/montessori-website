@@ -3,7 +3,7 @@ import PhotoFrame from "@/components/ui/PhotoFrame";
 
 const stats = [
   { key: "years", value: "+١٠", valueEn: "10+" },
-  { key: "children", value: "+٥٠٠", valueEn: "500+" },
+  { key: "children", value: "+٧٠", valueEn: "70+" },
   { key: "programs", value: "٤", valueEn: "4" },
   { key: "teachers", value: "+٢٠", valueEn: "20+" },
 ];
