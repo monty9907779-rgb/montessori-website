@@ -115,7 +115,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .mtop{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
 .mtop .sp{margin-inline-start:auto}
@@ -193,14 +193,14 @@ function render(){
   app.innerHTML = bar() +
   '<main class="app-main app-narrow">'+
     '<div class="mtop">'+
-      '<b style="font-size:15px">صناديق البريد ('+BOXES.length+')</b>'+
+      '<b class="u-fs15">صناديق البريد ('+BOXES.length+')</b>'+
       '<span class="sp"></span>'+
       '<a class="btn btn--soft" href="https://mail.montessori-ksa.com" target="_blank" rel="noopener">✉️ فتح البريد</a>'+
     '</div>'+
 
     '<div class="addbox">'+
-      '<b style="font-size:14px">إضافة صندوق جديد</b>'+
-      '<div class="addrow" style="margin-top:11px">'+
+      '<b class="u-fs14">إضافة صندوق جديد</b>'+
+      '<div class="addrow u-mt11">'+
         '<div class="fld"><input id="nm" placeholder="الاسم بالإنجليزي" autocomplete="off" spellcheck="false"/>'+
           '<span class="dom">@montessori-ksa.com</span></div>'+
         '<button class="btn btn--primary" id="addb">إنشاء</button>'+
@@ -222,7 +222,7 @@ function render(){
 
 function showPw(email, pw){
   document.getElementById('pw').innerHTML =
-    '<div class="pwbox"><div style="font-weight:800;font-size:13px">'+NS.esc(email)+'</div>'+
+    '<div class="pwbox"><div class="u-fw800 u-fs13">'+NS.esc(email)+'</div>'+
     '<div class="pw" id="pwv">'+NS.esc(pw)+'</div>'+
     '<button class="btn-xs" id="cp">نسخ</button> '+
     '<span class="warn">لن تظهر مرة أخرى</span></div>';

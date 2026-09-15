@@ -123,7 +123,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .perm-card{margin-bottom:14px;position:relative}
 .perm-head{display:flex;align-items:center;gap:9px;font-size:1.05rem;color:var(--forest);
@@ -166,7 +166,7 @@ function gate(){
 }
 function ownerOnly(msg){
   app.innerHTML=NS.appbar({sub:'الصلاحيات', nav:NS.adminNav('')})+
-    '<main class="app-main app-narrow" id="main"><div class="gate" style="min-height:auto;padding:40px 0">'+
+    '<main class="app-main app-narrow" id="main"><div class="gate gate--compact">'+
     '<div class="gate__card"><div class="modal__icon u-block-c">'+I('shield')+'</div>'+
     '<h2>للمالكة فقط</h2><p>'+NS.esc(msg||'صفحة الصلاحيات متاحة لحساب المالكة فقط.')+'</p>'+
     '<a class="btn btn--ghost btn--block" href="/roles/">'+I('users')+' رجوع للأدوار</a></div></div></main>';

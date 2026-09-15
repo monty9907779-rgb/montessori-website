@@ -115,7 +115,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .gsec{background:var(--card,#fff);border-radius:14px;box-shadow:0 3px 12px rgba(15,23,42,.06);padding:18px;margin-bottom:16px}
 .gsec>h3{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;margin-bottom:4px}
@@ -152,6 +152,7 @@
 .bnever.off{background:#eef2f7;color:#64748b}
 .tag{display:inline-block;background:#fef3c7;color:#b45309;border-radius:7px;padding:2px 8px;font-size:11px;font-weight:700}
 .flag{font-size:15px;margin-inline-end:4px}
+.bar-cell-32{width:32%}.geo-line{font-size:11px;color:#79857c}.attack-sample{font-size:10.5px;color:#9aa3a8;direction:ltr;word-break:break-all}.auto-controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.sec-title{font-size:19px;font-weight:800;margin:0}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
 </style>
 </head>
@@ -206,6 +207,7 @@ function ageTxt(stamp){
   return 'منذ '+Math.floor(h/24)+' يوم';
 }
 function pill(kind,txt){ return '<span class="st s-'+kind+'">'+NS.esc(txt)+'</span>'; }
+function pctClass(v){ var p=Math.max(0,Math.min(100,Math.round(Number(v||0)/5)*5)); return 'w-p'+p; }
 function sec(title,status,subtitle,body){
   return '<div class="gsec"><h3>'+NS.esc(title)+(status||'')+'</h3>'+
     (subtitle?'<div class="sub">'+subtitle+'</div>':'')+body+'</div>';
@@ -253,7 +255,7 @@ function secKinds(s){
   var rows = s.kinds.map(function(k){
     var p = Math.round(Number(k[1])*100/tot);
     return '<tr><td>'+esc(k[0])+'</td><td class="n">'+num(k[1])+'</td>'+
-      '<td class="n">'+p+'%</td><td style="width:32%"><span class="bar"><i style="width:'+p+'%"></i></span></td></tr>';
+      '<td class="n">'+p+'%</td><td class="bar-cell-32"><span class="bar"><i class="'+pctClass(p)+'"></i></span></td></tr>';
   }).join('');
   return sec('🎯 الهجمات بتحاول إيه', '', 'تصنيف المحاولات حسب نوع الثغرة المستهدَفة',
     '<table class="tbl"><thead><tr><th>نوع المحاولة</th><th class="u-center">عدد</th>'+
@@ -266,7 +268,7 @@ function secCountries(s){
   var rows = s.countries.map(function(k){
     var p = Math.round(Number(k[1])*100/tot);
     return '<tr><td>'+esc(k[0])+'</td><td class="n">'+num(k[1])+'</td>'+
-      '<td class="n">'+p+'%</td><td style="width:32%"><span class="bar"><i style="width:'+p+'%"></i></span></td></tr>';
+      '<td class="n">'+p+'%</td><td class="bar-cell-32"><span class="bar"><i class="'+pctClass(p)+'"></i></span></td></tr>';
   }).join('');
   return sec('🌍 الهجمات جاية منين', '', 'الدولة مصدر العنوان (ipinfo)',
     '<table class="tbl"><thead><tr><th>الدولة</th><th class="u-center">محاولات</th>'+
@@ -276,11 +278,11 @@ function secCountries(s){
 function secAttackers(s){
   if(!s) return '';
   var rows = (s.attackers||[]).map(function(a){
-    return '<tr><td><span class="ip">'+esc(a.ip)+'</span><div style="font-size:11px;color:#79857c">'+
+    return '<tr><td><span class="ip">'+esc(a.ip)+'</span><div class="geo-line">'+
         '<span class="flag">'+flag(a.cc)+'</span>'+esc(a.country)+(a.org?' · '+esc(a.org):'')+'</div></td>'+
       '<td class="n">'+num(a.hits)+'</td>'+
-      '<td>'+esc(a.kind)+'<div style="font-size:10.5px;color:#9aa3a8;direction:ltr;word-break:break-all">'+esc(a.sample)+'</div></td>'+
-      '<td class="n" style="font-size:11px">'+esc(a.last)+'</td>'+
+      '<td>'+esc(a.kind)+'<div class="attack-sample">'+esc(a.sample)+'</div></td>'+
+      '<td class="n u-fs11">'+esc(a.last)+'</td>'+
       '<td class="n">'+btnBlock(a.ip, a.blocked)+'</td></tr>';
   }).join('');
   return sec('💻 أكثر العناوين مهاجمةً للموقع', '',
@@ -293,9 +295,9 @@ function secAttackers(s){
 function secSsh(s){
   if(!s || !(s.ssh||[]).length) return '';
   var rows = s.ssh.map(function(a){
-    return '<tr><td><span class="ip">'+esc(a.ip)+'</span><div style="font-size:11px;color:#79857c">'+
+    return '<tr><td><span class="ip">'+esc(a.ip)+'</span><div class="geo-line">'+
         '<span class="flag">'+flag(a.cc)+'</span>'+esc(a.country)+(a.org?' · '+esc(a.org):'')+'</div></td>'+
-      '<td class="n">'+num(a.hits)+'</td><td class="n" style="font-size:11px">'+esc(a.last)+'</td>'+
+      '<td class="n">'+num(a.hits)+'</td><td class="n u-fs11">'+esc(a.last)+'</td>'+
       '<td class="n">'+btnBlock(a.ip, a.blocked)+'</td></tr>';
   }).join('');
   return sec('🔑 محاولات تخمين دخول SSH', '',
@@ -307,7 +309,7 @@ function secSsh(s){
 function secBlocked(b){
   var rows = (b||[]).map(function(r){
     return '<tr><td><span class="ip">'+esc(r.ip)+'</span></td><td>'+esc(r.note||'—')+'</td>'+
-      '<td class="n" style="font-size:11px">'+esc(r.at||'—')+'</td>'+
+      '<td class="n u-fs11">'+esc(r.at||'—')+'</td>'+
       '<td class="n">'+btnBlock(r.ip, true)+'</td></tr>';
   }).join('');
   return sec('🚫 قائمة الحظر', pill(rows?'bad':'ok', (b||[]).length+' عنوان'),
@@ -326,7 +328,7 @@ function secAuto(s, auto){
   var rows = (auto||[]).slice(0,25).map(function(a){
     return '<tr><td><span class="ip">'+esc(a.ip)+'</span></td>'+
       '<td class="n">'+num(a.hits)+'</td><td>'+esc(a.kind)+'</td>'+
-      '<td class="n" style="font-size:11px">'+esc(a.exp)+'</td>'+
+      '<td class="n u-fs11">'+esc(a.exp)+'</td>'+
       '<td class="n">'+btnNever(a.ip)+'</td></tr>';
   }).join('');
   return sec('🤖 الحظر التلقائي المستمر',
@@ -334,10 +336,10 @@ function secAuto(s, auto){
     'الحارس بيفحص كل دقيقتين ويقفل أي عنوان يعمل '+r.web_min+
     ' محاولات اختراق أو '+r.ssh_min+' محاولات دخول SSH. الحظر بينتهي لوحده بعد '+
     r.days+' أيام لو العنوان بطّل.',
-    '<div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px">'+
+    '<div class="auto-controls">'+
       '<button class="bblock '+(on?'off':'on')+'" id="autotgl">'+
       (on?'إيقاف الحظر التلقائي':'▶️ تشغيل الحظر التلقائي')+'</button>'+
-      '<span class="note" style="margin:0">محظور تلقائياً دلوقتي: <b>'+num((auto||[]).length)+'</b></span>'+
+      '<span class="note u-m0">محظور تلقائياً دلوقتي: <b>'+num((auto||[]).length)+'</b></span>'+
     '</div>'+
     (rows? '<table class="tbl"><thead><tr><th>العنوان</th><th class="u-center">محاولات</th>'+
       '<th>السبب</th><th class="u-center">ينتهي</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+
@@ -349,7 +351,7 @@ function secNever(never){
   if(!(never||[]).length) return '';
   var rows = never.map(function(r){
     return '<tr><td><span class="ip">'+esc(r.ip)+'</span></td>'+
-      '<td class="n" style="font-size:11px">'+esc(r.at)+'</td>'+
+      '<td class="n u-fs11">'+esc(r.at)+'</td>'+
       '<td class="n"><button class="bnever off" data-ip="'+NS.esc(r.ip)+'" data-act="del">شيله</button></td></tr>';
   }).join('');
   return sec('✅ عناوين آمنة (ما تتحظرش أبداً)', pill('ok', never.length+' عنوان'),
@@ -361,7 +363,7 @@ function render(){
   var s = D.sec;
   app.innerHTML = bar() +
     '<main class="app-main app-narrow">'+
-      '<div class="hd"><h2 style="font-size:19px;font-weight:800;margin:0">الحماية</h2>'+
+      '<div class="hd"><h2 class="sec-title">الحماية</h2>'+
       '<span class="sp"></span>'+
       '<button class="btn btn--soft" id="rf">تحديث</button></div>'+
       secOverview(s)+secAuto(s, D.auto)+secKinds(s)+secCountries(s)+secAttackers(s)+secSsh(s)+secBlocked(D.blocked)+secNever(D.never)+

@@ -115,7 +115,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .gsec{background:var(--card,#fff);border-radius:14px;box-shadow:0 3px 12px rgba(15,23,42,.06);padding:18px;margin-bottom:16px}
 .gsec>h3{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;margin-bottom:4px}
@@ -203,7 +203,7 @@ function secPage(p){
   ]);
 
   if(p.posts && p.posts.length){
-    body += '<div class="posts"><div class="sub" style="margin:12px 0 0">آخر المنشورات</div>'+
+    body += '<div class="posts"><div class="sub meta-sub-posts">آخر المنشورات</div>'+
       p.posts.map(function(x){
         var t = x.url ? '<a class="lnk" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.text||'(بدون نص)')+'</a>'
                       : esc(x.text||'(بدون نص)');
@@ -219,7 +219,7 @@ function secPage(p){
       '</b> (بعد '+num(p.access_expires_days)+' يوم). لما تنتهي، محادثات ماسنجر هتقف — التجديد من Chatwoot بإعادة ربط الصفحة.</div>';
   }
   if(p.link){
-    body += '<div style="margin-top:10px"><a class="lnk" href="'+esc(p.link)+'" target="_blank" rel="noopener">فتح الصفحة على فيسبوك ↗</a></div>';
+    body += '<div class="u-mt10"><a class="lnk" href="'+esc(p.link)+'" target="_blank" rel="noopener">فتح الصفحة على فيسبوك ↗</a></div>';
   }
   return sec('📘 صفحة فيسبوك — '+esc(p.name||''), badge, cls,
     'بيانات مباشرة من Graph API بتوكن الصفحة', body);
@@ -247,7 +247,7 @@ function secInbox(inb, meta_only){
     ]);
     body += '<div class="rowline"><span>اسم الصندوق</span><b>'+esc(c.name)+'</b></div>';
     if(!isFB){
-      body += '<div class="note warn" style="margin-top:10px">⚠️ ده جسر غير رسمي. لو ميتا غيّرت حاجة ممكن يقف فجأة. البديل الرسمي = WhatsApp Cloud API ومحتاج حساب Meta Business موثّق.</div>';
+      body += '<div class="note warn u-mt10">⚠️ ده جسر غير رسمي. لو ميتا غيّرت حاجة ممكن يقف فجأة. البديل الرسمي = WhatsApp Cloud API ومحتاج حساب Meta Business موثّق.</div>';
     }
     return sec(title, badge, cls, subtitle, body);
   }).join('');
@@ -269,15 +269,15 @@ function secAccess(a){
   }
 
   if(a.roles && a.roles.length){
-    body += '<div class="sub" style="margin:2px 0 6px">أصحاب الصلاحيات الظاهرين</div>';
+    body += '<div class="sub meta-sub-tight">أصحاب الصلاحيات الظاهرين</div>';
     body += a.roles.map(function(r){
       return '<div class="rowline"><span>'+esc(r.name)+'</span>'+
              '<b>'+(r.full_control ? '👑 تحكم كامل' : 'محرِّر')+'</b></div>';
     }).join('');
-    body += '<div class="note" style="margin-top:10px">القايمة دي بتوري اللي التوكن يقدر يشوفه بس — ممكن يكون فيه ناس تانية. الأكيد من: فيسبوك ← الصفحة ← الإعدادات ← <b>الوصول إلى صفحة</b>.</div>';
+    body += '<div class="note u-mt10">القايمة دي بتوري اللي التوكن يقدر يشوفه بس — ممكن يكون فيه ناس تانية. الأكيد من: فيسبوك ← الصفحة ← الإعدادات ← <b>الوصول إلى صفحة</b>.</div>';
   }
 
-  body += '<div class="rowline" style="margin-top:8px"><span>حساب الأعمال المالك</span><b>'+
+  body += '<div class="rowline u-mt8"><span>حساب الأعمال المالك</span><b>'+
           (a.owner_business ? esc(a.owner_business) : '❓ غير معروف') + '</b></div>';
   if(!a.owner_business){
     body += '<div class="note warn">الصفحة تابعة لحساب أعمال <b>مش شايفينه</b> (أو صفحة كلاسيكية بلا حساب أعمال). '+
@@ -285,9 +285,9 @@ function secAccess(a){
   }
 
   if(a.scopes_missing && a.scopes_missing.length){
-    body += '<div class="sub" style="margin:14px 0 6px">صلاحيات ناقصة في التوكن</div>';
+    body += '<div class="sub meta-sub-gap">صلاحيات ناقصة في التوكن</div>';
     body += a.scopes_missing.map(function(m){
-      return '<div class="rowline"><span>'+esc(m.why)+'</span><b style="color:#b91c1c">'+esc(m.scope)+'</b></div>';
+      return '<div class="rowline"><span>'+esc(m.why)+'</span><b class="t-bad">'+esc(m.scope)+'</b></div>';
     }).join('');
   }
   return sec('🔐 الصلاحيات والملكية', badge, cls,
@@ -332,7 +332,7 @@ function render(){
   html += secAds();
   html += secContent();
   if(stamp){
-    html += '<div class="sub" style="text-align:center;margin:6px 0 20px">آخر تحديث للبيانات: '+esc(stamp)+'</div>';
+    html += '<div class="sub meta-updated">آخر تحديث للبيانات: '+esc(stamp)+'</div>';
   }
   html += '</main>';
   app.innerHTML = html;

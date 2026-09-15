@@ -18,7 +18,7 @@
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css?v=2"/>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .rg-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
 .rg-summary .stat{appearance:none;text-align:inherit;width:100%;cursor:pointer}
@@ -82,8 +82,8 @@ function netError(){
   var m=document.createElement('div');
   m.className='app-main app-narrow';
   app.appendChild(m);
-  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
-    '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+  m.innerHTML='<div class="card card--pad u-center"><div class="modal__icon u-block-c">'+I('wifi')+'</div>'+
+    '<h3 class="u-mb8">تعذّر الاتصال</h3><p class="muted u-mb20">حاولي مرة أخرى.</p>'+
     '<button class="btn btn--primary btn--block btn--lg" data-reload="1">'+I('refresh')+' إعادة المحاولة</button></div>';
 }
 
@@ -135,7 +135,7 @@ function render(){
   var total=users.length;
   var h=NS.appbar({sub:'الأدوار', nav:NS.adminNav('roles')})+
     '<main class="app-main">'+
-      '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+      '<div class="page-head between u-wrap12">'+
         '<div><h1>توزيع الأدوار</h1><div class="sub">'+(DATA.manager?('مسجّلة الدخول: '+NS.esc(DATA.manager)):'حدّدي دور كل مستخدم واربطي أولياء الأمور بأطفالهم.')+'</div></div>'+
       '</div>'+
       '<div class="rg-summary">'+

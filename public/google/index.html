@@ -115,7 +115,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .gsec{background:var(--card,#fff);border-radius:14px;box-shadow:0 3px 12px rgba(15,23,42,.06);padding:18px;margin-bottom:16px}
 .gsec>h3{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;margin-bottom:4px}
@@ -158,6 +158,12 @@
 .stars .e{color:#d8ded9}
 .stars .f{position:absolute;inset-inline-start:0;top:0;overflow:hidden;color:#f59e0b}
 .note{color:#79857c;font-size:11.5px;margin-top:9px;line-height:1.65}
+.geo-now{margin:2px 0 4px}.grow--compact{padding:4px 0}.pulse--sm{width:6px;height:6px;display:inline-block}.flag-lg{font-size:15px}
+.small-muted{color:#79857c;font-size:11.5px}.small-muted2{color:#79857c;font-size:11px;font-weight:600}.td-loose{line-height:1.6}
+.mono-ip{direction:ltr;text-align:left;font-family:ui-monospace,monospace;font-size:12.5px}.muted-ltr{font-size:11.5px;color:#79857c;direction:ltr;text-align:left}
+.visitor-kind{font-weight:700;white-space:nowrap}.st-logs{background:#eaf5ef;color:#15803d}.bar-cell-34{width:34%}.bar-cell-30{width:30%}.bar-cell-45{width:45%}
+.g-label{font-weight:800;font-size:13px;margin-top:16px}.g-label--danger{font-weight:800;font-size:13px;margin-top:14px;color:#b91c1c}.g-now{font-size:14px;font-weight:800;margin-bottom:6px}
+.warn-note{background:#fffbeb;border-radius:9px;padding:9px 11px;color:#b45309}.gbp-stars{margin:4px 0 12px;text-align:center}.g-final-note{text-align:center;margin-bottom:26px}
 @media (prefers-reduced-motion:reduce){.pulse,.spin{animation:none}}
 </style>
 </head>
@@ -208,6 +214,8 @@ function ageTxt(stamp){
 }
 function pill(kind,txt){ return '<span class="st s-'+kind+'">'+NS.esc(txt)+'</span>'; }
 function row(l,v){ return '<div class="grow"><span class="l">'+NS.esc(l)+'</span><span class="v">'+v+'</span></div>'; }
+function pctClass(v){ var p=Math.max(0,Math.min(100,Math.round(Number(v||0)/5)*5)); return 'w-p'+p; }
+function okClass(v){ return v?'t-ok':'t-bad'; }
 function sec(title,status,subtitle,body){
   return '<div class="gsec"><h3>'+NS.esc(title)+status+'</h3>'+
     (subtitle?'<div class="sub">'+subtitle+'</div>':'')+body+'</div>';
@@ -231,15 +239,15 @@ function nowGeo(g){
   var arr = g.now_geo||[];
   if(!arr.length) return '';
   // ادمج حسب المدينة+الدولة، رتّب تنازلياً
-  var h = '<div style="margin:2px 0 4px">';
+  var h = '<div class="geo-now">';
   arr.slice(0,8).forEach(function(x){
     var city = AR_CITY[x.city]||x.city, ctry = AR_COUNTRY[x.country]||x.country;
     var place = (x.city && x.city!=='(not set)') ? city : ctry;
     var sub = (x.city && x.city!=='(not set)' && x.country) ? ' · '+ctry : '';
-    h += '<div class="grow" style="padding:4px 0"><span class="l">'+
-      '<span class="pulse" style="width:6px;height:6px;display:inline-block"></span> '+
-      '<span style="font-size:15px">'+flag(x.cc)+'</span> '+
-      esc(place)+'<small style="color:#79857c">'+esc(sub)+'</small></span>'+
+    h += '<div class="grow grow--compact"><span class="l">'+
+      '<span class="pulse pulse--sm"></span> '+
+      '<span class="flag-lg">'+flag(x.cc)+'</span> '+
+      esc(place)+'<small class="t-muted">'+esc(sub)+'</small></span>'+
       '<span class="v">'+num(x.users)+'</span></div>';
   });
   return h+'</div>';
@@ -251,31 +259,30 @@ function secVisitors(v){
   var rows = (v.visitors||[]).map(function(x){
     var place = [AR_CITY[x.city]||x.city, AR_COUNTRY[x.country]||x.country]
                 .filter(Boolean).join(' · ') || '—';
-    var col = x.kind==='متصفح' ? '#15803d'
-            : (x.kind==='فحص/ثغرات' ? '#b91c1c' : '#b45309');
+    var kcls = x.kind==='متصفح' ? 't-ok'
+            : (x.kind==='فحص/ثغرات' ? 't-bad' : 't-warn');
     var org = (x.org||'').replace(/^AS\d+\s*/,'');           // رقم الـAS مالوش لازمة
     var first = (x.pages||[])[0] || '';
     var more  = (x.page_count||0) > 1 ? ' +'+((x.page_count||1)-1) : '';
     return '<tr>'+
-      '<td style="line-height:1.6">'+
-        '<div style="direction:ltr;text-align:left;font-family:ui-monospace,monospace;'+
-        'font-size:12.5px">'+esc(x.ip)+(x.admin?' 🔑':'')+'</div>'+
-        '<div style="font-size:11.5px;color:#79857c">'+esc(org)+'</div></td>'+
-      '<td style="line-height:1.6">'+esc(place)+
-        '<div style="font-size:11.5px;color:#79857c;direction:ltr;text-align:left">'+
+      '<td class="td-loose">'+
+        '<div class="mono-ip">'+esc(x.ip)+(x.admin?' 🔑':'')+'</div>'+
+        '<div class="small-muted">'+esc(org)+'</div></td>'+
+      '<td class="td-loose">'+esc(place)+
+        '<div class="muted-ltr">'+
         esc(first.slice(0,34))+esc(more)+'</div></td>'+
-      '<td class="u-center" style="color:'+col+';font-weight:700;white-space:nowrap">'+
+      '<td class="u-center visitor-kind '+kcls+'">'+
         esc(x.kind)+'</td>'+
       '<td class="u-center">'+num(x.hits)+'</td>'+
-      '<td class="u-center" style="white-space:nowrap">'+esc(x.last)+'</td>'+
+      '<td class="u-center u-nowrap">'+esc(x.last)+'</td>'+
     '</tr>';
   });
-  var sub = 'آخر '+num(v.window_min)+' دقيقة · <b style="color:#15803d">'+num(v.real)+
-            '</b> زائر حقيقي · <b style="color:#b45309">'+num(v.bots)+'</b> أداة آلية'+
-            '<br><small style="color:#79857c">الـIP من سجل السيرفر — GA4 بيشيله. '+
+  var sub = 'آخر '+num(v.window_min)+' دقيقة · <b class="t-ok">'+num(v.real)+
+            '</b> زائر حقيقي · <b class="t-warn">'+num(v.bots)+'</b> أداة آلية'+
+            '<br><small class="t-muted">الـIP من سجل السيرفر — GA4 بيشيله. '+
             '🔑 = فتح صفحات إدارة. اسم المستخدم مش متاح للزوار المجهولين.</small>';
   return sec('مين على الموقع دلوقتي',
-    '<span class="st" style="background:#eaf5ef;color:#15803d">من سجلات السيرفر</span>',
+    '<span class="st st-logs">من سجلات السيرفر</span>',
     sub,
     table([['الزائر'],['المكان والصفحة'],['النوع',1],['طلبات',1],['آخر نشاط',1]], rows));
 }
@@ -286,12 +293,12 @@ function secGA(g){
   var rows = (g.sources||[]).map(function(s){
     var n=Number(s[1]||0), p=Math.round(n*100/srcTotal);
     return '<tr><td>'+esc(s[0])+'</td><td class="n">'+num(n)+'</td><td class="n">'+p+'%</td>'+
-      '<td style="width:34%"><span class="bar"><i style="width:'+p+'%"></i></span></td></tr>';
+      '<td class="bar-cell-34"><span class="bar"><i class="'+pctClass(p)+'"></i></span></td></tr>';
   });
   return sec('📈 Google Analytics',
     pill(age(g.received_at)>60?'warn':'ok', ageTxt(g.received_at)),
     'الموقع: montessori-ksa.com · معرّف القياس G-H0856C2N0T',
-    '<div style="font-size:14px;font-weight:800;margin-bottom:6px"><span class="pulse"></span>'+
+    '<div class="g-now"><span class="pulse"></span>'+
       num(g.now)+' زائر على الموقع الآن</div>'+
     nowGeo(g)+
     kpis([['مستخدمو أمس',num(g.y_users)],['جلسات أمس',num(g.y_sessions)],
@@ -339,26 +346,26 @@ function geoBlock(g){
 
   if(cs.length){
     var tot = cs.reduce(function(a,c){ return a + Number(c.users||0); },0) || 1;
-    h += '<div style="font-weight:800;font-size:13px;margin-top:16px">'+
-         'الدول اللي بتزور <span style="font-weight:600;color:#79857c;font-size:11px">(آخر ٧ أيام)</span></div>'+
+    h += '<div class="g-label">'+
+         'الدول اللي بتزور <span class="small-muted2">(آخر ٧ أيام)</span></div>'+
       table([['الدولة'],['زوار',1],['النسبة',1],['']],
         cs.map(function(c){
           var n = Number(c.users||0), p = Math.round(n*100/tot);
           return '<tr><td>'+flag(c.cc)+' '+esc(AR_COUNTRY[c.name]||c.name)+'</td>'+
             '<td class="n">'+num(n)+'</td><td class="n">'+p+'%</td>'+
-            '<td style="width:30%"><span class="bar"><i style="width:'+p+'%"></i></span></td></tr>';
+            '<td class="bar-cell-30"><span class="bar"><i class="'+pctClass(p)+'"></i></span></td></tr>';
         }));
   }
 
   if(ct.length){
     var tc = ct.reduce(function(a,c){ return a + Number(c.users||0); },0) || 1;
-    h += '<div style="font-weight:800;font-size:13px;margin-top:16px">'+
-         'المدن <span style="font-weight:600;color:#79857c;font-size:11px">(آخر ٧ أيام)</span></div>'+
+    h += '<div class="g-label">'+
+         'المدن <span class="small-muted2">(آخر ٧ أيام)</span></div>'+
       table([['المدينة'],['الدولة'],['زوار',1],['النسبة',1]],
         ct.map(function(c){
           var n = Number(c.users||0), p = Math.round(n*100/tc);
           return '<tr><td>'+esc(AR_CITY[c.city]||c.city)+'</td>'+
-            '<td style="color:#79857c;font-size:11.5px">'+esc(AR_COUNTRY[c.country]||c.country)+'</td>'+
+            '<td class="small-muted">'+esc(AR_COUNTRY[c.country]||c.country)+'</td>'+
             '<td class="n">'+num(n)+'</td><td class="n">'+p+'%</td></tr>';
         }))+
       '<div class="note">جدة هي السوق الحقيقي — لو نسبتها بتقل يبقى الإعلانات '+
@@ -413,7 +420,7 @@ function secAds(a, clicks){
       body += '<div class="stale">'+a.problems.map(NS.esc).join('<br>')+'</div>';
     } else {
       body += '<div class="grow"><span class="l">حالة الحساب</span>'+
-              '<span class="v" style="color:#15803d">سليم — لا مشاكل</span></div>';
+              '<span class="v t-ok">سليم — لا مشاكل</span></div>';
     }
     if(a.account) body += row('الحساب', esc(a.account));
     body += row('العملة', esc(a.currency));
@@ -439,16 +446,16 @@ function secAds(a, clicks){
       camps.map(function(c){
         var okc = ['ELIGIBLE','PAUSED','ENDED','PENDING'].indexOf(c.primary)>=0;
         return '<tr><td>'+esc(c.name||c.id)+
-          (c.reasons?'<div style="color:#b45309;font-size:10.5px">'+esc(c.reasons)+'</div>':'')+
+          (c.reasons?'<div class="t-warn u-fs11">'+esc(c.reasons)+'</div>':'')+
           '</td>'+
-          '<td class="n" style="color:'+(okc?'#15803d':'#b91c1c')+'">'+esc(c.primary)+'</td>'+
+          '<td class="n '+okClass(okc)+'">'+esc(c.primary)+'</td>'+
           '<td class="n">'+num(c.budget)+'</td><td class="n">'+num(c.cost)+'</td>'+
           '<td class="n">'+num(c.clicks)+'</td><td class="n">'+(c.ctr!=null?c.ctr+'%':'—')+'</td>'+
           '<td class="n">'+num(c.conv)+'</td><td class="n">'+(c.cpa?num(c.cpa):'—')+'</td></tr>';
       }));
 
     if(!camps.length){
-      body += '<div class="note" style="background:#fffbeb;border-radius:9px;padding:9px 11px;color:#b45309">'+
+      body += '<div class="note warn-note">'+
         'السكربت المركّب دلوقتي بيبعت الحالة العامة بس من غير تفاصيل الحملات. '+
         'النسخة المحدّثة (<b>/opt/ads/ads-script.js</b>) بتضيف الميزانية والصرف والنقرات '+
         'وCTR والتحويلات لكل حملة — الصقيها مكان القديمة في Google Ads.</div>';
@@ -456,11 +463,11 @@ function secAds(a, clicks){
 
     var bad = a.bad_ads||[];
     if(bad.length){
-      body += '<div style="font-weight:800;font-size:13px;margin-top:14px;color:#b91c1c">إعلانات غير معتمدة</div>';
+      body += '<div class="g-label--danger">إعلانات غير معتمدة</div>';
       body += table([['الحملة'],['المجموعة'],['الحالة',1]],
         bad.map(function(x){
           return '<tr><td>'+esc(x.campaign)+'</td><td>'+esc(x.ad_group)+'</td>'+
-            '<td class="n" style="color:#b91c1c">'+esc(x.approval)+'</td></tr>';
+            '<td class="n t-bad">'+esc(x.approval)+'</td></tr>';
         }));
     } else if(detailed){
       body += '<div class="note">كل الإعلانات معتمدة ✅</div>';
@@ -473,11 +480,11 @@ function secAds(a, clicks){
 
   // نقرات gclid المسجّلة على السيرفر — مصدر مستقل عن تقارير جوجل
   if(clicks){
-    body += '<div style="font-weight:800;font-size:13px;margin-top:16px">نقرات إعلانية وصلت الموقع فعلاً (من سجلات nginx)</div>';
+    body += '<div class="g-label">نقرات إعلانية وصلت الموقع فعلاً (من سجلات nginx)</div>';
     body += kpis([['اليوم',num(clicks.today)],['الإجمالي',num(clicks.total)]]);
     body += table([['الحملة'],['نقرات',1]],
       (clicks.campaigns||[]).map(function(c){
-        return '<tr><td style="direction:ltr">'+esc(c.id)+'</td><td class="n">'+num(c.clicks)+'</td></tr>';
+        return '<tr><td class="u-ltr">'+esc(c.id)+'</td><td class="n">'+num(c.clicks)+'</td></tr>';
       }));
     var bd = clicks.by_day||[];
     if(bd.length){
@@ -486,8 +493,8 @@ function secAds(a, clicks){
       body += table([['اليوم'],['نقرات',1],['']],
         bd.slice().reverse().map(function(d){
           var p=Math.round(Number(d.clicks||0)*100/mx);
-          return '<tr><td style="direction:ltr">'+esc(d.day)+'</td><td class="n">'+num(d.clicks)+'</td>'+
-            '<td style="width:45%"><span class="bar"><i style="width:'+p+'%"></i></span></td></tr>';
+          return '<tr><td class="u-ltr">'+esc(d.day)+'</td><td class="n">'+num(d.clicks)+'</td>'+
+            '<td class="bar-cell-45"><span class="bar"><i class="'+pctClass(p)+'"></i></span></td></tr>';
         }));
     }
     body += '<div class="note">دي نقرات فيها gclid وصلت صفحات الموقع فعلاً — رقم مستقل عن '+
@@ -502,8 +509,8 @@ function secCloud(c){
   return sec('☁️ Google Cloud',
     pill(ok?'ok':'bad', ok?'على الحساب المدفوع':'انتبهي'),
     'تكاملات Google الخارجية فقط — الاستضافة على Hostinger VPS',
-    row('المشروع', '<span style="direction:ltr">'+esc(c.project)+'</span>')+
-    row('حساب الفوترة', '<span style="direction:ltr">'+esc(c.billing_account)+'</span>')+
+    row('المشروع', '<span class="u-ltr">'+esc(c.project)+'</span>')+
+    row('حساب الفوترة', '<span class="u-ltr">'+esc(c.billing_account)+'</span>')+
     row('الفوترة مفعّلة', c.billing_enabled?'✅ نعم':'❌ لا')+
     row('على الحساب المدفوع', c.on_paid?'✅ نعم':'⚠️ لا — حساب تجريبي')+
     row('آخر فحص', esc(c.received_at))+
@@ -523,7 +530,7 @@ function secDrive(d){
         var okr = String(t.last_rc)==='0';
         return '<tr><td>'+esc(t.name)+'</td>'+
           '<td class="n">'+(t.active?'✅':'❌')+'</td>'+
-          '<td class="n" style="color:'+(okr?'#15803d':'#b91c1c')+'">'+(okr?'نجحت':'خطأ '+esc(t.last_rc))+'</td></tr>';
+          '<td class="n '+okClass(okr)+'">'+(okr?'نجحت':'خطأ '+esc(t.last_rc))+'</td></tr>';
       }))+
     row('آخر فحص', esc(d.received_at)));
 }
@@ -539,17 +546,17 @@ function secBusiness(g){
   // (بتطلع مربع فاضي)، فبنقص طبقة نجوم ممتلئة فوق نجوم فاضية بالـCSS.
   var r = Math.max(0, Math.min(5, Number(g.rating||0)));
   var stars = '<span class="stars"><span class="e">☆☆☆☆☆</span>'+
-              '<span class="f" style="width:'+(r*20)+'%">★★★★★</span></span>';
+              '<span class="f '+pctClass(r*20)+'">★★★★★</span></span>';
   var body =
     kpis([['التقييم', (g.rating!=null?Number(g.rating).toFixed(1):'—')+' ★'],
           ['عدد التقييمات', num(g.count)]])+
-    '<div style="text-align:center;margin:4px 0 12px">'+stars+'</div>'+
+    '<div class="gbp-stars">'+stars+'</div>'+
     row('اسم النشاط', esc(g.name))+
     row('حالة النشاط', open?'✅ يعمل':'⚠️ '+esc(g.status))+
     row('مفتوح الآن', g.open_now==null?'—':(g.open_now?'✅ نعم':'مغلق حالياً'))+
-    row('الهاتف', '<span style="direction:ltr">'+esc(g.phone)+'</span>')+
+    row('الهاتف', '<span class="u-ltr">'+esc(g.phone)+'</span>')+
     row('رابط الموقع في جوجل',
-        (g.website_ok?'✅ ':'🔴 ')+'<span style="direction:ltr;font-size:12px">'+esc(g.website)+'</span>')+
+        (g.website_ok?'✅ ':'🔴 ')+'<span class="u-ltr u-fs12">'+esc(g.website)+'</span>')+
     row('آخر فحص', esc(g.received_at))+
     '<div class="u-mt12"><a class="btn btn--soft" href="'+NS.attr(g.maps_url||'#')+
       '" target="_blank" rel="noopener">📍 فتح على خرائط جوجل</a></div>';
@@ -573,7 +580,7 @@ function render(){
   app.innerHTML = bar() +
   '<main class="app-main app-narrow">'+
     '<div class="hd">'+
-      '<b style="font-size:16px">منتجات جوجل</b>'+
+      '<b class="u-fs16">منتجات جوجل</b>'+
       '<span class="sp"></span>'+
       '<button class="btn btn--primary" id="rf">تحديث الآن</button>'+
     '</div>'+
@@ -581,7 +588,7 @@ function render(){
       ' — اضغطي «تحديث الآن» لجلب أرقام لحظية.</div>' : '')+
     secGA(D.ga) + secVisitors(D.visitors) + secGSC(D.gsc) + secAds(D.ads, D.adclicks) +
     secCloud(D.cloud) + secDrive(D.drive) + secBusiness(D.gbp) +
-    '<div class="note" style="text-align:center;margin-bottom:26px">'+
+    '<div class="note g-final-note">'+
       'التحديث التلقائي كل ١٥ دقيقة. زرار «تحديث الآن» بيشغّل الجامع فوراً '+
       'ويجيب كل الأرقام من جوجل مباشرة (بياخد ١٠–٢٠ ثانية).</div>'+
   '</main>';

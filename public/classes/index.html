@@ -126,7 +126,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .cls-card{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:20px;box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:12px}
@@ -263,14 +263,14 @@ function studentsModal(c){
         '<span class="cur">'+(s.linked?'مرتبط':'غير مرتبط')+'</span>'+
         (inOther?'<span class="cur">في: '+NS.esc(curName)+'</span>':(s.class_id===c.id?'<span class="cur">في هذا الفصل</span>':''))+
       '</label>';
-    }).join('') || '<div class="empty" style="padding:24px">لا نتائج</div>';
+    }).join('') || '<div class="empty u-pad24">لا نتائج</div>';
   }
   var m=NS.modal(
     '<h3>'+I('users')+' طلاب «'+NS.esc(c.name)+'»</h3>'+
     '<div class="field u-mb8"><input class="input" id="stu-q" placeholder="ابحثي عن طالب..."/></div>'+
     '<div class="stu-filter" id="stu-filter">'+linkSeg('all','كل الربط')+linkSeg('linked','مرتبط بولي الأمر')+linkSeg('unlinked','غير مرتبط')+'</div>'+
     '<div class="stu-list" id="stu-list">'+rows('')+'</div>'+
-    '<p class="muted" style="font-size:.82rem;margin:6px 0 14px">اختيار طالب من فصل آخر ينقله لهذا الفصل.</p>'+
+    '<p class="muted u-fs82 pay-hint">اختيار طالب من فصل آخر ينقله لهذا الفصل.</p>'+
     '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' <span id="stu-n"></span></button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
   var list=m.el.querySelector('#stu-list'), nEl=m.el.querySelector('#stu-n');
   function count(){ var n=0; for(var k in sel) if(sel[k]) n++; nEl.textContent='حفظ ('+n+')'; }

@@ -126,7 +126,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .cm-note{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(180deg,#f2f9f4,#eaf5ee);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:18px}
 .cm-note .ic{flex:none;width:34px;height:34px;border-radius:10px;background:var(--forest);color:#fff;display:grid;place-items:center}
@@ -262,14 +262,14 @@ function paneFaces(){
   var classes=DATA.classes||[];
   var copts='<option value="">كل الفصول</option>'+classes.map(function(c){return '<option value="'+c.id+'"'+(String(c.id)===FCLASS?' selected':'')+'>'+NS.esc(c.name)+'</option>';}).join('');
   var ready=st.filter(function(s){return s.ready;}).length;
-  var head='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">'+
+  var head='<div class="u-grid-head">'+
       stat('is-forest','users','إجمالي الأطفال',st.length)+
       stat(ready===st.length&&st.length?'is-forest':'is-amber','eye','جاهزون للتعرّف',ready)+
       stat(st.length-ready?'is-amber':'is-forest','clock','باقٍ تسجيلهم',st.length-ready)+
     '</div>'+
     '<div class="cm-filter">'+
       '<div class="search"><input class="input" id="q" type="search" placeholder="ابحثي باسم الطفل…" value="'+NS.attr(Q)+'"/></div>'+
-      '<select class="input" id="fclass" style="max-width:200px">'+copts+'</select>'+
+      '<select class="input u-max200" id="fclass">'+copts+'</select>'+
     '</div><div id="flist"></div>';
   document.getElementById('pane').innerHTML=head;
   var q=document.getElementById('q'); q.addEventListener('input',function(){ Q=q.value; flist(); });
@@ -304,7 +304,7 @@ function openFaces(sid){
   }).catch(function(){ NS.toast('تعذّر الاتصال','err'); });
 }
 function showFaceModal(sid,d){
-  var m=NS.modal('<h3 style="margin-bottom:4px">صور وجه: '+NS.esc(d.student)+'</h3>'+
+  var m=NS.modal('<h3 class="u-mb4">صور وجه: '+NS.esc(d.student)+'</h3>'+
     '<div id="fp-body"></div>'+
     '<div class="actions u-mt14"><button class="btn btn--ghost btn--block" data-close>تم</button></div>');
   var body=m.el.querySelector('#fp-body');
@@ -320,9 +320,9 @@ function showFaceModal(sid,d){
       '</div>';
     });
     g+='<button class="fp-add" id="fp-add">'+I('plus')+'<span>أضف صورة</span></button></div>';
-    var status=d.enrolled?'<div class="face-badge fb-ready" style="margin-top:6px">'+I('check')+' مُسجَّل — بصمة التعرّف جاهزة</div>'
-      :(d.ready?'<div class="face-badge fb-ready" style="margin-top:6px">'+I('check')+' جاهز — سيُستخرج التعرّف تلقائياً</div>'
-      :'<div class="face-badge fb-part" style="margin-top:6px">يحتاج '+Math.max(0,2-(d.photos||[]).length)+' صورة إضافية على الأقل</div>');
+    var status=d.enrolled?'<div class="face-badge fb-ready u-mt6">'+I('check')+' مُسجَّل — بصمة التعرّف جاهزة</div>'
+      :(d.ready?'<div class="face-badge fb-ready u-mt6">'+I('check')+' جاهز — سيُستخرج التعرّف تلقائياً</div>'
+      :'<div class="face-badge fb-part u-mt6">يحتاج '+Math.max(0,2-(d.photos||[]).length)+' صورة إضافية على الأقل</div>');
     return g+status;
   }
   function refreshBody(){

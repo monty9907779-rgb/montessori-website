@@ -115,7 +115,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .gsec{background:var(--card,#fff);border-radius:14px;box-shadow:0 3px 12px rgba(15,23,42,.06);padding:18px;margin-bottom:16px}
 .gsec>h3{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;margin-bottom:4px}
@@ -152,6 +152,9 @@
 .none{color:#9aa3a8;font-size:12.5px;padding:9px 0}
 .split{display:flex;height:9px;border-radius:5px;overflow:hidden;background:#eef2f7;min-width:70px}
 .split i{display:block;height:100%}
+.split-cell{width:22%}.src-paid{color:#7c3aed!important}.src-org{color:#16a34a!important}.src-dir{color:#f59e0b!important}.src-oth{color:#cbd5e1!important}
+.split .src-paid,.lg .src-paid{background:#7c3aed}.split .src-org,.lg .src-org{background:#16a34a}.split .src-dir,.lg .src-dir{background:#f59e0b}.split .src-oth,.lg .src-oth{background:#cbd5e1}
+.web-label{font-weight:800;font-size:13px}.stale-flex{display:flex;gap:10px;align-items:flex-start}.refresh-mark{font-size:16px;line-height:1.2}.ops-note{margin:0 0 12px}.ops-tail{font-weight:400;font-size:11.5px}.ops-pkgs{font-weight:400;font-size:11px}.ops-sub{margin:16px 0 0}.spin--dark{border-color:rgba(0,0,0,.2);border-top-color:#2f6b46}.final-note{text-align:center;margin-bottom:26px}
 .lg{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:#79857c;margin-top:9px}
 .lg b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-inline-end:4px}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
@@ -197,6 +200,8 @@ function num(v){ return (v==null||v==='')?'—':Number(v).toLocaleString('en-US'
 function esc(v){ return NS.esc(v==null?'—':v); }
 function pill(k,t){ return '<span class="st s-'+k+'">'+NS.esc(t)+'</span>'; }
 function row(l,v){ return '<div class="grow"><span class="l">'+NS.esc(l)+'</span><span class="v">'+v+'</span></div>'; }
+function pctClass(v){ var p=Math.max(0,Math.min(100,Math.round(Number(v||0)/5)*5)); return 'w-p'+p; }
+function okClass(v){ return v?'t-ok':'t-bad'; }
 function sec(t,st,sb,b){ return '<div class="gsec"><h3>'+NS.esc(t)+st+'</h3>'+(sb?'<div class="sub">'+sb+'</div>':'')+b+'</div>'; }
 function kpis(l){ return '<div class="kpis">'+l.map(function(k){ return '<div class="kpi"><b>'+k[1]+'</b><span>'+NS.esc(k[0])+'</span></div>'; }).join('')+'</div>'; }
 function table(head,rows){
@@ -231,14 +236,14 @@ function secGeo(g){
 
   var rows = cs.map(function(c){
     var tot = c.total||1;
-    function seg(v,col){ return v? '<i style="width:'+(v*100/tot)+'%;background:'+col+'"></i>':''; }
+    function seg(v,cls){ return v? '<i class="'+cls+' '+pctClass(v*100/tot)+'"></i>':''; }
     return '<tr><td>'+flag(c.cc)+' '+esc(AR_C[c.name]||c.name)+'</td>'+
       '<td class="n">'+num(c.total)+'</td>'+
-      '<td class="n" style="color:'+C_PAID+'">'+num(c.paid)+'</td>'+
-      '<td class="n" style="color:'+C_ORG+'">'+num(c.organic)+'</td>'+
-      '<td class="n" style="color:'+C_DIR+'">'+num(c.direct)+'</td>'+
-      '<td style="width:22%"><span class="split">'+seg(c.paid,C_PAID)+seg(c.organic,C_ORG)+
-        seg(c.direct,C_DIR)+seg(c.other,C_OTH)+'</span></td></tr>';
+      '<td class="n src-paid">'+num(c.paid)+'</td>'+
+      '<td class="n src-org">'+num(c.organic)+'</td>'+
+      '<td class="n src-dir">'+num(c.direct)+'</td>'+
+      '<td class="split-cell"><span class="split">'+seg(c.paid,'src-paid')+seg(c.organic,'src-org')+
+        seg(c.direct,'src-dir')+seg(c.other,'src-oth')+'</span></td></tr>';
   });
 
   var body =
@@ -247,10 +252,10 @@ function secGeo(g){
     row('نصيب الإعلان من الزيارات', Math.round((t.paid||0)*100/gt)+'%')+
     row('نصيب البحث المجاني (SEO)', Math.round((t.organic||0)*100/gt)+'%')+
     table([['الدولة'],['كل الجلسات',1],['إعلان',1],['بحث',1],['مباشر',1],['']], rows)+
-    '<div class="lg"><span><b style="background:'+C_PAID+'"></b>إعلان</span>'+
-      '<span><b style="background:'+C_ORG+'"></b>بحث مجاني</span>'+
-      '<span><b style="background:'+C_DIR+'"></b>مباشر</span>'+
-      '<span><b style="background:'+C_OTH+'"></b>غير مصنّف</span></div>';
+    '<div class="lg"><span><b class="src-paid"></b>إعلان</span>'+
+      '<span><b class="src-org"></b>بحث مجاني</span>'+
+      '<span><b class="src-dir"></b>مباشر</span>'+
+      '<span><b class="src-oth"></b>غير مصنّف</span></div>';
 
   if((t.other||0) > gt*0.5){
     body = '<div class="stale">⚠️ أكتر من نص الجلسات «غير مصنّفة» — يعني '+
@@ -296,7 +301,7 @@ function secWeb(w){
   return sec('🌐 محاولات فحص الموقع', pill(w.probe_paths&&w.probe_paths.length?'warn':'ok',
       num(w.errors_4xx)+' طلب مرفوض'),
     'بوتات بتدوّر على ثغرات معروفة',
-    '<div style="font-weight:800;font-size:13px">المسارات اللي بيدوّروا عليها</div>'+
+    '<div class="web-label">المسارات اللي بيدوّروا عليها</div>'+
     table([['المسار'],['مرات',1]], (w.probe_paths||[]).map(function(x){
       return '<tr><td class="mono">'+esc(x.path)+'</td><td class="n">'+num(x.n)+'</td></tr>'; }))+
     '<div class="note">كل دي بترجع 404 لأن المسارات دي مش موجودة أصلاً على السيرفر — '+
@@ -314,7 +319,7 @@ function secTLS(t){
     table([['الشهادة'],['باقي',1],['مستخدمة',1]],
       t.slice(0,8).map(function(x){
         return '<tr><td class="mono">'+esc(x.name)+'</td>'+
-          '<td class="n" style="color:'+(x.days<21?'#b91c1c':'#15803d')+'">'+x.days+' يوم</td>'+
+          '<td class="n '+(x.days<21?'t-bad':'t-ok')+'">'+x.days+' يوم</td>'+
           '<td class="n">'+(x.in_use?'✅':'—')+'</td></tr>'; }))+
     '<div class="note">الشهادات غير المستخدمة بقايا خدمات اتشالت — مش خطر، '+
     'بس ممكن تتنضف عشان التجديد مايفضلش يحاول عليها.</div>');
@@ -334,7 +339,7 @@ function secHost(h){
     row('المنافذ المفتوحة للإنترنت', '<span class="mono">'+(h.open_ports||[]).join(', ')+'</span>')+
     '<div class="u-lbl">الخدمات</div>'+
     table([['الخدمة'],['الحالة',1]], (h.containers||[]).map(function(c){
-      return '<tr><td>'+esc(c.name)+'</td><td class="n" style="color:'+(c.up?'#15803d':'#b91c1c')+'">'+
+      return '<tr><td>'+esc(c.name)+'</td><td class="n '+okClass(c.up)+'">'+
         (c.up?'شغالة':'واقفة')+'</td></tr>'; })));
 }
 
@@ -370,12 +375,12 @@ function opsReboot(rb){
     ? 'نواة جديدة اتركّبت (<b>'+esc(rb.kernel_newest)+'</b>) والسيرفر لسه شغّال بالقديمة (<b>'+
       esc(rb.kernel_running)+'</b>).'
     : 'تحديثات اتركّبت ومحتاجة إعادة تشغيل عشان تشتغل.';
-  return '<div class="stale" style="display:flex;gap:10px;align-items:flex-start">'+
-    '<span style="font-size:16px;line-height:1.2">🔄</span><div>'+
+  return '<div class="stale stale-flex">'+
+    '<span class="refresh-mark">🔄</span><div>'+
     '<b>في تحديثات مستنية إعادة تشغيل</b><br>'+why+
-    (rb.pkgs && rb.pkgs.length ? '<br><span style="font-weight:400;font-size:11px">'+
+    (rb.pkgs && rb.pkgs.length ? '<br><span class="ops-pkgs">'+
       esc(rb.pkgs.join('، '))+'</span>' : '')+
-    '<br><span style="font-weight:400;font-size:11.5px">مفيش استعجال — اضغطي '+
+    '<br><span class="ops-tail">مفيش استعجال — اضغطي '+
     '«إعادة تشغيل السيرفر كله» تحت في وقت هادي (الحضانة مقفولة مثلاً).</span>'+
     '</div></div>';
 }
@@ -383,11 +388,11 @@ function opsReboot(rb){
 function opsSnap(sn){
   if(!sn) return '';
   var bad = (sn.containers||[]).filter(function(c){ return c.state!=='running'; });
-  return '<div class="note" style="margin:0 0 12px">مشتغل من: <b>'+esc(sn.uptime)+
+  return '<div class="note ops-note">مشتغل من: <b>'+esc(sn.uptime)+
     '</b> · الرام المتاحة: <b>'+num(sn.ram_mb)+' ميجا</b> · القرص: <b>'+esc(sn.disk_pct)+'%</b>'+
-    (bad.length? ' · <span style="color:#b91c1c;font-weight:800">خدمات واقفة: '+
+    (bad.length? ' · <span class="t-bad u-fw800">خدمات واقفة: '+
       bad.map(function(c){ return NS.esc(c.name); }).join('، ')+'</span>'
-     : ' · <span style="color:#15803d;font-weight:800">كل الخدمات شغّالة</span>')+'</div>';
+     : ' · <span class="t-ok u-fw800">كل الخدمات شغّالة</span>')+'</div>';
 }
 
 function opsLog(rows){
@@ -412,7 +417,7 @@ function renderOps(){
       '<b>'+esc(a.label)+
       (rbq && a.id==='reboot' ? ' <span class="need">مطلوب</span>':'')+
       '</b><span>'+esc(a.desc)+
-      (cd? '<br><b style="color:#b45309">متاح بعد '+a.cooldown+' ثانية</b>':'')+
+      (cd? '<br><b class="t-warn">متاح بعد '+a.cooldown+' ثانية</b>':'')+
       '</span></button>';
   }).join('');
   box.innerHTML = sec('⚡ إجراءات السيرفر', pill('ok','للمالك'),
@@ -420,7 +425,7 @@ function renderOps(){
     'مش في القايمة عمداً — قطعهم بيضيّع جلسة الواتساب فمحتاج تدخّل يدوي.',
     opsReboot((OPS.snapshot||{}).reboot) + opsSnap(OPS.snapshot) +
     '<div class="ops">'+btns+'</div>' +
-    '<div class="sub" style="margin:16px 0 0">آخر الإجراءات</div>' + opsLog(OPS.log));
+    '<div class="sub ops-sub">آخر الإجراءات</div>' + opsLog(OPS.log));
 }
 
 document.addEventListener('click', function(ev){
@@ -432,7 +437,7 @@ document.addEventListener('click', function(ev){
   if(danger>=2 && !confirm('تأكيد أخير: كل الخدمات هتقف لحوالي دقيقة ونص. أكمّل؟')) return;
   opsBusy = true;
   var old = b.innerHTML;
-  b.disabled = true; b.innerHTML = '<b><span class="spin" style="border-color:rgba(0,0,0,.2);border-top-color:#2f6b46"></span> بينفّذ…</b>';
+  b.disabled = true; b.innerHTML = '<b><span class="spin spin--dark"></span> بينفّذ…</b>';
   NS.api('/api/manager/opsrun',{mt:TOKEN, action:id, confirm:(danger>=2?id:null)}).then(function(r){
     opsBusy = false;
     if(r && r.ok) NS.toast(r.msg || (label+' — تم'),'ok');
@@ -452,7 +457,7 @@ function render(){
   var s = D.server||{};
   app.innerHTML = bar()+
   '<main class="app-main app-narrow">'+
-    '<div class="hd"><b style="font-size:16px">حالة السيرفر والأمان</b>'+
+    '<div class="hd"><b class="u-fs16">حالة السيرفر والأمان</b>'+
       '<span class="sp"></span>'+
       '<a class="btn btn--soft" data-owner="1" data-sso-api="/api/manager/beszel_sso" '+
         'href="https://mon.montessori-ksa.com" target="_blank" rel="noopener">📊 الرسوم البيانية</a>'+
@@ -460,7 +465,7 @@ function render(){
     '<div id="opsbox"></div>'+
     secGeo(s.geo) + secAppsec(s.appsec) + secSSH(s.ssh) + secF2B(s.fail2ban) +
     secWeb(s.web) + secTLS(s.tls) + secHost(s.host) +
-    '<div class="note" style="text-align:center;margin-bottom:26px">آخر تحديث: '+
+    '<div class="note final-note">آخر تحديث: '+
       esc(s.received_at)+' · زرار «تحديث الآن» بيعيد الفحص فوراً (~١٢ ثانية).</div>'+
   '</main>';
   document.getElementById('rf').onclick = refresh;

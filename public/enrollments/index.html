@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest-manage.webmanifest"/>
 <link rel="icon" href="/logo.png"/>
 <link rel="stylesheet" href="/assets/fonts.css?v=2"/>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <title>طلبات السنة الجديدة | روضة كوكب الطفل الحر</title>
 <style>
 .en-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
@@ -86,9 +86,9 @@ function boot(){
 }
 function error(){
   app.innerHTML=NS.appbar({sub:'طلبات السنة الجديدة',nav:NS.adminNav('enrollments')})+
-    '<main class="app-main app-narrow"><div class="card card--pad" style="text-align:center">'+
-    '<div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
-    '<h3>تعذّر الاتصال</h3><p class="muted" style="margin:8px 0 18px">حاولي مرة أخرى.</p>'+
+    '<main class="app-main app-narrow"><div class="card card--pad u-center">'+
+    '<div class="modal__icon u-block-c">'+I('wifi')+'</div>'+
+    '<h3>تعذّر الاتصال</h3><p class="muted msg-gap-8-18">حاولي مرة أخرى.</p>'+
     '<button class="btn btn--primary" data-reload="1">'+I('refresh')+' إعادة المحاولة</button></div></main>';
 }
 function stat(accent,icon,label,value,key){
@@ -103,7 +103,7 @@ function render(){
   var pending=st.filter(function(s){return s.link_state==='pending';}).length;
   app.innerHTML=NS.appbar({sub:'طلبات السنة الجديدة',nav:NS.adminNav('enrollments')})+
     '<main class="app-main">'+
-    '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+    '<div class="page-head between u-wrap12">'+
       '<div><h1>طلبات السنة الجديدة</h1><div class="sub">حجوزات سبتمبر 2026 · لا يوجد نقل يدوي عند إغلاق أغسطس</div></div>'+
       '<button class="btn btn--primary" id="add">'+I('plus')+' طلب جديد</button>'+
     '</div>'+
@@ -281,7 +281,7 @@ function edit(s){
     '<div class="field"><label>الجريد</label><select class="input" id="f-level">'+levelOptions(s?s.level:'')+'</select></div>'+
     '<div class="field"><label>الرسوم الشهرية (ر.س)</label><input class="input" type="number" min="0" id="f-fees" value="'+NS.attr(s?s.fees:'')+'"/></div>'+
     '<div class="field"><label>ملاحظة</label><textarea class="input" id="f-note" rows="2">'+NS.esc(s?s.remark:'')+'</textarea></div>'+
-    '<p class="muted" style="font-size:.82rem;margin-top:8px">بعد الحفظ سيظهر الطالب في كشف سبتمبر تلقائياً عند فتح الشهر، ولن يظهر في كشف أغسطس قبل تاريخ البداية.</p>'+
+    '<p class="muted u-fs82 u-mt8">بعد الحفظ سيظهر الطالب في كشف سبتمبر تلقائياً عند فتح الشهر، ولن يظهر في كشف أغسطس قبل تاريخ البداية.</p>'+
     '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button><button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
   m.el.querySelector('[data-cancel]').onclick=m.close;
   m.el.querySelector('[data-ok]').onclick=function(){

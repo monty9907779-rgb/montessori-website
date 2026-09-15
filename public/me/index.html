@@ -18,7 +18,7 @@
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iura6YBj_oCad4k1nzSBC5xLhLFw4Q.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Iurf6YBj_oCad4k1l4qkHrRpiZtK6GwN9w.woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css?v=2"/>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .child-hero{display:flex;align-items:center;gap:16px;background:linear-gradient(155deg,var(--forest),#123c2f);color:#fff;
   border-radius:var(--r-lg);padding:22px;box-shadow:var(--sh-forest);position:relative;overflow:hidden;margin-bottom:14px}
@@ -104,16 +104,16 @@ function pending(){
     mount.innerHTML=
      '<div class="gate__card">'+
        '<img class="logo" src="/logo.png" alt=""/>'+
-       '<div class="modal__icon" style="margin:0 auto 14px;background:var(--warn-bg)">'+I('clock','style="color:var(--warn)"')+'</div>'+
+       '<div class="modal__icon u-block-c pending-clock">'+I('clock','class="u-warn"')+'</div>'+
        '<h2>حسابك جاهز — بانتظار الربط</h2>'+
        '<p>أنشأنا حسابك بنجاح. الإدارة تربط حسابك بصفحة طفلك الآن، وعادةً يتم ذلك خلال دقائق.</p>'+
-       '<div class="tag tag--soft" style="margin-bottom:18px">'+I('user')+' '+NS.esc(email)+'</div>'+
+       '<div class="tag tag--soft u-mb18">'+I('user')+' '+NS.esc(email)+'</div>'+
        '<button class="btn btn--primary btn--block btn--lg" id="recheck">'+I('refresh')+' تحقّق الآن</button>'+
-       '<button class="btn btn--accent btn--block" style="margin-top:10px" id="notify">'+I('bell')+' بلّغ الإدارة أنك سجّلت</button>'+
-       '<div id="notify-msg" style="min-height:18px;margin-top:8px;font-size:.9rem;font-weight:700"></div>'+
+       '<button class="btn btn--accent btn--block u-mt10" id="notify">'+I('bell')+' بلّغ الإدارة أنك سجّلت</button>'+
+       '<div id="notify-msg" class="notify-msg"></div>'+
        '<a class="btn btn--ghost btn--block" id="wa">'+I('whatsapp')+' أو راسلنا على واتساب</a>'+
-       '<div class="switch" style="margin-top:16px"><a href="'+NS.SWITCH+'" style="color:var(--clay-600);font-weight:700;font-size:.9rem">'+I('refresh')+' دخول بإيميل آخر</a></div>'+
-       '<div style="margin-top:12px"><a class="btn btn--soft btn--block" href="/">'+I('home')+' رجوع للموقع</a></div>'+
+       '<div class="switch u-mt16"><a href="'+NS.SWITCH+'" class="u-clay-link--soft">'+I('refresh')+' دخول بإيميل آخر</a></div>'+
+       '<div class="u-mt12"><a class="btn btn--soft btn--block" href="/">'+I('home')+' رجوع للموقع</a></div>'+
      '</div>';
     mount.querySelector('#recheck').addEventListener('click',function(){ location.href = NS.ODOO + '/portal-home'; });
     var waMsg='السلام عليكم، سجّلت في الموقع بإيميل '+email+' وأرغب بربط حسابي بطفلي.';
@@ -132,11 +132,11 @@ function pending(){
           nm.classList.remove('msg-danger'); nm.classList.add('msg-ok'); nm.textContent='وصل تنبيهك للإدارة، وسيتم ربط حسابك قريباً. يمكنك أيضاً مراسلتنا على واتساب.';
         } else if(r&&r.no_request){
           nm.classList.remove('msg-ok'); nm.classList.add('msg-danger');
-          nm.innerHTML='لم نجد طلب تسجيل بهذا البريد — <a href="/#register" style="color:var(--clay-600);font-weight:800">سجّل طفلك أولاً</a>';
+          nm.innerHTML='لم نجد طلب تسجيل بهذا البريد — <a href="/#register" class="u-clay-link">سجّل طفلك أولاً</a>';
         } else { nm.classList.remove('msg-ok'); nm.classList.add('msg-danger'); nm.textContent=(r&&r.error)||'تعذّر الإرسال، جرّب واتساب'; }
       }).catch(function(){
         nb.classList.remove('is-loading'); nm.classList.remove('msg-ok'); nm.classList.add('msg-danger');
-        nm.innerHTML='تعذّر الإرسال — <a href="'+NS.wa(NS.WA_MANAGER,waMsg)+'" target="_blank" rel="noopener" style="color:var(--clay-600);font-weight:800">راسلنا واتساب</a>';
+        nm.innerHTML='تعذّر الإرسال — <a href="'+NS.wa(NS.WA_MANAGER,waMsg)+'" target="_blank" rel="noopener" class="u-clay-link">راسلنا واتساب</a>';
       });
     });
   } else {
@@ -147,7 +147,7 @@ function pending(){
 /* ---------- boot (skeleton -> state) ---------- */
 function boot(){
   document.getElementById('boot').innerHTML =
-    '<div class="skel" style="height:104px;border-radius:22px;margin-bottom:14px"></div>'+
+    '<div class="skel u-skel-child"></div>'+
     NS.skelCard()+NS.skelCard();
   rpc('/state').then(function(d){ S=d; render(); })
   .catch(function(err){
@@ -157,7 +157,7 @@ function boot(){
 }
 function netError(){
   app.innerHTML='';var m=document.createElement('div');app.appendChild(m);m.className='gate';
-  m.innerHTML='<div class="gate__card"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
+  m.innerHTML='<div class="gate__card"><div class="modal__icon u-block-c">'+I('wifi')+'</div>'+
     '<h2>تعذّر الاتصال</h2><p>تحقّق من اتصالك بالإنترنت وحاول مجدداً.</p>'+
     '<button class="btn btn--primary btn--block btn--lg" data-reload="1">'+I('refresh')+' إعادة المحاولة</button></div>';
 }
@@ -194,7 +194,7 @@ function render(){
      '</div>'+
      familyPicker+
      '<div id="countdown"></div>'+
-     '<div class="card card--pad att-card" style="margin-bottom:14px">'+
+     '<div class="card card--pad att-card mb-14">'+
        '<div class="card__head"><span class="card__title">'+I('pin')+' حضور اليوم</span></div>'+
        '<div class="att-status" id="att-status"></div>'+
        '<div class="att-btns"><button class="btn btn--primary" id="arrive">'+I('check')+' وصل ابني</button>'+
@@ -208,9 +208,9 @@ function render(){
        '<button data-t="live" class="live-tab">'+I('video')+'<span>البث المباشر</span><i class="soon-dot">قريباً</i></button>'+
        '<button data-t="info">'+I('calendar')+'<span>الحضانة</span></button>'+
      '</div>'+
-     '<div id="content" style="margin-top:14px"></div>'+
+     '<div class="u-mt14" id="content"></div>'+
    '</main>'+
-   '<footer style="text-align:center;color:var(--muted);font-size:.82rem;padding:20px">حضانة مونتيسوري · جدة</footer>';
+   '<footer class="u-footer">حضانة مونتيسوري · جدة</footer>';
 
   var childSwitch=document.getElementById('child-switch');
   if(childSwitch) childSwitch.addEventListener('change',function(){
@@ -267,13 +267,13 @@ function countdown(){
     var diff=target-new Date();
     if(diff>0){
       var d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4);
-      box.innerHTML='<div class="countdown rev in" style="margin-bottom:14px">'+
+      box.innerHTML='<div class="countdown rev in mb-14">'+
         '<div class="cd-label">'+I('clock')+' باقٍ على تجديد الرسوم</div>'+
         '<div class="cd-units"><div><b>'+d+'</b><span>يوم</span></div><div><b>'+h+'</b><span>ساعة</span></div><div><b>'+m+'</b><span>دقيقة</span></div></div>'+
         '<div class="cd-sub">الرسوم '+NS.riyal(p.fees)+' · مدفوع حتى '+NS.fmtShort(p.paid_until)+'</div></div>';
     } else {
       var late=Math.floor(-diff/864e5);
-      box.innerHTML='<div class="countdown overdue rev in" style="margin-bottom:14px">'+
+      box.innerHTML='<div class="countdown overdue rev in mb-14">'+
         '<div class="cd-label">'+I('alert')+' الرسوم مستحقّة</div>'+
         '<div class="cd-time">متأخّر '+late+' يوم</div>'+
         '<div class="cd-sub">'+NS.riyal(p.fees)+' — يمكنك السداد من تبويب «الرسوم»</div></div>';
@@ -323,7 +323,7 @@ function starsRO(v){
 }
 function evals(){
   var C=document.getElementById('content');
-  C.innerHTML='<div class="card card--pad"><div class="skel skel-line" style="width:60%;height:20px"></div>'+NS.skelLines(4)+'</div>';
+  C.innerHTML='<div class="card card--pad"><div class="skel skel-line u-skel-h20-w60"></div>'+NS.skelLines(4)+'</div>';
   rpc('/evals').then(function(d){
     var list=(d&&d.evals)||[];
     if(!list.length){
@@ -335,15 +335,15 @@ function evals(){
       var badge=e.etype==='daily'
         ? '<span class="tag tag--soft">'+I('sun')+' '+NS.esc(e.type_label)+'</span>'
         : '<span class="tag tag--ok">'+I('calendar')+' '+NS.esc(e.type_label)+'</span>';
-      h+='<div class="card card--pad" style="margin-bottom:14px">'+
+      h+='<div class="card card--pad mb-14">'+
         '<div class="card__head"><span class="card__title">'+badge+'</span>'+
-          '<span class="muted" style="font-size:.85rem">'+NS.fmtDate(e.date)+'</span></div>'+
+          '<span class="muted u-fs85">'+NS.fmtDate(e.date)+'</span></div>'+
         (e.avg?'<div class="evp-avg">'+starsRO(Math.round(e.avg))+'<b>'+e.avg+' / 5</b></div>':'');
       (e.criteria||[]).forEach(function(c){
         h+='<div class="evp-row"><span class="l">'+NS.esc(c.label)+'</span>'+starsRO(c.val)+'</div>';
       });
       if(e.note) h+='<div class="evp-note">'+I('chat')+' <span>'+NS.esc(e.note)+'</span></div>';
-      if(e.teacher) h+='<div class="muted" style="font-size:.8rem;margin-top:8px">أ. '+NS.esc(e.teacher)+'</div>';
+      if(e.teacher) h+='<div class="muted u-fs80 u-mt8">أ. '+NS.esc(e.teacher)+'</div>';
       h+='</div>';
     });
     C.innerHTML=h;
@@ -359,16 +359,16 @@ function evals(){
 function pay(){
   var p=S.payment, C=document.getElementById('content');
   var payMsg='السلام عليكم، أرغب بسداد رسوم الطفل '+S.child.name+' ('+NS.riyal(p.fees)+'). شكراً لكم.';
-  var h='<div class="card card--pad" style="margin-bottom:14px"><div class="card__head"><span class="card__title">'+I('wallet')+' حالة الرسوم</span>'+
+  var h='<div class="card card--pad mb-14"><div class="card__head"><span class="card__title">'+I('wallet')+' حالة الرسوم</span>'+
       (p.paid?'<span class="tag tag--ok">'+I('check')+' مدفوع</span>':'<span class="tag tag--none">'+I('alert')+' مستحق</span>')+'</div>'+
      '<div class="info-row"><span class="l">الرسوم الشهرية</span><b>'+NS.riyal(p.fees)+'</b></div>'+
      (p.paid_until?'<div class="info-row"><span class="l">مدفوع حتى</span><b>'+NS.fmtDate(p.paid_until)+'</b></div>':'')+
      (p.next_due?'<div class="info-row"><span class="l">الدفعة القادمة</span><span class="tag tag--warn">'+NS.fmtDate(p.next_due)+'</span></div>':'')+
      '</div>';
-  h+='<div class="card card--pad" style="margin-bottom:14px"><span class="card__title" style="margin-bottom:8px">'+I('whatsapp')+' سداد الرسوم</span>'+
-     '<p class="muted" style="font-size:.92rem;margin:6px 0 14px">للسداد أو الاستفسار عن طرق الدفع، تواصل مع الإدارة مباشرةً عبر واتساب وسيتم تأكيد الدفعة وتحديث حسابك.</p>'+
+  h+='<div class="card card--pad mb-14"><span class="card__title u-mb8">'+I('whatsapp')+' سداد الرسوم</span>'+
+     '<p class="muted u-fs92 pay-hint">للسداد أو الاستفسار عن طرق الدفع، تواصل مع الإدارة مباشرةً عبر واتساب وسيتم تأكيد الدفعة وتحديث حسابك.</p>'+
      '<a class="btn btn--accent btn--block btn--lg" target="_blank" rel="noopener noreferrer" href="'+NS.wa(NS.WA_MANAGER,payMsg)+'">'+I('whatsapp')+' تواصل للسداد</a></div>';
-  h+='<div class="card card--pad"><span class="card__title" style="margin-bottom:10px">'+I('info')+' سجل المدفوعات</span>';
+  h+='<div class="card card--pad"><span class="card__title u-mb10">'+I('info')+' سجل المدفوعات</span>';
   if(!p.history||!p.history.length) h+=NS.empty('wallet','لا توجد مدفوعات مسجلة','ستظهر هنا كل دفعة بعد تأكيدها من الإدارة.');
   else p.history.forEach(function(x){ h+='<div class="info-row"><span class="l">'+NS.fmtDate(x.date)+(x.period?' · '+NS.esc(x.period):'')+'</span><b>'+NS.riyal(x.amount)+'</b></div>'; });
   C.innerHTML=h+'</div>';
@@ -377,18 +377,18 @@ function pay(){
 /* ---------- info / holidays ---------- */
 function info(){
   var i=S.child, C=document.getElementById('content');
-  var h='<div class="card card--pad" style="margin-bottom:14px"><span class="card__title" style="margin-bottom:10px">'+I('user')+' بيانات '+NS.esc(i.name)+'</span>'+
+  var h='<div class="card card--pad mb-14"><span class="card__title u-mb10">'+I('user')+' بيانات '+NS.esc(i.name)+'</span>'+
     (i.class_name?'<div class="info-row"><span class="l">الفصل</span><b>'+NS.esc(i.class_name)+'</b></div>':'')+
     (i.teacher?'<div class="info-row"><span class="l">المعلّمة</span><b>'+NS.esc(i.teacher)+'</b></div>':'')+
     (i.joining_date?'<div class="info-row"><span class="l">تاريخ الالتحاق</span><b>'+NS.fmtDate(i.joining_date)+'</b></div>':'')+'</div>';
-  h+='<div class="card card--pad" style="margin-bottom:14px"><span class="card__title" style="margin-bottom:10px">'+I('calendar')+' إجازات الحضانة</span>';
-  if(!S.holidays||!S.holidays.length) h+='<p class="muted" style="font-size:.92rem">لا توجد إجازات قريبة.</p>';
+  h+='<div class="card card--pad mb-14"><span class="card__title u-mb10">'+I('calendar')+' إجازات الحضانة</span>';
+  if(!S.holidays||!S.holidays.length) h+='<p class="muted u-fs92">لا توجد إجازات قريبة.</p>';
   else S.holidays.forEach(function(x){ h+='<div class="hol"><b>'+NS.esc(x.name)+'</b><span class="tag tag--soft">'+NS.fmtShort(x.from)+(x.to&&x.to!==x.from?' → '+NS.fmtShort(x.to):'')+'</span></div>'; });
   h+='<div class="hol"><span class="muted">نهاية الأسبوع</span><span class="tag tag--soft">الجمعة والسبت</span></div></div>';
-  h+='<div class="card card--pad"><span class="card__title" style="margin-bottom:10px">'+I('clock')+' مواعيد العمل</span>'+
+  h+='<div class="card card--pad"><span class="card__title u-mb10">'+I('clock')+' مواعيد العمل</span>'+
      '<div class="info-row"><span class="l">الأحد – الخميس</span><b>٨:٠٠ ص – ١:٠٠ م</b></div></div>';
-  h+='<div class="card card--pad" style="margin-top:14px"><span class="card__title" style="margin-bottom:10px">'+I('pin')+' سجل الحضور والانصراف</span>';
-  if(!S.attendance_history||!S.attendance_history.length) h+='<p class="muted" style="font-size:.92rem">لا توجد سجلات حضور بعد.</p>';
+  h+='<div class="card card--pad u-mt14"><span class="card__title u-mb10">'+I('pin')+' سجل الحضور والانصراف</span>';
+  if(!S.attendance_history||!S.attendance_history.length) h+='<p class="muted u-fs92">لا توجد سجلات حضور بعد.</p>';
   else S.attendance_history.slice(0,12).forEach(function(a){
     h+='<div class="info-row"><span class="l">'+NS.fmtDate(a.date)+' · '+NS.esc(a.status_label||a.status||'')+'</span><b>'+
       [a.arrival?('حضور '+NS.esc(a.arrival)):'',a.departure?('خروج '+NS.esc(a.departure)):''].filter(Boolean).join(' · ')+'</b></div>';
@@ -402,10 +402,10 @@ function chat(){
   var C=document.getElementById('content');
   C.innerHTML='<div class="card card--pad">'+NS.skelLines(4)+'</div>';
   rpc('/messages').then(function(d){
-    var h='<div class="card card--pad"><span class="card__title" style="margin-bottom:12px">'+I('chat')+' التواصل مع المعلّمة</span>'+
+    var h='<div class="card card--pad"><span class="card__title u-mb12">'+I('chat')+' التواصل مع المعلّمة</span>'+
       '<div class="chat" id="thread"></div>'+
       '<div class="composer"><textarea class="input" id="mb" rows="1" placeholder="اكتب رسالتك..."></textarea>'+
-      '<button class="btn btn--primary" id="ms" aria-label="إرسال" style="min-width:52px">'+I('send')+'</button></div></div>';
+      '<button class="btn btn--primary u-send" id="ms" aria-label="إرسال">'+I('send')+'</button></div></div>';
     C.innerHTML=h;
     renderThread(d.messages||[]);
     var mb=document.getElementById('mb');
@@ -416,7 +416,7 @@ function chat(){
 }
 function renderThread(msgs){
   var th=document.getElementById('thread');
-  if(!msgs.length){ th.innerHTML='<div style="padding:14px 0">'+NS.empty('chat','ابدأ المحادثة','راسل معلّمة '+NS.esc(S.child.name)+' لمتابعة يومه.')+'</div>'; return; }
+  if(!msgs.length){ th.innerHTML='<div class="u-pad14y">'+NS.empty('chat','ابدأ المحادثة','راسل معلّمة '+NS.esc(S.child.name)+' لمتابعة يومه.')+'</div>'; return; }
   th.innerHTML=msgs.map(function(m){
     return '<div class="bubble '+(m.is_parent?'me':'them')+'">'+NS.esc(m.body)+
       '<div class="meta">'+(m.is_parent?'أنا':NS.esc(m.author))+' · '+NS.esc(m.time)+'</div></div>';
@@ -450,17 +450,17 @@ function chatErr(C,err){
 function photos(albumId){
   var C=document.getElementById('content');
   C.innerHTML='<div class="card card--pad"><div class="album-grid">'+
-    '<div class="skel" style="aspect-ratio:1"></div><div class="skel" style="aspect-ratio:1"></div>'+
-    '<div class="skel" style="aspect-ratio:1"></div><div class="skel" style="aspect-ratio:1"></div></div></div>';
+    '<div class="skel u-ar1"></div><div class="skel u-ar1"></div>'+
+    '<div class="skel u-ar1"></div><div class="skel u-ar1"></div></div></div>';
   if(!albumId){
     rpc('/albums').then(function(d){
       if(!d.albums||!d.albums.length){ C.innerHTML='<div class="card card--pad">'+NS.empty('camera','لا توجد ألبومات بعد','ستظهر هنا صور أنشطة طفلك فور رفعها.')+'</div>'; return; }
       var h='<div class="album-grid">';
       d.albums.forEach(function(a){
-        h+='<a data-album="'+a.id+'">'+(a.cover?'<img loading="lazy" src="'+NS.driveThumb(a.cover,500)+'" alt=""/>':'<div class="skel" style="width:100%;height:100%"></div>')+
+        h+='<a data-album="'+a.id+'">'+(a.cover?'<img loading="lazy" src="'+NS.driveThumb(a.cover,500)+'" alt=""/>':'<div class="skel u-full"></div>')+
           '<span class="cap">'+NS.esc(a.name)+' · '+a.count+'</span></a>';
       });
-      C.innerHTML='<div class="card card--pad"><span class="card__title" style="margin-bottom:12px">'+I('camera')+' ألبومات الصور</span>'+h+'</div></div>';
+      C.innerHTML='<div class="card card--pad"><span class="card__title u-mb12">'+I('camera')+' ألبومات الصور</span>'+h+'</div></div>';
       [].forEach.call(C.querySelectorAll('[data-album]'),function(a){ a.addEventListener('click',function(){ photos(a.getAttribute('data-album')); }); });
     }).catch(function(err){ photosErr(C,err); });
   } else {

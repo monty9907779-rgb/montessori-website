@@ -126,7 +126,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 .sal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .sal-card{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--sh-1)}
@@ -196,7 +196,7 @@ function render(){
         '<div><h1>المرتبات والموظفون</h1><div class="sub">'+NS.esc(DATA.term_label||'')+' · أضيفي المعلّمات، وحدّدي الراتب واطبعي قسيمة الراتب.</div></div>'+
         '<button class="btn btn--primary" id="add-emp">'+I('plus')+' معلّمة / موظف جديد</button>'+
       '</div>'+
-      '<div class="row-wrap" style="margin-bottom:14px"><span class="tag tag--soft">'+I('wallet')+' إجمالي المستحق '+NS.riyal(totalExp)+'</span>'+
+      '<div class="row-wrap mb-14"><span class="tag tag--soft">'+I('wallet')+' إجمالي المستحق '+NS.riyal(totalExp)+'</span>'+
       '<span class="tag tag--ok">'+I('check')+' صافي '+NS.riyal(totalNet)+'</span></div>'+
       '<div id="list"></div>'+
     '</main>';
@@ -249,7 +249,7 @@ function renderList(){
       '<div class="sal-rows">'+
         '<div class="r"><span class="l">الراتب المستحق</span><b class="tabnum">'+NS.riyal(r.expected)+'</b></div>'+
         '<div class="r"><span class="l">المدفوع فعلياً</span><b class="tabnum">'+NS.riyal(r.actual)+'</b></div>'+
-        '<div class="r"><span class="l">إجمالي الخصومات</span><b class="tabnum" style="color:'+(r.deductions_total?'var(--danger)':'var(--muted)')+'">'+(r.deductions_total?'- ':'')+NS.riyal(r.deductions_total)+'</b></div>'+
+        '<div class="r"><span class="l">إجمالي الخصومات</span><b class="tabnum '+(r.deductions_total?'u-danger':'u-muted')+'">'+(r.deductions_total?'- ':'')+NS.riyal(r.deductions_total)+'</b></div>'+
         '<div class="r net"><span class="l">صافي الراتب</span><b class="tabnum">'+NS.riyal(r.net)+'</b></div>'+
       '</div>'+
       '<div class="sal-actions">'+
@@ -291,18 +291,18 @@ function payslip(empId){
       ded='<table><tbody>';
       p.deductions.forEach(function(x){ ded+='<tr><td>'+NS.esc(x.label)+' — '+NS.esc(x.date)+' ('+x.days+' يوم)</td><td>- '+NS.riyal(x.amount)+'</td></tr>'; });
       ded+='</tbody></table>';
-    } else { ded='<p class="muted" style="font-size:.86rem">لا توجد خصومات.</p>'; }
+    } else { ded='<p class="muted u-fs86">لا توجد خصومات.</p>'; }
     var m=NS.modal(
       '<div id="ps-print"><div class="ps">'+
         '<div class="ps__head"><img loading="lazy" src="/logo.png" alt=""/><div class="h"><b>'+NS.esc(p.nursery)+'</b><span>قسيمة راتب — '+NS.esc(p.term_label)+'</span></div>'+
-          '<div class="ps__title"><b>'+NS.esc(p.name)+'</b><br/><span style="color:var(--muted);font-size:.82rem">'+NS.esc(p.job||'موظف')+'</span></div></div>'+
+          '<div class="ps__title"><b>'+NS.esc(p.name)+'</b><br/><span class="u-muted u-fs82">'+NS.esc(p.job||'موظف')+'</span></div></div>'+
         '<table><tbody>'+
           '<tr><td>الراتب المستحق</td><td>'+NS.riyal(p.expected)+'</td></tr>'+
           '<tr><td>المدفوع فعلياً</td><td>'+NS.riyal(p.actual)+'</td></tr>'+
           '<tr><td>الأساس المعتمد للصرف</td><td>'+NS.riyal(p.gross)+'</td></tr>'+
           '<tr><td>إجمالي الخصومات</td><td>- '+NS.riyal(p.deductions_total)+'</td></tr>'+
         '</tbody></table>'+
-        '<div style="font-weight:800;color:var(--forest);margin:8px 0 4px">تفاصيل الخصومات</div>'+ded+
+        '<div class="ps-detail-title">تفاصيل الخصومات</div>'+ded+
         '<div class="grand"><span>صافي الراتب المستحق</span><b>'+NS.riyal(p.net)+'</b></div>'+
         '<div class="sig"><span>توقيع الإدارة: ________</span><span>توقيع المستلم: ________</span></div>'+
       '</div></div>'+

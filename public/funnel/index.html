@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>قمع المبيعات — روضة كوكب الطفل الحر</title>
 <link rel="stylesheet" href="/assets/fonts.css?v=2">
-<link rel="stylesheet" href="/assets/app-admin.css?v=12"/>
+<link rel="stylesheet" href="/assets/app-admin.css?v=13"/>
 <style>
 :root{
   /* مشتقّة من توكنز app.css عشان يفضل مصدر لون واحد للوحة كلها */
@@ -25,7 +25,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
      display:flex;flex-direction:column;max-height:calc(100vh - 92px)}
 .col > h2{margin:0;padding:12px 14px;font-size:.9rem;display:flex;
           align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,.06)}
-.dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+.dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}.dot-new{background:#94A3B8}.dot-contact{background:#3B82F6}.dot-visit{background:#8B5CF6}.dot-done{background:#F59E0B}.dot-enrolled{background:#10B981}.dot-defer{background:#EF4444}.dot-other{background:#999}
 .cnt{margin-inline-start:auto;background:rgba(0,0,0,.08);border-radius:20px;
      padding:1px 9px;font-size:.78rem}
 .list{padding:10px;overflow-y:auto;flex:1;min-height:80px}
@@ -62,7 +62,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
 </head>
 <body>
 <div id="ns-appbar"></div>
-<div class="app-main" style="padding-bottom:0">
+<div class="app-main funnel-main">
   <h1 class="page-title">قمع المبيعات <span id="stat"></span></h1>
 </div>
 
@@ -84,8 +84,8 @@ body{margin:0;background:var(--bg);color:var(--ink);
 })();
 const ODOO='https://odoo.montessori-ksa.com';
 const CRM='https://crm.montessori-ksa.com/app/accounts/1/conversations/';
-const COLORS={'01-جديد':'#94A3B8','02-تم-التواصل':'#3B82F6','03-زيارة-مجدولة':'#8B5CF6',
-              '04-زار-الحضانة':'#F59E0B','05-مسجل':'#10B981','06-مؤجل':'#EF4444'};
+const STAGE_DOT={'01-جديد':'dot-new','02-تم-التواصل':'dot-contact','03-زيارة-مجدولة':'dot-visit',
+              '04-زار-الحضانة':'dot-done','05-مسجل':'dot-enrolled','06-مؤجل':'dot-defer'};
 let TOKEN=null, DATA=null;
 
 function tok(){
@@ -126,7 +126,7 @@ function render(){
   b.innerHTML=DATA.stages.map(s=>{
     const list=DATA.columns[s]||[];
     return `<section class="col" data-stage="${esc(s)}">
-      <h2><span class="dot" style="background:${COLORS[s]||'#999'}"></span>${esc(s.replace(/^\d+-/,''))}
+      <h2><span class="dot ${STAGE_DOT[s]||'dot-other'}"></span>${esc(s.replace(/^\d+-/,''))}
       <span class="cnt">${list.length}</span></h2>
       <div class="list">${list.length?list.map(card).join(''):'<div class="empty">فاضي</div>'}</div>
     </section>`;}).join('');
@@ -172,7 +172,7 @@ async function load(){
   const r=await rpc('/api/funnel/board');
   if(!r.ok){
     document.getElementById('board').innerHTML=
-      '<div class="empty" style="padding:40px">'+
+      '<div class="empty u-pad40">'+
       (r.error==='forbidden'?'لا تملك صلاحية — سجّل الدخول من لوحة الإدارة أولاً':esc(r.error))+'</div>';
     document.getElementById('stat').textContent=''; return;
   }

@@ -15,8 +15,8 @@ if(!TOKEN){ gate(); } else { boot(); }
 function gate(){ app.innerHTML=''; var m=document.createElement('div'); app.appendChild(m);
   NS.gate(m,{title:'الطلاب',body:'سجّلي دخولك كمديرة أو صاحبة الحضانة لإدارة الطلاب والرسوم.'}); }
 function netError(){ app.innerHTML=''; var m=document.createElement('div'); m.className='app-main app-narrow'; app.appendChild(m);
-  m.innerHTML='<div class="card card--pad" style="text-align:center"><div class="modal__icon" style="margin:0 auto 14px">'+I('wifi')+'</div>'+
-  '<h3 style="margin-bottom:8px">تعذّر الاتصال</h3><p class="muted" style="margin-bottom:20px">حاولي مرة أخرى.</p>'+
+  m.innerHTML='<div class="card card--pad u-center"><div class="modal__icon u-block-c">'+I('wifi')+'</div>'+
+  '<h3 class="u-mb8">تعذّر الاتصال</h3><p class="muted u-mb20">حاولي مرة أخرى.</p>'+
   '<button class="btn btn--primary btn--block btn--lg" data-reload="1">'+I('refresh')+' إعادة المحاولة</button></div>'; }
 
 function boot(){
@@ -172,9 +172,9 @@ function render(){
   var linked=st.filter(function(s){return !!s.linked;}).length;
   var h=NS.appbar({sub:'الطلاب', nav:NS.adminNav('students')})+
     '<main class="app-main">'+
-      '<div class="page-head between" style="flex-wrap:wrap;gap:12px">'+
+      '<div class="page-head between u-wrap12">'+
         '<div><h1>الطلاب</h1><div class="sub">أضيفي الطلاب، وسجّلي رسومهم ومتى دفعوا.</div></div>'+
-        '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
+        '<div class="u-row10">'+
           '<button class="btn btn--soft" id="export">تصدير Excel</button>'+
           '<button class="btn btn--primary" id="add">'+I('plus')+' طالب جديد</button>'+
         '</div>'+
@@ -383,7 +383,7 @@ function edit(s){
     '<div class="field"><label>جوال ولي الأمر</label><input class="input" id="f-gp" type="tel" inputmode="tel" value="'+NS.attr(s?s.guardian_phone:'')+'" placeholder="05xxxxxxxx"/></div>'+ 
     '<div class="field"><label>تاريخ الالتحاق</label><input class="input" type="date" id="f-jd" value="'+NS.attr(s?s.joining_date:todayISO())+'"/></div>'+
     '<div class="actions"><button class="btn btn--primary" data-ok>'+I('check')+' حفظ</button>'+
-      (s?'<button class="btn btn--ghost" data-del style="color:var(--danger)">حذف</button>':'')+
+      (s?'<button class="btn btn--ghost u-danger" data-del>حذف</button>':'')+
       '<button class="btn btn--ghost" data-cancel>إلغاء</button></div>');
   m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
   if(s) m.el.querySelector('[data-del]').addEventListener('click',function(){
@@ -417,7 +417,7 @@ function pay(s){
   var m=NS.modal(
     '<div class="modal__icon">'+I('wallet')+'</div>'+
     '<h3>تسجيل دفعة — '+NS.esc(s.name)+'</h3>'+
-    '<p class="muted" style="font-size:.86rem;margin-bottom:6px">الرسوم الشهرية: '+NS.riyal(s.fees)+'</p>'+
+    '<p class="muted u-fs86 u-mb6">الرسوم الشهرية: '+NS.riyal(s.fees)+'</p>'+
     '<div class="field"><label>المبلغ المدفوع (ر.س) *</label><input class="input" type="number" min="1" id="p-amt" value="'+(s.fees||'')+'"/></div>'+
     '<div class="field"><label>تاريخ الدفع</label><input class="input" type="date" id="p-date" value="'+todayISO()+'"/></div>'+
     '<div class="field"><label>مدفوع حتى (موعد التجديد القادم)</label><input class="input" type="date" id="p-until" value="'+defUntil+'"/></div>'+
@@ -444,7 +444,7 @@ function payBooks(s){
   var m=NS.modal(
     '<div class="modal__icon">'+I('book')+'</div>'+
     '<h3>دفع رسوم الكتب — '+NS.esc(s.name)+'</h3>'+
-    '<p class="muted" style="font-size:.86rem;margin-bottom:6px">المطلوب: '+NS.riyal(Number(s.books_due||0))+' · المدفوع: '+NS.riyal(s.books_paid||0)+' · المتبقي: '+NS.riyal(remaining)+'</p>'+
+    '<p class="muted u-fs86 u-mb6">المطلوب: '+NS.riyal(Number(s.books_due||0))+' · المدفوع: '+NS.riyal(s.books_paid||0)+' · المتبقي: '+NS.riyal(remaining)+'</p>'+
     '<div class="field"><label>المبلغ المدفوع (ر.س) *</label><input class="input" type="number" min="1" max="'+remaining+'" id="bp-amt" value="'+remaining+'"/></div>'+
     '<div class="field"><label>تاريخ الدفع</label><input class="input" type="date" id="bp-date" value="'+todayISO()+'"/></div>'+
     '<div class="field"><label>طريقة الدفع</label><select class="input" id="bp-method">'+
@@ -469,7 +469,7 @@ function payBooks(s){
 /* ---- payment history ---- */
 function history(s,type){
   var isBooks=type==='books';
-  var m=NS.modal('<div class="modal__icon">'+I(isBooks?'book':'clock')+'</div><h3>'+(isBooks?'دفعات الكتب لـ':'دفعات ')+NS.esc(s.name)+'</h3><div id="ph-body"><div class="skel skel-line" style="width:80%"></div><div class="skel skel-line" style="width:60%;margin-top:8px"></div></div>'+
+  var m=NS.modal('<div class="modal__icon">'+I(isBooks?'book':'clock')+'</div><h3>'+(isBooks?'دفعات الكتب لـ':'دفعات ')+NS.esc(s.name)+'</h3><div id="ph-body"><div class="skel skel-line u-w80"></div><div class="skel skel-line u-w60 u-mt8"></div></div>'+
     '<div class="actions"><button class="btn btn--ghost" data-cancel>إغلاق</button></div>');
   m.el.querySelector('[data-cancel]').addEventListener('click',m.close);
   NS.api('/api/manager/student/payments',{mt:TOKEN,student_id:s.id,payment_type:isBooks?'books':'tuition'}).then(function(d){
@@ -483,7 +483,7 @@ function history(s,type){
         '<span>'+NS.esc(p.method)+(p.note?(' · '+NS.esc(p.note)):'')+'</span></div>'+
         '<button class="del" data-del="'+NS.attr(p.id)+'" title="حذف الدفعة">'+I('trash')+'</button></div>';
     });
-    h+='</div><div style="display:flex;justify-content:space-between;padding-top:10px;border-top:2px solid var(--line-2);font-weight:800;color:var(--forest)"><span>الإجمالي</span><span class="tabnum">'+NS.riyal(d.total_paid)+'</span></div>';
+    h+='</div><div class="ph-total"><span>الإجمالي</span><span class="tabnum">'+NS.riyal(d.total_paid)+'</span></div>';
     B.innerHTML=h;
     bind(B,'data-del',function(id){
       NS.confirm({title:'حذف الدفعة؟',body:'سيُحذف هذا السجل نهائياً.',okText:'حذف',danger:true}).then(function(ok){
