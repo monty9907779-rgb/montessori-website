@@ -1,5 +1,6 @@
 import { useTranslations, useLocale } from "next-intl";
 import { Hand, Eye, BookOpen, Calculator, Globe, Home, Clock, Users, Sprout } from "lucide-react";
+import Reveal from "@/components/ui/Reveal";
 
 const areaKeys = [
   "practicalLife",
@@ -54,7 +55,7 @@ export default function CurriculumSection() {
       <div className="max-w-7xl mx-auto">
 
         {/* Badge + heading */}
-        <div className="text-center mb-14">
+        <Reveal className="text-center mb-14">
           <div className="flex justify-center mb-4">
             <span className="badge surface-warm text-primary-600">
               {t("badge")}
@@ -66,16 +67,17 @@ export default function CurriculumSection() {
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
             {t("subtitle")}
           </p>
-        </div>
+        </Reveal>
 
         {/* 5 Area cards — 3-col grid, last two centred on the 2nd row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {areaKeys.map((key) => {
+          {areaKeys.map((key, areaIndex) => {
             const Icon = areaIcons[key];
             const accent = areaAccent[key];
             return (
-              <div
+              <Reveal
                 key={key}
+                delay={((areaIndex % 4) + 1) as 1 | 2 | 3 | 4}
                 className={`card-hover rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden border-s-4 ${accent.border} ${
                   key === "mathematics" || key === "cultural" ? "lg:col-span-1" : ""
                 }`}
@@ -104,7 +106,7 @@ export default function CurriculumSection() {
                     ))}
                   </ul>
                 </div>
-              </div>
+              </Reveal>
             );
           })}
 
@@ -114,13 +116,16 @@ export default function CurriculumSection() {
 
         {/* 4 Core Principles */}
         <div>
-          <h3 className="text-2xl font-bold text-center mb-8 text-primary-600">
-            {t("principlesTitle")}
-          </h3>
+          <Reveal>
+            <h3 className="text-2xl font-bold text-center mb-8 text-primary-600">
+              {t("principlesTitle")}
+            </h3>
+          </Reveal>
           <div className="grid sm:grid-cols-2 gap-5">
-            {principleKeys.map((key) => (
-              <div
+            {principleKeys.map((key, principleIndex) => (
+              <Reveal
                 key={key}
+                delay={((principleIndex % 4) + 1) as 1 | 2 | 3 | 4}
                 className="flex items-start gap-4 p-5 rounded-2xl border border-gray-100 bg-primary-50 card-hover"
               >
                 {(() => {
@@ -139,7 +144,7 @@ export default function CurriculumSection() {
                     {t(`principles.${key}.desc`)}
                   </p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>

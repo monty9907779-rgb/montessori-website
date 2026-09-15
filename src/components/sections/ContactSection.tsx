@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { ArrowUpRight, CheckCircle2, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { siteFacts } from "@/lib/site-facts";
+import Reveal from "@/components/ui/Reveal";
 
 type FormState = {
   name: string;
@@ -108,14 +109,14 @@ export default function ContactSection() {
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* ── Left: Info ── */}
-          <div>
+          <Reveal>
             {/* Badge */}
             <span className="badge surface-warm text-primary-600">{t("badge")}</span>
 
-            <h2 className="section-title text-gray-900 mb-4 animate-slide-up">
+            <h2 className="section-title text-gray-900 mb-4">
               {t("title")}
             </h2>
-            <p className="text-gray-500 text-lg leading-relaxed mb-10 animate-fade-in">
+            <p className="text-gray-500 text-lg leading-relaxed mb-10">
               {t("subtitle")}
             </p>
 
@@ -214,10 +215,10 @@ export default function ContactSection() {
                 <ArrowUpRight size={14} />
               </Link>
             </div>
-          </div>
+          </Reveal>
 
           {/* ── Right: Form ── */}
-          <div className="rounded-3xl p-8 md:p-10 shadow-xl border border-gray-100 bg-gray-50">
+          <Reveal delay={2} className="rounded-3xl p-8 md:p-10 shadow-xl border border-gray-100 bg-gray-50">
             {submitted ? (
               /* Success State */
               <div className="flex flex-col items-center justify-center text-center py-12 gap-4">
@@ -386,7 +387,7 @@ export default function ContactSection() {
                 </div>
               </form>
             )}
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

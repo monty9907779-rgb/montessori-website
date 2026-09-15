@@ -27,8 +27,8 @@ export default function Navbar() {
     <header className="fixed top-0 inset-x-0 z-50 h-16 md:h-20 bg-white/95 backdrop-blur-md shadow-md">
       <div className="max-w-7xl mx-auto px-4 md:px-8 h-full flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href={`/${locale}`} className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-montessori flex items-center justify-center shadow-md">
+        <Link href={`/${locale}`} className="group flex items-center gap-3 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-montessori flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
             <span className="text-white text-lg font-bold">ب</span>
           </div>
           <div className="hidden sm:block">

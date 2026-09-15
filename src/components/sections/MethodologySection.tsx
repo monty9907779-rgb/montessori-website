@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import Reveal from "@/components/ui/Reveal";
 
 const stepIndices = [0, 1, 2, 3, 4] as const;
 
@@ -16,13 +17,13 @@ export default function MethodologySection() {
   return (
     <section id="methodology" className="section-padding surface-warm">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
+        <Reveal className="text-center mb-14">
           <span className="badge bg-white text-primary-600">{t("badge")}</span>
           <h2 className="section-title mt-4 text-gray-900">{t("title")}</h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed mt-4">
             {t("subtitle")}
           </p>
-        </div>
+        </Reveal>
 
         <div className="relative">
           <div
@@ -32,9 +33,13 @@ export default function MethodologySection() {
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-4 relative">
             {stepIndices.map((i) => (
-              <div key={i} className="relative flex flex-col items-center text-center lg:px-2">
+              <Reveal
+                key={i}
+                delay={((i % 4) + 1) as 1 | 2 | 3 | 4}
+                className="relative flex flex-col items-center text-center lg:px-2"
+              >
                 <div
-                  className={`relative z-10 mb-5 flex h-20 w-20 items-center justify-center rounded-full border-4 border-white shadow-lg ${stepAccentClass[i]}`}
+                  className={`relative z-10 mb-5 flex h-20 w-20 items-center justify-center rounded-full border-4 border-white shadow-lg transition-transform duration-300 hover:scale-110 ${stepAccentClass[i]}`}
                 >
                   <span className="text-white text-2xl font-black">
                     {t(`steps.${i}.step`)}
@@ -54,12 +59,12 @@ export default function MethodologySection() {
                 <p className="text-gray-500 text-sm leading-relaxed">
                   {t(`steps.${i}.desc`)}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
 
-        <div className="mt-16 max-w-3xl mx-auto">
+        <Reveal className="mt-16 max-w-3xl mx-auto">
           <blockquote className="relative rounded-3xl border-s-4 border-primary-600 bg-white p-8 shadow-md">
             <span
               className="absolute top-4 end-6 text-8xl font-serif leading-none text-primary-600 opacity-10 select-none"
@@ -74,7 +79,7 @@ export default function MethodologySection() {
               {t("quote.author")}
             </footer>
           </blockquote>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

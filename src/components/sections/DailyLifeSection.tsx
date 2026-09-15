@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Sun, Puzzle, Trees, Utensils, BookOpen, Palette, Leaf, Users, Sparkles } from "lucide-react";
 import PhotoFrame from "@/components/ui/PhotoFrame";
+import Reveal from "@/components/ui/Reveal";
 
 const scheduleIndices = [0, 1, 2, 3, 4, 5] as const;
 const scheduleIcons = [Sun, Puzzle, Trees, Utensils, BookOpen, Palette] as const;
@@ -15,13 +16,13 @@ export default function DailyLifeSection() {
   return (
     <section id="daily-life" className="section-padding bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
+        <Reveal className="text-center mb-14">
           <span className="badge surface-warm text-primary-600">{t("badge")}</span>
           <h2 className="section-title mt-4 text-gray-900">{t("title")}</h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed mt-4">
             {t("subtitle")}
           </p>
-        </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* LEFT — Daily schedule timeline */}
@@ -32,14 +33,19 @@ export default function DailyLifeSection() {
                 const Icon = scheduleIcons[i];
                 const isLast = i === scheduleIndices[scheduleIndices.length - 1];
                 return (
-                  <li key={i} className="relative flex gap-5 pb-8">
+                  <Reveal
+                    key={i}
+                    as="li"
+                    delay={((i % 4) + 1) as 1 | 2 | 3 | 4}
+                    className="relative flex gap-5 pb-8"
+                  >
                     {!isLast && (
                       <div
                         className="absolute start-5 top-10 bottom-0 w-0.5 bg-primary-300 opacity-30"
                         aria-hidden="true"
                       />
                     )}
-                    <div className="icon-tile relative z-10 h-10 w-10 border-2 border-white shadow">
+                    <div className="icon-tile relative z-10 h-10 w-10 border-2 border-white shadow transition-transform duration-300 hover:scale-110">
                       <Icon size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -55,14 +61,14 @@ export default function DailyLifeSection() {
                         {t(`schedule.${i}.desc`)}
                       </p>
                     </div>
-                  </li>
+                  </Reveal>
                 );
               })}
             </ol>
           </div>
 
           {/* RIGHT — Environment card + real classroom photo */}
-          <div className="flex flex-col gap-6">
+          <Reveal delay={2} className="flex flex-col gap-6">
             <div className="surface-warm overflow-hidden rounded-3xl border border-gray-100 shadow-lg">
               <div className="surface-forest px-7 py-6">
                 <h3 className="text-xl font-bold text-white mb-1">{t("environment.title")}</h3>
@@ -89,8 +95,9 @@ export default function DailyLifeSection() {
               alt={t("environmentPhotoAlt")}
               comingSoonLabel={common("comingSoonPhoto")}
               aspect="video"
+              className="transition-transform duration-500 hover:scale-[1.02]"
             />
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 import { useTranslations, useLocale } from "next-intl";
 import { CheckCircle2, Users, Award, Languages, Trees, Baby, Footprints, Home, Backpack } from "lucide-react";
+import Reveal from "@/components/ui/Reveal";
 
 const PROGRAM_KEYS = ["infants", "toddlers", "casa", "prep"] as const;
 type ProgramKey = (typeof PROGRAM_KEYS)[number];
@@ -57,23 +58,25 @@ export default function ProgramsSection() {
     >
       <div className="max-w-7xl mx-auto">
         {/* Badge */}
-        <div className="flex justify-center mb-4">
-          <span className="badge bg-white text-primary-600">
-            {t("badge")}
-          </span>
-        </div>
+        <Reveal>
+          <div className="flex justify-center mb-4">
+            <span className="badge bg-white text-primary-600">
+              {t("badge")}
+            </span>
+          </div>
 
-        {/* Heading */}
-        <h2 className="section-title text-center mb-4 text-primary-600">
-          {t("title")}
-        </h2>
-        <p className="text-center text-gray-600 text-lg max-w-2xl mx-auto mb-14 leading-relaxed">
-          {t("subtitle")}
-        </p>
+          {/* Heading */}
+          <h2 className="section-title text-center mb-4 text-primary-600">
+            {t("title")}
+          </h2>
+          <p className="text-center text-gray-600 text-lg max-w-2xl mx-auto mb-14 leading-relaxed">
+            {t("subtitle")}
+          </p>
+        </Reveal>
 
         {/* Program Cards Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
-          {PROGRAM_KEYS.map((key) => {
+          {PROGRAM_KEYS.map((key, cardIndex) => {
             // Safely read arrays — fall back to empty if translation key absent
             let outcomes: string[] = [];
             let materials: string[] = [];
@@ -90,8 +93,9 @@ export default function ProgramsSection() {
 
             const { Icon, iconClass, badgeClass, pillClass, checkClass } = PROGRAM_META[key];
             return (
-              <div
+              <Reveal
                 key={key}
+                delay={((cardIndex % 4) + 1) as 1 | 2 | 3 | 4}
                 className="card-hover bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 flex flex-col"
               >
                 <div className="p-6 flex flex-col flex-1">
@@ -143,20 +147,21 @@ export default function ProgramsSection() {
 
                   <div className="flex-1" />
 
-                  <a href="#contact" className="pill-btn pill-btn--forest mt-2 !py-2 text-sm">
+                  <a href="#contact" className="pill-btn pill-btn--forest mt-2 !py-2 text-sm hover:scale-105">
                     {t("learnMore")}
                   </a>
                 </div>
-              </div>
+              </Reveal>
             );
           })}
         </div>
 
         {/* Feature badges */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
-          {FEATURE_ICONS.map(({ key, Icon }) => (
-            <div
+          {FEATURE_ICONS.map(({ key, Icon }, i) => (
+            <Reveal
               key={key}
+              delay={((i % 4) + 1) as 1 | 2 | 3 | 4}
               className="flex items-center gap-3 bg-white rounded-2xl px-5 py-4 shadow-sm border border-green-100"
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 surface-warm">
@@ -165,15 +170,15 @@ export default function ProgramsSection() {
               <span className="text-sm font-semibold text-gray-700">
                 {t(`features.${key}`)}
               </span>
-            </div>
+            </Reveal>
           ))}
         </div>
 
-        <div className="flex justify-center">
-          <a href="#contact" className="pill-btn pill-btn--primary !px-10 !py-4 text-base">
+        <Reveal className="flex justify-center">
+          <a href="#contact" className="pill-btn pill-btn--primary !px-10 !py-4 text-base hover:scale-105">
             {t("cta")}
           </a>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

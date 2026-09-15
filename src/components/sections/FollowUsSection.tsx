@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Instagram, Facebook, MessageCircle } from "lucide-react";
 import { siteFacts } from "@/lib/site-facts";
+import Reveal from "@/components/ui/Reveal";
 
 type Platform = {
   key: string;
@@ -20,21 +21,25 @@ export default function FollowUsSection() {
   const t = useTranslations("followUs");
 
   return (
-    <section id="follow" className="section-padding surface-forest">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-center mb-4">
-          <span className="badge border border-white/20 bg-white/10 text-white">{t("badge")}</span>
-        </div>
+    <section id="follow" className="relative overflow-hidden section-padding surface-forest">
+      <div className="ambient-blob ambient-blob--a -top-20 -end-20 h-72 w-72 bg-accent/15" aria-hidden="true" />
+      <div className="relative max-w-7xl mx-auto">
+        <Reveal>
+          <div className="flex justify-center mb-4">
+            <span className="badge border border-white/20 bg-white/10 text-white">{t("badge")}</span>
+          </div>
 
-        <h2 className="section-title mt-4 text-center text-white">{t("title")}</h2>
-        <p className="text-center text-white/70 text-lg max-w-xl mx-auto mb-14 mt-4">
-          {t("subtitle")}
-        </p>
+          <h2 className="section-title mt-4 text-center text-white">{t("title")}</h2>
+          <p className="text-center text-white/70 text-lg max-w-xl mx-auto mb-14 mt-4">
+            {t("subtitle")}
+          </p>
+        </Reveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {platforms.map(({ key, name, Icon, handle, href }) => (
-            <div
+          {platforms.map(({ key, name, Icon, handle, href }, i) => (
+            <Reveal
               key={key}
+              delay={((i % 4) + 1) as 1 | 2 | 3 | 4}
               className="flex flex-col items-center rounded-3xl border border-white/10 bg-white/5 p-7 text-center transition-transform hover:-translate-y-1"
             >
               <div className="icon-tile icon-tile--lg mb-4 bg-white/10 text-white">
@@ -42,10 +47,10 @@ export default function FollowUsSection() {
               </div>
               <h3 className="text-white font-bold text-lg mb-1">{name}</h3>
               <p className="text-white/70 text-sm mb-5 font-mono">{handle}</p>
-              <a href={href} target="_blank" rel="noopener noreferrer" className="pill-btn pill-btn--primary w-full">
+              <a href={href} target="_blank" rel="noopener noreferrer" className="pill-btn pill-btn--primary w-full hover:scale-105">
                 {t("cta")}
               </a>
-            </div>
+            </Reveal>
           ))}
         </div>
 
