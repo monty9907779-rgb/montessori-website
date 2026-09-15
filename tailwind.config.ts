@@ -39,11 +39,12 @@ const config: Config = {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         arabic: ["var(--font-arabic)", "Noto Naskh Arabic", "Arial", "sans-serif"],
       },
+      fontSize: {
+        display: ["clamp(2.75rem, 6vw, 4.75rem)", { lineHeight: "1.05", fontWeight: "900" }],
+      },
       animation: {
-        "fade-in":    "fadeIn 0.6s ease-out forwards",
-        "slide-up":   "slideUp 0.6s ease-out forwards",
-        "slide-in-r": "slideInRight 0.6s ease-out forwards",
-        "slide-in-l": "slideInLeft 0.6s ease-out forwards",
+        "fade-in":  "fadeIn 0.6s ease-out forwards",
+        "slide-up": "slideUp 0.6s ease-out forwards",
       },
       keyframes: {
         fadeIn: {
@@ -53,14 +54,6 @@ const config: Config = {
         slideUp: {
           "0%":   { opacity: "0", transform: "translateY(30px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        slideInRight: {
-          "0%":   { opacity: "0", transform: "translateX(30px)" },
-          "100%": { opacity: "1", transform: "translateX(0)" },
-        },
-        slideInLeft: {
-          "0%":   { opacity: "0", transform: "translateX(-30px)" },
-          "100%": { opacity: "1", transform: "translateX(0)" },
         },
       },
     },

@@ -3,6 +3,9 @@
     "title": "Planet of the Free Child Nursery | Montessori Nursery Jeddah",
     "description": "Planet of the Free Child Nursery — a complete Montessori nursery in Jeddah, KSA. Smart nursery management and early education platform."
   },
+  "common": {
+    "comingSoonPhoto": "Real photos coming soon"
+  },
   "nav": {
     "home": "Home",
     "about": "About",
@@ -22,14 +25,7 @@
     "subheadline": "At Planet of the Free Child, we believe every child carries the seed of genius. Our Montessori approach nurtures it with freedom, creativity, and love.",
     "cta": "Discover Our World",
     "ctaSecondary": "Contact Us",
-    "autoReply": {
-      "loading": "Loading status...",
-      "start": "Enable Auto Reply",
-      "stop": "Disable Auto Reply",
-      "on": "Auto reply is on",
-      "off": "Auto reply is off",
-      "error": "Could not refresh the shared status"
-    },
+    "photoAlt": "Children exploring a Montessori environment at Planet of the Free Child",
     "stats": {
       "years": "Years of Experience",
       "children": "Happy Children",
@@ -39,6 +35,7 @@
   },
   "about": {
     "badge": "Our Philosophy",
+    "photoAlt": "Children learning in a Montessori environment at Planet of the Free Child",
     "title": "About Us",
     "headline": "We believe early childhood is the foundation of the future",
     "body1": "Planet of the Free Child Nursery is a complete Montessori educational environment in Jeddah, founded with a clear vision: to give every child the opportunity to discover themselves and build their skills naturally and joyfully.",
@@ -182,10 +179,10 @@
     "title": "Behind Every Happy Child Is an Exceptional Team",
     "subtitle": "Our team of professional teachers and specialists places the child at the center of everything.",
     "hiring": {
-      "title": "Join Our Team",
-      "headline": "We're Hiring Passionate Educators 🌱",
-      "description": "Do you believe in the power of early education? We're looking for certified Montessori teachers and teaching assistants who love children and seek to make a real difference in their lives. Join the Planet of the Free Child family!",
-      "cta": "Apply Now →"
+      "eyebrow": "Join Our Team",
+      "title": "We're Hiring Passionate Educators",
+      "body": "If you love children and believe in the Montessori philosophy, we'd love to meet you. Reach out and be part of our growing family in Jeddah.",
+      "cta": "Apply Now"
     },
     "items": {
       "director": {
@@ -394,37 +391,31 @@
       {
         "time": "8:00 – 8:30 AM",
         "activity": "Morning Arrival & Welcome",
-        "emoji": "🌅",
         "desc": "Children arrive and are greeted individually by their guide. Morning routines such as hanging up bags, signing in at the attendance board, and choosing their first work of the day help children transition smoothly into the school environment and build a sense of ownership over their space."
       },
       {
         "time": "8:00 – 11:00 AM",
         "activity": "Uninterrupted Work Cycle",
-        "emoji": "📚",
         "desc": "The heart of the Montessori morning: a three-hour period of child-directed activity. Children move freely through the prepared environment, selecting materials from the five curriculum areas, working individually or in small groups, and engaging in lessons offered by the guide. Concentration deepens, and the classroom hums with purposeful, peaceful activity."
       },
       {
         "time": "11:00 – 11:45 AM",
         "activity": "Outdoor Exploration & Gross Motor Play",
-        "emoji": "🌿",
         "desc": "Children move to the outdoor environment for fresh air, physical exercise, and nature-based exploration. The outdoor space is an extension of the classroom — children may tend the garden, observe insects, participate in group games, or engage in imaginative play, all of which support physical development, risk assessment, and social negotiation skills."
       },
       {
         "time": "11:45 AM – 12:30 PM",
         "activity": "Lunch & Community Mealtime",
-        "emoji": "🍱",
         "desc": "Lunch is a social and practical life experience. Children set their own places, serve themselves where appropriate, practise mealtime conversation, and learn table manners within a warm, unhurried atmosphere. Cleaning up after eating reinforces responsibility and care for the shared environment."
       },
       {
         "time": "12:30 – 1:30 PM",
         "activity": "Rest, Story & Quiet Work",
-        "emoji": "🌙",
         "desc": "Younger children rest in a cosy, darkened sleep area, while older children engage in quiet work, guided reading, journaling, or sensorial activities. Story time and music weave through this period, nurturing a love of literature, language, and calm self-regulation before the afternoon."
       },
       {
         "time": "12:30 – 1:00 PM",
         "activity": "Afternoon Enrichment & Dismissal",
-        "emoji": "🎨",
         "desc": "The afternoon is enriched with art, music, movement, cultural projects, and language sessions. Children reflect on their day, tidy their materials, and prepare for dismissal. Guides share brief observations with families at pick-up, keeping parents connected to their child's daily journey and achievements."
       }
     ],
@@ -439,6 +430,7 @@
         "Materials arranged in sequential order from simple to complex, left to right on each shelf"
       ]
     },
-    "scheduleTitle": "Our Daily Schedule"
+    "scheduleTitle": "Our Daily Schedule",
+    "environmentPhotoAlt": "A corner of a Planet of the Free Child classroom"
   }
 }

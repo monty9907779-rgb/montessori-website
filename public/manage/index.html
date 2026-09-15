@@ -214,12 +214,62 @@ function render(){
         '<div><h1>طلبات الربط</h1><div class="sub">'+(S.manager?NS.esc(S.manager):'مراجعة أولياء الأمور')+'</div></div>'+
         '<span class="count-pill" id="count"></span>'+
       '</div>'+
+      '<div class="card card--pad settings-card" id="wa-settings"></div>'+
       '<div class="reqs-list" id="list"></div>'+
     '</main>'+
     '<footer class="u-footer">روضة كوكب الطفل الحر · جدة</footer>';
   NS.wireLogout('mt');
   updateCount();
   renderList();
+  renderWaSettings();
+}
+
+/* ---------- WhatsApp auto-reply toggle (moved off the public Hero) ---------- */
+var WA={enabled:null};
+
+function renderWaSettings(){
+  var el=document.getElementById('wa-settings');
+  if(!el) return;
+  waPaint(el);
+  fetch('/api/whatsapp-auto-reply',{cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+    .then(function(d){ WA.enabled=!!d.enabled; waPaint(el); })
+    .catch(function(){ WA.enabled=null; waPaint(el,true); });
+}
+
+function waPaint(el, error){
+  var loading = WA.enabled===null && !error;
+  var statusText = error
+    ? 'تعذّر تحديث الحالة'
+    : loading
+      ? 'جاري تحميل الحالة...'
+      : (WA.enabled ? 'الرد الآلي مفعّل الآن' : 'الرد الآلي متوقف الآن');
+  var btnLabel = error ? 'إعادة المحاولة' : (WA.enabled ? 'إيقاف الرد الآلي' : 'تشغيل الرد الآلي');
+  var btnClass = error ? 'btn btn--soft' : (WA.enabled ? 'btn btn--primary' : 'btn btn--soft');
+  el.innerHTML=
+    '<div class="settings-row">'+
+      '<div class="settings-copy"><h3>الرد الآلي على واتساب</h3><p>'+statusText+'</p></div>'+
+      '<button class="'+btnClass+'" id="wa-toggle" '+(loading?'disabled':'')+'>'+
+        I('refresh')+' '+btnLabel+
+      '</button>'+
+    '</div>';
+  var btn=document.getElementById('wa-toggle');
+  if(btn) btn.addEventListener('click', error ? function(){ renderWaSettings(el); } : waToggle);
+}
+
+function waToggle(){
+  var el=document.getElementById('wa-settings');
+  if(!el || WA.enabled===null) return;
+  var btn=document.getElementById('wa-toggle');
+  if(btn){ btn.classList.add('is-loading'); btn.disabled=true; }
+  fetch('/api/whatsapp-auto-reply',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({enabled:!WA.enabled})
+  })
+    .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+    .then(function(d){ WA.enabled=!!d.enabled; waPaint(el); NS.toast('تم التحديث','ok'); })
+    .catch(function(){ waPaint(el,true); NS.toast('تعذّر تحديث الحالة','err'); });
 }
 
 function updateCount(){

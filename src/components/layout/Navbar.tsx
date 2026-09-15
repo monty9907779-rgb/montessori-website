@@ -47,7 +47,6 @@ export default function Navbar() {
               className={`font-bold text-base leading-tight ${
                 scrolled ? "text-primary-600" : "text-white"
               }`}
-              style={{ color: scrolled ? "#2d5016" : undefined }}
             >
               {locale === "ar" ? "حضانة كوكب الطفل الحر" : "Planet of the Free Child"}
             </div>
@@ -70,11 +69,6 @@ export default function Navbar() {
                   ? "text-gray-700 hover:text-primary-600 hover:bg-primary-50"
                   : "text-white/90 hover:text-white hover:bg-white/10"
               }`}
-              style={
-                scrolled
-                  ? { "--tw-text-opacity": "1" } as React.CSSProperties
-                  : undefined
-              }
             >
               {t(key)}
             </a>
@@ -88,7 +82,7 @@ export default function Navbar() {
             href={altPath}
             className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
               scrolled
-                ? "border-primary-200 text-primary-700 hover:bg-primary-50"
+                ? "border-primary-200 text-primary-600 hover:bg-primary-50"
                 : "border-white/30 text-white hover:bg-white/10"
             }`}
           >
@@ -103,7 +97,7 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className={`hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               scrolled
-                ? "text-primary-700 hover:bg-primary-50"
+                ? "text-primary-600 hover:bg-primary-50"
                 : "text-white/90 hover:text-white hover:bg-white/10"
             }`}
           >
@@ -114,8 +108,7 @@ export default function Navbar() {
           {/* CTA */}
           <a
             href={`/${locale}#contact`}
-            className="hidden md:flex items-center px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105 shadow-md"
-            style={{ background: "#2d5016" }}
+            className="pill-btn pill-btn--forest hidden md:flex !px-5 !py-2.5 text-sm"
           >
             {locale === "ar" ? "سجّل الآن" : "Enroll Now"}
           </a>
@@ -142,7 +135,7 @@ export default function Navbar() {
                 key={key}
                 href={getHref(key)}
                 onClick={() => setOpen(false)}
-                className="px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-primary-50 hover:text-primary-700 transition-colors"
+                className="px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-primary-50 hover:text-primary-600 transition-colors"
               >
                 {t(key)}
               </a>
@@ -157,8 +150,7 @@ export default function Navbar() {
               </Link>
               <a
                 href={`/${locale}#contact`}
-                className="px-5 py-2 rounded-xl text-sm font-semibold text-white"
-                style={{ background: "#2d5016" }}
+                className="pill-btn pill-btn--forest !px-5 !py-2.5 text-sm"
                 onClick={() => setOpen(false)}
               >
                 {locale === "ar" ? "سجّل الآن" : "Enroll Now"}
@@ -168,7 +160,7 @@ export default function Navbar() {
               href={parentPortalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-primary-200 px-4 py-3 text-sm font-semibold text-primary-700 hover:bg-primary-50"
+              className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-primary-200 px-4 py-3 text-sm font-semibold text-primary-600 hover:bg-primary-50"
               onClick={() => setOpen(false)}
             >
               <LogIn size={16} />
