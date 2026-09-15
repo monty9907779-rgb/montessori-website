@@ -13,7 +13,7 @@ export default function AboutSection() {
   return (
     <section id="about" className="relative section-padding bg-white">
       <div className="max-w-7xl mx-auto">
-        <span className="badge surface-warm text-primary-700">{t("badge")}</span>
+        <span className="badge surface-warm text-primary-600">{t("badge")}</span>
 
         <h2 className="section-title mt-4 text-gray-900">{t("headline")}</h2>
 
@@ -22,7 +22,7 @@ export default function AboutSection() {
             <p className="text-gray-600 leading-relaxed text-lg">{t("body1")}</p>
             <p className="text-gray-600 leading-relaxed text-lg">{t("body2")}</p>
 
-            <blockquote className="border-s-4 border-primary-700 ps-5 py-2 italic text-primary-700 text-lg font-medium">
+            <blockquote className="border-s-4 border-primary-600 ps-5 py-2 italic text-primary-600 text-lg font-medium">
               {'"The greatest gifts we can give our children are the roots of responsibility and the wings of independence."'}
               <footer className="text-sm font-normal text-gray-500 mt-1 not-italic">
                 — Maria Montessori
@@ -67,7 +67,7 @@ export default function AboutSection() {
                   <div className="icon-tile icon-tile--lg mx-auto mb-3">
                     <Icon size={24} />
                   </div>
-                  <h4 className="font-bold text-lg mb-2 text-primary-700">
+                  <h4 className="font-bold text-lg mb-2 text-primary-600">
                     {t(`values.${key}.title`)}
                   </h4>
                   <p className="text-gray-500 text-sm leading-relaxed">

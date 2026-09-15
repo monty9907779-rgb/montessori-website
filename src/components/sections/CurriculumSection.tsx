@@ -21,10 +21,10 @@ const areaIcons: Record<string, typeof Hand> = {
    (لازم تكون literal strings كاملة عشان Tailwind JIT يمسكها؛ ممنوع بناء الاسم
    بـ string concatenation وقت التشغيل زي .replace("border-","bg-")). */
 const areaAccent: Record<string, { border: string; bg: string; text: string; dot: string }> = {
-  practicalLife: { border: "border-primary-700", bg: "bg-primary-50", text: "text-primary-700", dot: "bg-primary-700" },
+  practicalLife: { border: "border-primary-600", bg: "bg-primary-50", text: "text-primary-600", dot: "bg-primary-600" },
   sensorial:     { border: "border-accent",       bg: "bg-amber-50",   text: "text-accent-dark", dot: "bg-accent" },
   language:      { border: "border-primary-500",  bg: "bg-primary-50", text: "text-primary-600", dot: "bg-primary-500" },
-  mathematics:   { border: "border-primary-600",  bg: "bg-primary-50", text: "text-primary-700", dot: "bg-primary-600" },
+  mathematics:   { border: "border-primary-600",  bg: "bg-primary-50", text: "text-primary-600", dot: "bg-primary-600" },
   cultural:      { border: "border-accent-dark",  bg: "bg-amber-50",   text: "text-accent-dark", dot: "bg-accent-dark" },
 };
 
@@ -56,7 +56,7 @@ export default function CurriculumSection() {
         {/* Badge + heading */}
         <div className="text-center mb-14">
           <div className="flex justify-center mb-4">
-            <span className="badge surface-warm text-primary-700">
+            <span className="badge surface-warm text-primary-600">
               {t("badge")}
             </span>
           </div>
@@ -114,7 +114,7 @@ export default function CurriculumSection() {
 
         {/* 4 Core Principles */}
         <div>
-          <h3 className="text-2xl font-bold text-center mb-8 text-primary-700">
+          <h3 className="text-2xl font-bold text-center mb-8 text-primary-600">
             {t("principlesTitle")}
           </h3>
           <div className="grid sm:grid-cols-2 gap-5">
@@ -132,7 +132,7 @@ export default function CurriculumSection() {
                   );
                 })()}
                 <div>
-                  <h4 className="font-bold text-base mb-1 text-primary-700">
+                  <h4 className="font-bold text-base mb-1 text-primary-600">
                     {t(`principles.${key}.title`)}
                   </h4>
                   <p className="text-gray-500 text-sm leading-relaxed">

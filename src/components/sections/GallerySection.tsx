@@ -49,7 +49,9 @@ export default function GallerySection() {
         className="pointer-events-none absolute -top-4 end-0 w-28 rotate-90 opacity-60"
       />
       <div className="max-w-7xl mx-auto">
-        <span className="badge surface-warm text-primary-700">{t("badge")}</span>
+        <div className="flex justify-center mb-4">
+          <span className="badge surface-warm text-primary-600">{t("badge")}</span>
+        </div>
 
         <h2 className="section-title mt-4 text-center text-gray-900">{t("title")}</h2>
         <p className="text-center text-gray-500 text-lg max-w-xl mx-auto mb-10 mt-4">
@@ -65,8 +67,8 @@ export default function GallerySection() {
                 onClick={() => setActiveCategory(cat)}
                 className={`min-h-[44px] rounded-full px-5 py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 ${
                   isActive
-                    ? "bg-primary-700 text-white shadow-md"
-                    : "surface-warm text-primary-700 border border-primary-200"
+                    ? "bg-primary-600 text-white shadow-md"
+                    : "surface-warm text-primary-600 border border-primary-200"
                 }`}
                 aria-pressed={isActive}
                 aria-label={`${t(`categories.${cat}`)} ${isActive ? "(selected)" : ""}`}

@@ -16,7 +16,7 @@ export default function DailyLifeSection() {
     <section id="daily-life" className="section-padding bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-14">
-          <span className="badge surface-warm text-primary-700">{t("badge")}</span>
+          <span className="badge surface-warm text-primary-600">{t("badge")}</span>
           <h2 className="section-title mt-4 text-gray-900">{t("title")}</h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed mt-4">
             {t("subtitle")}
@@ -26,7 +26,7 @@ export default function DailyLifeSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* LEFT — Daily schedule timeline */}
           <div>
-            <h3 className="text-xl font-bold mb-8 text-primary-700">{t("scheduleTitle")}</h3>
+            <h3 className="text-xl font-bold mb-8 text-primary-600">{t("scheduleTitle")}</h3>
             <ol className="relative space-y-0">
               {scheduleIndices.map((i) => {
                 const Icon = scheduleIcons[i];
@@ -44,7 +44,7 @@ export default function DailyLifeSection() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="inline-block rounded-full bg-primary-700 px-3 py-0.5 text-xs font-bold text-white">
+                        <span className="inline-block rounded-full bg-primary-600 px-3 py-0.5 text-xs font-bold text-white">
                           {t(`schedule.${i}.time`)}
                         </span>
                         <span className="font-semibold text-gray-800 text-sm">

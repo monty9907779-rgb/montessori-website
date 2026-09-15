@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 const stepIndices = [0, 1, 2, 3, 4] as const;
 
 const stepAccentClass = [
-  "bg-primary-700",
+  "bg-primary-600",
   "bg-primary-600",
   "bg-primary-500",
   "bg-accent",
@@ -17,7 +17,7 @@ export default function MethodologySection() {
     <section id="methodology" className="section-padding surface-warm">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-14">
-          <span className="badge bg-white text-primary-700">{t("badge")}</span>
+          <span className="badge bg-white text-primary-600">{t("badge")}</span>
           <h2 className="section-title mt-4 text-gray-900">{t("title")}</h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed mt-4">
             {t("subtitle")}
@@ -48,7 +48,7 @@ export default function MethodologySection() {
                   />
                 )}
 
-                <h3 className="font-bold text-base mb-2 text-primary-700">
+                <h3 className="font-bold text-base mb-2 text-primary-600">
                   {t(`steps.${i}.title`)}
                 </h3>
                 <p className="text-gray-500 text-sm leading-relaxed">
@@ -60,14 +60,14 @@ export default function MethodologySection() {
         </div>
 
         <div className="mt-16 max-w-3xl mx-auto">
-          <blockquote className="relative rounded-3xl border-s-4 border-primary-700 bg-white p-8 shadow-md">
+          <blockquote className="relative rounded-3xl border-s-4 border-primary-600 bg-white p-8 shadow-md">
             <span
-              className="absolute top-4 end-6 text-8xl font-serif leading-none text-primary-700 opacity-10 select-none"
+              className="absolute top-4 end-6 text-8xl font-serif leading-none text-primary-600 opacity-10 select-none"
               aria-hidden="true"
             >
               &ldquo;
             </span>
-            <p className="relative z-10 text-xl md:text-2xl italic font-medium leading-relaxed mb-5 text-primary-700">
+            <p className="relative z-10 text-xl md:text-2xl italic font-medium leading-relaxed mb-5 text-primary-600">
               &ldquo;{t("quote.text")}&rdquo;
             </p>
             <footer className="font-semibold text-gray-700 not-italic">

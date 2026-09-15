@@ -391,37 +391,31 @@
       {
         "time": "8:00 – 8:30 AM",
         "activity": "Morning Arrival & Welcome",
-        "emoji": "🌅",
         "desc": "Children arrive and are greeted individually by their guide. Morning routines such as hanging up bags, signing in at the attendance board, and choosing their first work of the day help children transition smoothly into the school environment and build a sense of ownership over their space."
       },
       {
         "time": "8:00 – 11:00 AM",
         "activity": "Uninterrupted Work Cycle",
-        "emoji": "📚",
         "desc": "The heart of the Montessori morning: a three-hour period of child-directed activity. Children move freely through the prepared environment, selecting materials from the five curriculum areas, working individually or in small groups, and engaging in lessons offered by the guide. Concentration deepens, and the classroom hums with purposeful, peaceful activity."
       },
       {
         "time": "11:00 – 11:45 AM",
         "activity": "Outdoor Exploration & Gross Motor Play",
-        "emoji": "🌿",
         "desc": "Children move to the outdoor environment for fresh air, physical exercise, and nature-based exploration. The outdoor space is an extension of the classroom — children may tend the garden, observe insects, participate in group games, or engage in imaginative play, all of which support physical development, risk assessment, and social negotiation skills."
       },
       {
         "time": "11:45 AM – 12:30 PM",
         "activity": "Lunch & Community Mealtime",
-        "emoji": "🍱",
         "desc": "Lunch is a social and practical life experience. Children set their own places, serve themselves where appropriate, practise mealtime conversation, and learn table manners within a warm, unhurried atmosphere. Cleaning up after eating reinforces responsibility and care for the shared environment."
       },
       {
         "time": "12:30 – 1:30 PM",
         "activity": "Rest, Story & Quiet Work",
-        "emoji": "🌙",
         "desc": "Younger children rest in a cosy, darkened sleep area, while older children engage in quiet work, guided reading, journaling, or sensorial activities. Story time and music weave through this period, nurturing a love of literature, language, and calm self-regulation before the afternoon."
       },
       {
         "time": "12:30 – 1:00 PM",
         "activity": "Afternoon Enrichment & Dismissal",
-        "emoji": "🎨",
         "desc": "The afternoon is enriched with art, music, movement, cultural projects, and language sessions. Children reflect on their day, tidy their materials, and prepare for dismissal. Guides share brief observations with families at pick-up, keeping parents connected to their child's daily journey and achievements."
       }
     ],

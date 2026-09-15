@@ -22,7 +22,9 @@ export default function RolesSection() {
   return (
     <section id="team" className="section-padding bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <span className="badge surface-warm text-primary-700">{t("badge")}</span>
+        <div className="flex justify-center mb-4">
+          <span className="badge surface-warm text-primary-600">{t("badge")}</span>
+        </div>
 
         <h2 className="section-title mt-4 text-center text-gray-900">{t("title")}</h2>
         <p className="text-center text-gray-500 text-lg max-w-2xl mx-auto mb-14 mt-4">
@@ -41,7 +43,7 @@ export default function RolesSection() {
                   <Icon size={24} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-primary-700">
+                  <h3 className="text-lg font-bold text-primary-600">
                     {t(`items.${key}.title`)}
                   </h3>
                   <p

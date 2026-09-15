@@ -309,7 +309,7 @@ export default async function SeoPage({
           <span aria-hidden="true" className="mx-2">/</span>
           <span aria-current="page">{page.title}</span>
         </nav>
-        <p className="badge w-fit" style={{ background: "#e9f3dc", color: "#2d5016" }}>
+        <p className="badge w-fit surface-warm text-primary-600">
           {isAr ? "دليل مونتيسوري وتعليم مبكر" : "Montessori & Early Education Guide"}
         </p>
         <h1 className="text-4xl md:text-5xl font-black text-gray-900 mt-5 mb-6">{page.title}</h1>

@@ -10,10 +10,10 @@ const PROGRAM_META: Record<
 > = {
   infants: {
     Icon: Baby,
-    iconClass: "text-primary-700 bg-primary-50 border-primary-700",
-    badgeClass: "bg-primary-50 text-primary-700",
-    pillClass: "border-primary-700 text-primary-700 bg-primary-50",
-    checkClass: "text-primary-700",
+    iconClass: "text-primary-600 bg-primary-50 border-primary-600",
+    badgeClass: "bg-primary-50 text-primary-600",
+    pillClass: "border-primary-600 text-primary-600 bg-primary-50",
+    checkClass: "text-primary-600",
   },
   toddlers: {
     Icon: Footprints,
@@ -58,13 +58,13 @@ export default function ProgramsSection() {
       <div className="max-w-7xl mx-auto">
         {/* Badge */}
         <div className="flex justify-center mb-4">
-          <span className="badge surface-warm text-primary-700">
+          <span className="badge bg-white text-primary-600">
             {t("badge")}
           </span>
         </div>
 
         {/* Heading */}
-        <h2 className="section-title text-center mb-4 text-primary-700">
+        <h2 className="section-title text-center mb-4 text-primary-600">
           {t("title")}
         </h2>
         <p className="text-center text-gray-600 text-lg max-w-2xl mx-auto mb-14 leading-relaxed">
@@ -99,7 +99,7 @@ export default function ProgramsSection() {
                     <Icon size={22} />
                   </div>
 
-                  <h3 className="font-bold text-lg leading-snug mb-2 text-primary-700">
+                  <h3 className="font-bold text-lg leading-snug mb-2 text-primary-600">
                     {t(`items.${key}.title`)}
                   </h3>
 
@@ -160,7 +160,7 @@ export default function ProgramsSection() {
               className="flex items-center gap-3 bg-white rounded-2xl px-5 py-4 shadow-sm border border-green-100"
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 surface-warm">
-                <Icon size={18} className="text-primary-700" />
+                <Icon size={18} className="text-primary-600" />
               </div>
               <span className="text-sm font-semibold text-gray-700">
                 {t(`features.${key}`)}
@@ -170,7 +170,7 @@ export default function ProgramsSection() {
         </div>
 
         <div className="flex justify-center">
-          <a href="#contact" className="pill-btn pill-btn--primary px-10 py-4 text-base">
+          <a href="#contact" className="pill-btn pill-btn--primary !px-10 !py-4 text-base">
             {t("cta")}
           </a>
         </div>

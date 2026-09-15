@@ -22,7 +22,9 @@ export default function FollowUsSection() {
   return (
     <section id="follow" className="section-padding surface-forest">
       <div className="max-w-7xl mx-auto">
-        <span className="badge border border-white/20 bg-white/10 text-white">{t("badge")}</span>
+        <div className="flex justify-center mb-4">
+          <span className="badge border border-white/20 bg-white/10 text-white">{t("badge")}</span>
+        </div>
 
         <h2 className="section-title mt-4 text-center text-white">{t("title")}</h2>
         <p className="text-center text-white/70 text-lg max-w-xl mx-auto mb-14 mt-4">

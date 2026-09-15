@@ -23,7 +23,7 @@ export default function SeoLinksSection() {
   return (
     <section className="section-padding bg-[#f7faf3]" aria-labelledby="seo-guides-title">
       <div className="max-w-7xl mx-auto">
-        <p className="badge w-fit" style={{ background: "#e9f3dc", color: "#2d5016" }}>
+        <p className="badge w-fit surface-warm text-primary-600">
           {isAr ? "دليل أولياء الأمور" : "Parent Guides"}
         </p>
         <h2 id="seo-guides-title" className="section-title text-gray-900 mt-4 mb-3">

@@ -244,8 +244,8 @@ function waPaint(el, error){
     : loading
       ? 'جاري تحميل الحالة...'
       : (WA.enabled ? 'الرد الآلي مفعّل الآن' : 'الرد الآلي متوقف الآن');
-  var btnLabel = WA.enabled ? 'إيقاف الرد الآلي' : 'تشغيل الرد الآلي';
-  var btnClass = WA.enabled ? 'btn btn--primary' : 'btn btn--soft';
+  var btnLabel = error ? 'إعادة المحاولة' : (WA.enabled ? 'إيقاف الرد الآلي' : 'تشغيل الرد الآلي');
+  var btnClass = error ? 'btn btn--soft' : (WA.enabled ? 'btn btn--primary' : 'btn btn--soft');
   el.innerHTML=
     '<div class="settings-row">'+
       '<div class="settings-copy"><h3>الرد الآلي على واتساب</h3><p>'+statusText+'</p></div>'+
@@ -254,7 +254,7 @@ function waPaint(el, error){
       '</button>'+
     '</div>';
   var btn=document.getElementById('wa-toggle');
-  if(btn) btn.addEventListener('click', waToggle);
+  if(btn) btn.addEventListener('click', error ? function(){ renderWaSettings(el); } : waToggle);
 }
 
 function waToggle(){

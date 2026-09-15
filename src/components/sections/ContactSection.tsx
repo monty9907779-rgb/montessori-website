@@ -110,7 +110,7 @@ export default function ContactSection() {
           {/* ── Left: Info ── */}
           <div>
             {/* Badge */}
-            <span className="badge surface-warm text-primary-700">{t("badge")}</span>
+            <span className="badge surface-warm text-primary-600">{t("badge")}</span>
 
             <h2 className="section-title text-gray-900 mb-4 animate-slide-up">
               {t("title")}
@@ -123,8 +123,8 @@ export default function ContactSection() {
             <div className="space-y-5 mb-10">
               {/* Address */}
               <div className="flex gap-4 items-start">
-                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
-                  <MapPin size={20} className="text-primary-700" />
+                <div className="icon-tile shrink-0 shadow-sm">
+                  <MapPin size={20} className="text-primary-600" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -138,8 +138,8 @@ export default function ContactSection() {
 
               {/* Phone */}
               <div className="flex gap-4 items-start">
-                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
-                  <Phone size={20} className="text-primary-700" />
+                <div className="icon-tile shrink-0 shadow-sm">
+                  <Phone size={20} className="text-primary-600" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -147,7 +147,7 @@ export default function ContactSection() {
                   </p>
                   <a
                     href={`tel:${siteFacts.contact.phone}`}
-                    className="text-sm font-medium hover:underline text-primary-700"
+                    className="text-sm font-medium hover:underline text-primary-600"
                   >
                     {siteFacts.contact.phoneDisplay}
                   </a>
@@ -156,8 +156,8 @@ export default function ContactSection() {
 
               {/* Email */}
               <div className="flex gap-4 items-start">
-                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
-                  <Mail size={20} className="text-primary-700" />
+                <div className="icon-tile shrink-0 shadow-sm">
+                  <Mail size={20} className="text-primary-600" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -165,7 +165,7 @@ export default function ContactSection() {
                   </p>
                   <a
                     href={`mailto:${siteFacts.contact.email}`}
-                    className="text-sm font-medium hover:underline text-primary-700"
+                    className="text-sm font-medium hover:underline text-primary-600"
                   >
                     {siteFacts.contact.email}
                   </a>
@@ -174,8 +174,8 @@ export default function ContactSection() {
 
               {/* Hours */}
               <div className="flex gap-4 items-start">
-                <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm surface-warm">
-                  <Clock size={20} className="text-primary-700" />
+                <div className="icon-tile shrink-0 shadow-sm">
+                  <Clock size={20} className="text-primary-600" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -190,8 +190,8 @@ export default function ContactSection() {
 
             {/* Map Placeholder */}
             <div className="surface-warm rounded-3xl overflow-hidden border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-3 py-10 px-6 text-center min-h-[180px]">
-              <MapPin size={40} className="text-primary-700" aria-hidden="true" />
-              <p className="font-bold text-base text-primary-700">
+              <MapPin size={40} className="text-primary-600" aria-hidden="true" />
+              <p className="font-bold text-base text-primary-600">
                 {isAr ? "روضة كوكب الطفل الحر" : "Planet of the Free Child Nursery"}
               </p>
               <p className="text-gray-500 text-sm">
@@ -202,13 +202,13 @@ export default function ContactSection() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={isAr ? "افتح الموقع في خرائط جوجل" : "Open location in Google Maps"}
-                className="mt-1 text-xs font-semibold px-4 py-2 rounded-full border transition-all hover:scale-105 min-h-[44px] flex items-center justify-center border-primary-700 text-primary-700"
+                className="mt-1 text-xs font-semibold px-4 py-2 rounded-full border transition-all hover:scale-105 min-h-[44px] flex items-center justify-center border-primary-600 text-primary-600"
               >
                 {t("mapLink")}
               </a>
               <Link
                 href="/wa/"
-                className="mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all hover:scale-105 border-primary-700 text-primary-700 bg-white"
+                className="mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all hover:scale-105 border-primary-600 text-primary-600 bg-white"
               >
                 {isAr ? "صفحة التواصل الكاملة" : "Full contact page"}
                 <ArrowUpRight size={14} />
@@ -221,10 +221,10 @@ export default function ContactSection() {
             {submitted ? (
               /* Success State */
               <div className="flex flex-col items-center justify-center text-center py-12 gap-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-700 text-white shadow-lg">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg">
                   <CheckCircle2 size={36} />
                 </div>
-                <h3 className="text-2xl font-black text-primary-700">
+                <h3 className="text-2xl font-black text-primary-600">
                   {isAr ? "تم الإرسال بنجاح!" : "Message Sent!"}
                 </h3>
                 <p className="text-gray-500 text-sm max-w-xs leading-relaxed">
