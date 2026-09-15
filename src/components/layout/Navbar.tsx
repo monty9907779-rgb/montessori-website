@@ -47,7 +47,6 @@ export default function Navbar() {
               className={`font-bold text-base leading-tight ${
                 scrolled ? "text-primary-600" : "text-white"
               }`}
-              style={{ color: scrolled ? "#2d5016" : undefined }}
             >
               {locale === "ar" ? "حضانة كوكب الطفل الحر" : "Planet of the Free Child"}
             </div>
@@ -70,11 +69,6 @@ export default function Navbar() {
                   ? "text-gray-700 hover:text-primary-600 hover:bg-primary-50"
                   : "text-white/90 hover:text-white hover:bg-white/10"
               }`}
-              style={
-                scrolled
-                  ? { "--tw-text-opacity": "1" } as React.CSSProperties
-                  : undefined
-              }
             >
               {t(key)}
             </a>
@@ -114,8 +108,7 @@ export default function Navbar() {
           {/* CTA */}
           <a
             href={`/${locale}#contact`}
-            className="hidden md:flex items-center px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105 shadow-md"
-            style={{ background: "#2d5016" }}
+            className="pill-btn pill-btn--forest hidden md:flex !px-5 !py-2.5 text-sm"
           >
             {locale === "ar" ? "سجّل الآن" : "Enroll Now"}
           </a>
@@ -157,8 +150,7 @@ export default function Navbar() {
               </Link>
               <a
                 href={`/${locale}#contact`}
-                className="px-5 py-2 rounded-xl text-sm font-semibold text-white"
-                style={{ background: "#2d5016" }}
+                className="pill-btn pill-btn--forest !px-5 !py-2.5 text-sm"
                 onClick={() => setOpen(false)}
               >
                 {locale === "ar" ? "سجّل الآن" : "Enroll Now"}
