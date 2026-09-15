@@ -7,6 +7,7 @@
   --color-primary-light: #5aa01e;
   --color-accent: #f5a623;
   --color-earth: #f3d9a4;
+  --color-surface-warm: #f0f7e6;
 }
 
 /* RTL support */
@@ -63,12 +64,6 @@ html {
   @apply inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium;
 }
 
-/* Leaf decoration */
-.leaf-decoration::before {
-  content: "🌿";
-  margin-inline-end: 0.5rem;
-}
-
 /* Section title */
 .section-title {
   @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight;
@@ -89,11 +84,47 @@ html {
 
 /* Opacity for animations */
 .animate-fade-in,
-.animate-slide-up,
-.animate-slide-in-r,
-.animate-slide-in-l {
+.animate-slide-up {
   opacity: 0;
   animation-fill-mode: forwards;
+}
+
+/* ---- Warm redesign: shared button/surface utilities ---- */
+.pill-btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold transition-transform duration-200;
+}
+.pill-btn:hover { transform: translateY(-1px); }
+.pill-btn:active { transform: translateY(0) scale(0.98); }
+.pill-btn--primary {
+  background: var(--color-accent);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(245, 166, 35, 0.28);
+}
+.pill-btn--forest {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(45, 80, 22, 0.24);
+}
+.pill-btn--outline {
+  background: transparent;
+  border: 1.5px solid currentColor;
+}
+
+.icon-tile {
+  @apply inline-flex shrink-0 items-center justify-center rounded-2xl;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--color-surface-warm);
+  color: var(--color-primary);
+}
+.icon-tile--lg {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.surface-warm { background: var(--color-surface-warm); }
+.surface-forest {
+  background: linear-gradient(135deg, #1a3009 0%, #2d5016 45%, #3d6b20 100%);
 }
 
 .seo-article {
