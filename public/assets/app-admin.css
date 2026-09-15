@@ -580,3 +580,9 @@ html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-
 .excel-review__month{display:flex;align-items:center;gap:.5rem;margin:.75rem 0}
 .excel-review__month>span{font-weight:600;white-space:nowrap}
 .excel-review__month>select{flex:1;min-width:0}
+
+.settings-card{margin-bottom:18px}
+.settings-card .settings-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.settings-card .settings-copy{min-width:0}
+.settings-card .settings-copy h3{margin:0 0 4px;font-size:1.05rem;color:var(--forest)}
+.settings-card .settings-copy p{margin:0;color:var(--muted);font-size:.88rem}
