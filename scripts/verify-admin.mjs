@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const root = path.resolve(import.meta.dirname, '..', 'public');
 const projectRoot = path.resolve(import.meta.dirname, '..');
-const versions = { 'app.js' : '54', 'app-admin.css': '11', 'install.js': '4' };
+const versions = { 'app.js' : '55', 'app-admin.css': '11', 'install.js': '4' };
 const referencedScripts = new Set();
 let pages = 0;
 for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
