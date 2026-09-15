@@ -111,7 +111,12 @@ function paintQuestions(){
     ['الحضور والزيارات',SUGGESTIONS.slice(24,32)],
     ['المال والتشغيل',SUGGESTIONS.slice(32)]
   ];
-  document.getElementById('questions').innerHTML=groups.map(function(group){
+  /* 15/9: «سؤال حر» أول القائمة — ما بيبعتش نصاً ثابتاً، بيفرّغ خانة الكتابة
+     ويركّز عليها ويسحب الشاشة ليها (على الموبايل القائمة بعيدة عن الخانة). */
+  var free='<div class="q-group"><div class="q-list">'+
+    '<button class="q-btn" type="button" id="free-question" aria-label="سؤال حر — اكتبي سؤالك بنفسك">'+
+    NS.icon('sparkle')+' سؤال حر</button></div></div>';
+  document.getElementById('questions').innerHTML=free+groups.map(function(group){
     if(!group[1].length)return '';
     return '<div class="q-group"><div class="q-title">'+NS.esc(group[0])+'</div><div class="q-list">'+
       group[1].map(function(q){return '<button class="q-btn" type="button" data-question="'+NS.attr(q)+'">'+NS.esc(q)+'</button>';}).join('')+
@@ -119,6 +124,16 @@ function paintQuestions(){
   }).join('');
   [].forEach.call(document.querySelectorAll('[data-question]'),function(button){
     button.addEventListener('click',function(){ask(button.getAttribute('data-question'));});
+  });
+  var freeBtn=document.getElementById('free-question');
+  if(freeBtn)freeBtn.addEventListener('click',function(){
+    if(BUSY)return;
+    var input=document.getElementById('prompt'); if(!input)return;
+    input.value=''; input.style.height='48px';
+    input.placeholder='اكتبي سؤالك الحر هنا ثم اضغطي إرسال…';
+    var compose=document.querySelector('.ai-compose');
+    if(compose&&compose.scrollIntoView)compose.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){input.focus();},150);
   });
 }
 
