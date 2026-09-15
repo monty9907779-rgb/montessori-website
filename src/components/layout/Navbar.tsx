@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -14,13 +14,6 @@ export default function Navbar() {
   const locale = useLocale();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const altLocale = locale === "ar" ? "en" : "ar";
   const altPath = pathname.replace(`/${locale}`, `/${altLocale}`);
@@ -31,11 +24,7 @@ export default function Navbar() {
   };
 
   return (
-    <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 h-16 md:h-20 ${
-        scrolled ? "bg-white/95 backdrop-blur-md shadow-md" : "bg-transparent"
-      }`}
-    >
+    <header className="fixed top-0 inset-x-0 z-50 h-16 md:h-20 bg-white/95 backdrop-blur-md shadow-md">
       <div className="max-w-7xl mx-auto px-4 md:px-8 h-full flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href={`/${locale}`} className="flex items-center gap-3 shrink-0">
@@ -43,16 +32,10 @@ export default function Navbar() {
             <span className="text-white text-lg font-bold">ب</span>
           </div>
           <div className="hidden sm:block">
-            <div
-              className={`font-bold text-base leading-tight ${
-                scrolled ? "text-primary-600" : "text-white"
-              }`}
-            >
+            <div className="font-bold text-base leading-tight text-primary-600">
               {locale === "ar" ? "حضانة كوكب الطفل الحر" : "Planet of the Free Child"}
             </div>
-            <div
-              className={`text-xs ${scrolled ? "text-gray-500" : "text-green-100"}`}
-            >
+            <div className="text-xs text-gray-500">
               {locale === "ar" ? "مونتيسوري جدة" : "Montessori Jeddah"}
             </div>
           </div>
@@ -64,11 +47,7 @@ export default function Navbar() {
             <a
               key={key}
               href={getHref(key)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                scrolled
-                  ? "text-gray-700 hover:text-primary-600 hover:bg-primary-50"
-                  : "text-white/90 hover:text-white hover:bg-white/10"
-              }`}
+              className="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:text-primary-600 hover:bg-primary-50"
             >
               {t(key)}
             </a>
@@ -80,11 +59,7 @@ export default function Navbar() {
           {/* Language toggle */}
           <Link
             href={altPath}
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-              scrolled
-                ? "border-primary-200 text-primary-600 hover:bg-primary-50"
-                : "border-white/30 text-white hover:bg-white/10"
-            }`}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-all border-primary-200 text-primary-600 hover:bg-primary-50"
           >
             <Globe size={14} />
             {altLocale === "ar" ? "عربي" : "EN"}
@@ -95,11 +70,7 @@ export default function Navbar() {
             href={parentPortalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={`hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-              scrolled
-                ? "text-primary-600 hover:bg-primary-50"
-                : "text-white/90 hover:text-white hover:bg-white/10"
-            }`}
+            className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all text-primary-600 hover:bg-primary-50"
           >
             <LogIn size={15} />
             {t("parentPortal")}
@@ -116,9 +87,7 @@ export default function Navbar() {
           {/* Mobile toggle */}
           <button
             onClick={() => setOpen(!open)}
-            className={`lg:hidden p-2 rounded-lg ${
-              scrolled ? "text-gray-700" : "text-white"
-            }`}
+            className="lg:hidden p-2 rounded-lg text-gray-700"
             aria-label="Toggle menu"
           >
             {open ? <X size={22} /> : <Menu size={22} />}
