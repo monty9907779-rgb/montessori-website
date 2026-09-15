@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { HandHeart, Feather, Heart, Sparkles, CheckCircle2 } from "lucide-react";
 import PhotoFrame from "@/components/ui/PhotoFrame";
 
@@ -10,7 +11,7 @@ export default function AboutSection() {
   const common = useTranslations("common");
 
   return (
-    <section id="about" className="section-padding bg-white">
+    <section id="about" className="relative section-padding bg-white">
       <div className="max-w-7xl mx-auto">
         <span className="badge surface-warm text-primary-700">{t("badge")}</span>
 
@@ -78,6 +79,15 @@ export default function AboutSection() {
           </div>
         </div>
       </div>
+
+      <Image
+        src="/decor/section-divider.svg"
+        alt=""
+        aria-hidden="true"
+        width={220}
+        height={160}
+        className="pointer-events-none absolute -bottom-6 start-1/2 w-40 -translate-x-1/2 opacity-70"
+      />
     </section>
   );
 }

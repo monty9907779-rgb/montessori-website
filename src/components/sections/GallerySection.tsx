@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import PhotoFrame from "@/components/ui/PhotoFrame";
 
@@ -38,7 +39,15 @@ export default function GallerySection() {
     activeCategory === "all" ? TILES : TILES.filter((tile) => tile.category === activeCategory);
 
   return (
-    <section id="gallery" className="section-padding bg-white">
+    <section id="gallery" className="relative section-padding bg-white">
+      <Image
+        src="/decor/section-divider.svg"
+        alt=""
+        aria-hidden="true"
+        width={220}
+        height={160}
+        className="pointer-events-none absolute -top-4 end-0 w-28 rotate-90 opacity-60"
+      />
       <div className="max-w-7xl mx-auto">
         <span className="badge surface-warm text-primary-700">{t("badge")}</span>
 
