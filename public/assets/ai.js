@@ -46,11 +46,11 @@ function render(){
 
 function skeletonQuestions(){
   var h='<div class="q-group"><div class="q-list">';
-  for(var i=0;i<7;i++) h+='<div class="ai-skel" style="height:46px"></div>';
+  for(var i=0;i<7;i++) h+='<div class="ai-skel ai-skel--q"></div>';
   return h+'</div></div>';
 }
 function skeletonKpis(){
-  var h=''; for(var i=0;i<4;i++) h+='<div class="ai-kpi"><div class="ai-skel" style="width:70%"></div><div class="ai-skel" style="width:42%;margin-top:10px;height:22px"></div></div>';
+  var h=''; for(var i=0;i<4;i++) h+='<div class="ai-kpi"><div class="ai-skel ai-skel--kpi-label"></div><div class="ai-skel ai-skel--kpi-value"></div></div>';
   return h;
 }
 /* CSP blocks inline style="" writes (style-src-attr), so growing the
@@ -185,6 +185,8 @@ function ask(raw){
 
 function showLoadError(message){
   var shell=document.querySelector('.ai-shell'); if(!shell)return;
-  shell.innerHTML='<div class="ai-error" style="grid-column:1/-1"><div class="ai-error-box"><h2>تعذّر فتح ذكاء الحضانة</h2><p>'+NS.esc(message)+'</p><button class="btn btn--primary" type="button" onclick="location.reload()">'+NS.icon('refresh')+' إعادة المحاولة</button></div></div>';
+  shell.innerHTML='<div class="ai-error ai-error--span"><div class="ai-error-box"><h2>تعذّر فتح ذكاء الحضانة</h2><p>'+NS.esc(message)+'</p><button class="btn btn--primary" type="button" id="ai-reload">'+NS.icon('refresh')+' إعادة المحاولة</button></div></div>';
+  var reload=document.getElementById('ai-reload');
+  if(reload)reload.addEventListener('click',function(){location.reload();});
 }
 })();

@@ -83,6 +83,10 @@ body{margin:0;background:var(--ai-bg);color:var(--ink,#22302a)}
 .ai-error-box h2{font-size:1.1rem;margin:0 0 8px;color:var(--forest,#184e3e)}
 .ai-error-box p{margin:0 0 18px;color:#718078}
 .ai-skel{background:linear-gradient(90deg,#eef2ef 25%,#f8faf9 50%,#eef2ef 75%);background-size:200% 100%;animation:sk 1.2s infinite;height:18px;border-radius:5px}
+.ai-skel--q{height:46px}
+.ai-skel--kpi-label{width:70%}
+.ai-skel--kpi-value{width:42%;margin-top:10px;height:22px}
+.ai-error--span{grid-column:1/-1}
 @keyframes sk{to{background-position:-200% 0}}
 @media(max-width:900px){
   html,body{overflow:hidden}.ai-shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
@@ -107,7 +111,7 @@ body{margin:0;background:var(--ai-bg);color:var(--ink,#22302a)}
 <body>
 <div id="app"></div>
 <script src="/assets/app.js?v=54"></script>
-<script src="/assets/ai.js?v=3"></script>
+<script src="/assets/ai.js?v=4"></script>
 <script src="/assets/install.js?v=4" defer></script>
 </body>
 </html>
