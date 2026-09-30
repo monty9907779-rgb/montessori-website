@@ -354,6 +354,18 @@ def duplicate_of(cand, published):
 # but noindex + out of the sitemap until each is rewritten with distinct
 # content; remove a slug from this set once its rewrite is published.
 NOINDEX_SLUGS = frozenset({
+    'child-focus-attention-montessori',
+    'child-independence-nursery-jeddah',
+    'child-social-skills-nursery-jeddah',
+    'montessori-classroom-routine-jeddah',
+    'montessori-vs-traditional-nursery-jeddah',
+    'nursery-communication-with-parents-jeddah',
+    'nursery-readiness-signs-child-jeddah',
+    'nursery-separation-anxiety-jeddah-plan',
+    'nursery-small-groups-jeddah',
+    'nursery-transition-from-home-jeddah',
+    'preschool-fine-motor-skills-montessori',
+    'safe-nursery-environment-jeddah',
     'kindergarten-for-5-year-old-jeddah-montessori',
     'montessori-language-activities-arabic-english',
     'montessori-math-activities-preschool-jeddah',
@@ -1067,7 +1079,7 @@ def main():
                         + "".join(f'<li>{esc(x)}</li>' for x in w) + '</ul></li>'
                         for s, w in blocked) + '</ul></div>')
     if a is None:
-        log("all pending articles blocked by facts gate")
+        log("all pending articles blocked (facts/duplicate/redirect gates)")
         return
     d=today
     # slugs+titles map for related cards (all queue + assume prior 31 exist)
