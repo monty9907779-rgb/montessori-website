@@ -367,6 +367,9 @@ def faq_block(faq):
     return f'<section class="faq" aria-label="الأسئلة الشائعة"><h2>الأسئلة الشائعة</h2>{items}</section>'
 
 def related_block(a, allslugs, titles):
+    # Link only to articles that are actually published. Queue entries that
+    # are unpublished (or were dropped from the queue) have no page and 404.
+    allslugs={s for s in allslugs if titles.get(s,{}).get('pub')}
     rel=[s for s in (a.get('related') or []) if s in allslugs and s!=a['slug']][:3]
     if len(rel)<3:
         # allslugs is a set, so iterating it directly picked different fillers
@@ -824,7 +827,7 @@ def article_date(article, fallback):
         return fallback
 
 def repair_published_articles(q, today):
-    titles={x.get('slug',''):{'title':x.get('title',''),'cat':x.get('cat','dev')} for x in q}
+    titles={x.get('slug',''):{'title':x.get('title',''),'cat':x.get('cat','dev'),'pub':bool(x.get('published'))} for x in q}
     allslugs=set(titles)
     for a in q:
         if not a.get('published') or not a.get('slug'):
@@ -944,7 +947,7 @@ def main():
         return
     d=today
     # slugs+titles map for related cards (all queue + assume prior 31 exist)
-    titles={x['slug']:{'title':x['title'],'cat':x['cat']} for x in q}
+    titles={x['slug']:{'title':x['title'],'cat':x['cat'],'pub':bool(x.get('published'))} for x in q}
     allslugs=set(titles) | set()  # related may also point to prior slugs; those resolve at browse time
     # render + write article
     art_dir=ROOT/"blog"/a['slug']; art_dir.mkdir(parents=True, exist_ok=True)
