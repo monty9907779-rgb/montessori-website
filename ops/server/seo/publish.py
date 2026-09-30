@@ -374,18 +374,65 @@ NOINDEX_SLUGS = frozenset({
     'prekg-for-4-year-old-jeddah-montessori',
 })
 
-def prune_noindex_from_sitemap():
+REWRITES = OPT/"rewrites.json"
+_REWRITE_APPLIED = []
+
+def is_noindex(a):
+    return a.get('slug') in NOINDEX_SLUGS and not a.get('rewritten')
+
+def apply_rewrites(raw_q):
+    """Swap in hand-written replacements (/opt/seo/rewrites.json, shipped from
+    the repo by self-update.sh) for published templated articles. Each one must
+    pass the facts gate and the duplicate gate first; the article then drops
+    out of NOINDEX handling. Idempotent: a rewrite is re-applied only when its
+    content changes."""
+    if facts is None or not isinstance(raw_q, list):
+        return raw_q
+    try:
+        rw = json.loads(REWRITES.read_text(encoding='utf-8'))
+    except Exception:
+        return raw_q
+    fields = ('title', 'seoTitle', 'metaDescription', 'bodyHtml', 'faq', 'wordCount')
+    by_slug = {a.get('slug'): a for a in raw_q}
+    for slug, new in (rw or {}).items():
+        a = by_slug.get(slug)
+        if not a or not a.get('published') or not isinstance(new, dict):
+            continue
+        tag = hashlib.sha1(json.dumps(new, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()[:12]
+        if a.get('rewritten') == tag:
+            continue
+        cand = dict(a); cand.update({k: new[k] for k in fields if k in new})
+        why = facts.check_article(cand)
+        dup = duplicate_of(cand, [x for x in raw_q if x.get('published') and x.get('slug') != slug])
+        if why or dup:
+            log(f"rewrite rejected {slug}: {'; '.join(why) if why else 'duplicate of %s (%.2f)' % dup}")
+            continue
+        a.update({k: new[k] for k in fields if k in new})
+        a['rewritten'] = tag
+        _REWRITE_APPLIED.append(slug)
+        log(f"rewrite applied {slug}")
+    return raw_q
+
+def prune_noindex_from_sitemap(q):
     smp = ROOT/"sitemap.xml"
     try:
         sm = smp.read_text()
     except Exception:
         return
     new = sm
-    for slug in NOINDEX_SLUGS:
-        new = re.sub(r'\s*<url>\s*<loc>[^<]*/blog/%s/</loc>.*?</url>' % re.escape(slug), '', new, flags=re.S)
+    for a in q:
+        slug = a.get('slug')
+        if not a.get('published') or slug not in NOINDEX_SLUGS:
+            continue
+        if is_noindex(a):
+            new = re.sub(r'\s*<url>\s*<loc>[^<]*/blog/%s/</loc>.*?</url>' % re.escape(slug), '', new, flags=re.S)
+        elif f'/blog/{slug}/<' not in new:
+            new = new.replace('</urlset>',
+                f'  <url>\n    <loc>{SITE}/blog/{slug}/</loc>\n    <lastmod>{datetime.date.today().isoformat()}</lastmod>\n'
+                f'    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n</urlset>')
     if new != sm:
         smp.write_text(new, encoding='utf-8')
-        log(f"sitemap: removed {len(re.findall('<loc>', sm)) - len(re.findall('<loc>', new))} noindex urls")
+        log(f"sitemap: noindex sync {len(re.findall('<loc>', sm))} -> {len(re.findall('<loc>', new))} urls")
 
 def log(m):
     line = f"{datetime.datetime.now().isoformat(timespec='seconds')}  {m}"
@@ -490,7 +537,7 @@ def render_article(a, iso, d, allslugs, titles):
 <meta name="description" content="{esc(a['metaDescription'])}"/>
 <meta name="keywords" content="{esc(', '.join(k for k in kws if k))}"/>
 <meta name="author" content="كوكب الطفل الحر"/>
-<meta name="robots" content="{'noindex, follow' if a['slug'] in NOINDEX_SLUGS else 'index, follow, max-image-preview:large'}"/>
+<meta name="robots" content="{'noindex, follow' if is_noindex(a) else 'index, follow, max-image-preview:large'}"/>
 <meta name="theme-color" content="#184e3e"/>
 <link rel="canonical" href="{url}"/>
 <link rel="alternate" hreflang="ar" href="{url}"/><link rel="alternate" hreflang="x-default" href="{url}"/>
@@ -940,12 +987,13 @@ def main():
     today=datetime.date.today(); iso=today.isoformat()
     raw_q=json.loads(QUEUE.read_text())
     raw_q=ensure_auto_queue(raw_q, today)
+    raw_q=apply_rewrites(raw_q)
     q=[normalized_article(a) for a in raw_q]
-    if q != raw_q:
+    if q != raw_q or _REWRITE_APPLIED:
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     repair_static_site()
     repair_published_articles(q, today)
-    prune_noindex_from_sitemap()
+    prune_noindex_from_sitemap(q)
     pending=[a for a in q if not a.get('published')]
     hz=health()
     hz_ok=all(v==200 for v in hz.values())
