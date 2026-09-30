@@ -300,8 +300,13 @@ def _fallback_auto_topics(today, existing_slugs):
                 continue
             yield (slug, f'{label} | {area} {today.year}', cat, keyword, area)
 
+# Templated auto-refill produced near-identical articles (same body, keyword
+# swapped): 18 live articles overlap >60% with another. Off until the
+# generator produces genuinely distinct content.
+AUTO_REFILL_ENABLED = False
+
 def ensure_auto_queue(raw_q, today):
-    if not isinstance(raw_q, list):
+    if not AUTO_REFILL_ENABLED or not isinstance(raw_q, list):
         return raw_q
     pending = [a for a in raw_q if not a.get('published')]
     if len(pending) >= AUTO_REFILL_THRESHOLD:
@@ -319,6 +324,31 @@ def ensure_auto_queue(raw_q, today):
     if added:
         log(f"auto-refill added={added} pending_before={len(pending)} pending_after={len(pending)+added}")
     return raw_q
+
+DUP_THRESHOLD = 0.5
+
+def _shingles(a, n=6):
+    t = re.sub(r'<[^>]+>', ' ', a.get('bodyHtml', '') or '')
+    w = H.unescape(t).split()
+    return {' '.join(w[i:i+n]) for i in range(max(0, len(w) - n + 1))}
+
+def duplicate_of(cand, published):
+    """Return (slug, overlap) of the published article that cand copies most
+    closely, when the overlap is >= DUP_THRESHOLD; else None."""
+    sc = _shingles(cand)
+    if not sc:
+        return None
+    best = None
+    for p in published:
+        if p.get('slug') == cand.get('slug'):
+            continue
+        sp = _shingles(p)
+        if not sp:
+            continue
+        j = len(sc & sp) / len(sc | sp)
+        if j >= DUP_THRESHOLD and (best is None or j > best[1]):
+            best = (p['slug'], j)
+    return best
 
 def log(m):
     line = f"{datetime.datetime.now().isoformat(timespec='seconds')}  {m}"
@@ -922,6 +952,14 @@ def main():
             cand['blocked']=True; cand['blocked_reasons']=why
             blocked.append((cand.get('slug','?'), why))
             log(f"blocked {cand.get('slug','?')}: {'; '.join(why)}")
+            continue
+        dup=duplicate_of(cand, [x for x in q if x.get('published')])
+        if dup:
+            why=['المحتوى مكرر بنسبة %d%% مع مقال منشور (%s). أعد كتابته بمحتوى مختلف.'
+                 % (round(dup[1]*100), dup[0])]
+            cand['blocked']=True; cand['blocked_reasons']=why
+            blocked.append((cand.get('slug','?'), why))
+            log(f"blocked {cand.get('slug','?')}: duplicate of {dup[0]} ({dup[1]:.2f})")
             continue
         target=shadowing_redirect(cand.get('slug',''))
         if target:
