@@ -350,6 +350,43 @@ def duplicate_of(cand, published):
             best = (p['slug'], j)
     return best
 
+# Templated near-duplicate articles (>60% overlap with each other). Kept live
+# but noindex + out of the sitemap until each is rewritten with distinct
+# content; remove a slug from this set once its rewrite is published.
+NOINDEX_SLUGS = frozenset({
+    'kindergarten-for-5-year-old-jeddah-montessori',
+    'montessori-language-activities-arabic-english',
+    'montessori-math-activities-preschool-jeddah',
+    'montessori-nursery-al-andalus-jeddah-guide',
+    'montessori-nursery-al-hamra-jeddah-guide',
+    'montessori-nursery-al-khalidiyah-jeddah-guide',
+    'montessori-nursery-al-marwah-jeddah-guide',
+    'montessori-nursery-al-naeem-jeddah-guide',
+    'montessori-nursery-al-rabwah-jeddah-guide',
+    'montessori-nursery-al-rawdah-jeddah-guide',
+    'montessori-nursery-al-safa-jeddah-guide',
+    'montessori-nursery-bani-malik-jeddah-guide',
+    'montessori-nursery-obhur-jeddah-guide',
+    'montessori-practical-life-skills-nursery',
+    'montessori-sensorial-activities-nursery',
+    'nursery-for-2-year-old-jeddah-montessori',
+    'nursery-for-3-year-old-jeddah-montessori',
+    'prekg-for-4-year-old-jeddah-montessori',
+})
+
+def prune_noindex_from_sitemap():
+    smp = ROOT/"sitemap.xml"
+    try:
+        sm = smp.read_text()
+    except Exception:
+        return
+    new = sm
+    for slug in NOINDEX_SLUGS:
+        new = re.sub(r'\s*<url>\s*<loc>[^<]*/blog/%s/</loc>.*?</url>' % re.escape(slug), '', new, flags=re.S)
+    if new != sm:
+        smp.write_text(new, encoding='utf-8')
+        log(f"sitemap: removed {len(re.findall('<loc>', sm)) - len(re.findall('<loc>', new))} noindex urls")
+
 def log(m):
     line = f"{datetime.datetime.now().isoformat(timespec='seconds')}  {m}"
     print(line)
@@ -453,7 +490,7 @@ def render_article(a, iso, d, allslugs, titles):
 <meta name="description" content="{esc(a['metaDescription'])}"/>
 <meta name="keywords" content="{esc(', '.join(k for k in kws if k))}"/>
 <meta name="author" content="كوكب الطفل الحر"/>
-<meta name="robots" content="index, follow, max-image-preview:large"/>
+<meta name="robots" content="{'noindex, follow' if a['slug'] in NOINDEX_SLUGS else 'index, follow, max-image-preview:large'}"/>
 <meta name="theme-color" content="#184e3e"/>
 <link rel="canonical" href="{url}"/>
 <link rel="alternate" hreflang="ar" href="{url}"/><link rel="alternate" hreflang="x-default" href="{url}"/>
@@ -908,6 +945,7 @@ def main():
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     repair_static_site()
     repair_published_articles(q, today)
+    prune_noindex_from_sitemap()
     pending=[a for a in q if not a.get('published')]
     hz=health()
     hz_ok=all(v==200 for v in hz.values())
