@@ -300,8 +300,13 @@ def _fallback_auto_topics(today, existing_slugs):
                 continue
             yield (slug, f'{label} | {area} {today.year}', cat, keyword, area)
 
+# Templated auto-refill produced near-identical articles (same body, keyword
+# swapped): 18 live articles overlap >60% with another. Off until the
+# generator produces genuinely distinct content.
+AUTO_REFILL_ENABLED = False
+
 def ensure_auto_queue(raw_q, today):
-    if not isinstance(raw_q, list):
+    if not AUTO_REFILL_ENABLED or not isinstance(raw_q, list):
         return raw_q
     pending = [a for a in raw_q if not a.get('published')]
     if len(pending) >= AUTO_REFILL_THRESHOLD:
@@ -319,6 +324,115 @@ def ensure_auto_queue(raw_q, today):
     if added:
         log(f"auto-refill added={added} pending_before={len(pending)} pending_after={len(pending)+added}")
     return raw_q
+
+DUP_THRESHOLD = 0.5
+
+def _shingles(a, n=6):
+    t = re.sub(r'<[^>]+>', ' ', a.get('bodyHtml', '') or '')
+    w = H.unescape(t).split()
+    return {' '.join(w[i:i+n]) for i in range(max(0, len(w) - n + 1))}
+
+def duplicate_of(cand, published):
+    """Return (slug, overlap) of the published article that cand copies most
+    closely, when the overlap is >= DUP_THRESHOLD; else None."""
+    sc = _shingles(cand)
+    if not sc:
+        return None
+    best = None
+    for p in published:
+        if p.get('slug') == cand.get('slug'):
+            continue
+        sp = _shingles(p)
+        if not sp:
+            continue
+        j = len(sc & sp) / len(sc | sp)
+        if j >= DUP_THRESHOLD and (best is None or j > best[1]):
+            best = (p['slug'], j)
+    return best
+
+# Templated near-duplicate articles (>60% overlap with each other). Kept live
+# but noindex + out of the sitemap until each is rewritten with distinct
+# content; remove a slug from this set once its rewrite is published.
+NOINDEX_SLUGS = frozenset({
+    'kindergarten-for-5-year-old-jeddah-montessori',
+    'montessori-language-activities-arabic-english',
+    'montessori-math-activities-preschool-jeddah',
+    'montessori-nursery-al-andalus-jeddah-guide',
+    'montessori-nursery-al-hamra-jeddah-guide',
+    'montessori-nursery-al-khalidiyah-jeddah-guide',
+    'montessori-nursery-al-marwah-jeddah-guide',
+    'montessori-nursery-al-naeem-jeddah-guide',
+    'montessori-nursery-al-rabwah-jeddah-guide',
+    'montessori-nursery-al-rawdah-jeddah-guide',
+    'montessori-nursery-al-safa-jeddah-guide',
+    'montessori-nursery-bani-malik-jeddah-guide',
+    'montessori-nursery-obhur-jeddah-guide',
+    'montessori-practical-life-skills-nursery',
+    'montessori-sensorial-activities-nursery',
+    'nursery-for-2-year-old-jeddah-montessori',
+    'nursery-for-3-year-old-jeddah-montessori',
+    'prekg-for-4-year-old-jeddah-montessori',
+})
+
+REWRITES = OPT/"rewrites.json"
+_REWRITE_APPLIED = []
+
+def is_noindex(a):
+    return a.get('slug') in NOINDEX_SLUGS and not a.get('rewritten')
+
+def apply_rewrites(raw_q):
+    """Swap in hand-written replacements (/opt/seo/rewrites.json, shipped from
+    the repo by self-update.sh) for published templated articles. Each one must
+    pass the facts gate and the duplicate gate first; the article then drops
+    out of NOINDEX handling. Idempotent: a rewrite is re-applied only when its
+    content changes."""
+    if facts is None or not isinstance(raw_q, list):
+        return raw_q
+    try:
+        rw = json.loads(REWRITES.read_text(encoding='utf-8'))
+    except Exception:
+        return raw_q
+    fields = ('title', 'seoTitle', 'metaDescription', 'bodyHtml', 'faq', 'wordCount')
+    by_slug = {a.get('slug'): a for a in raw_q}
+    for slug, new in (rw or {}).items():
+        a = by_slug.get(slug)
+        if not a or not a.get('published') or not isinstance(new, dict):
+            continue
+        tag = hashlib.sha1(json.dumps(new, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()[:12]
+        if a.get('rewritten') == tag:
+            continue
+        cand = dict(a); cand.update({k: new[k] for k in fields if k in new})
+        why = facts.check_article(cand)
+        dup = duplicate_of(cand, [x for x in raw_q if x.get('published') and x.get('slug') != slug])
+        if why or dup:
+            log(f"rewrite rejected {slug}: {'; '.join(why) if why else 'duplicate of %s (%.2f)' % dup}")
+            continue
+        a.update({k: new[k] for k in fields if k in new})
+        a['rewritten'] = tag
+        _REWRITE_APPLIED.append(slug)
+        log(f"rewrite applied {slug}")
+    return raw_q
+
+def prune_noindex_from_sitemap(q):
+    smp = ROOT/"sitemap.xml"
+    try:
+        sm = smp.read_text()
+    except Exception:
+        return
+    new = sm
+    for a in q:
+        slug = a.get('slug')
+        if not a.get('published') or slug not in NOINDEX_SLUGS:
+            continue
+        if is_noindex(a):
+            new = re.sub(r'\s*<url>\s*<loc>[^<]*/blog/%s/</loc>.*?</url>' % re.escape(slug), '', new, flags=re.S)
+        elif f'/blog/{slug}/<' not in new:
+            new = new.replace('</urlset>',
+                f'  <url>\n    <loc>{SITE}/blog/{slug}/</loc>\n    <lastmod>{datetime.date.today().isoformat()}</lastmod>\n'
+                f'    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n</urlset>')
+    if new != sm:
+        smp.write_text(new, encoding='utf-8')
+        log(f"sitemap: noindex sync {len(re.findall('<loc>', sm))} -> {len(re.findall('<loc>', new))} urls")
 
 def log(m):
     line = f"{datetime.datetime.now().isoformat(timespec='seconds')}  {m}"
@@ -423,7 +537,7 @@ def render_article(a, iso, d, allslugs, titles):
 <meta name="description" content="{esc(a['metaDescription'])}"/>
 <meta name="keywords" content="{esc(', '.join(k for k in kws if k))}"/>
 <meta name="author" content="كوكب الطفل الحر"/>
-<meta name="robots" content="index, follow, max-image-preview:large"/>
+<meta name="robots" content="{'noindex, follow' if is_noindex(a) else 'index, follow, max-image-preview:large'}"/>
 <meta name="theme-color" content="#184e3e"/>
 <link rel="canonical" href="{url}"/>
 <link rel="alternate" hreflang="ar" href="{url}"/><link rel="alternate" hreflang="x-default" href="{url}"/>
@@ -873,11 +987,13 @@ def main():
     today=datetime.date.today(); iso=today.isoformat()
     raw_q=json.loads(QUEUE.read_text())
     raw_q=ensure_auto_queue(raw_q, today)
+    raw_q=apply_rewrites(raw_q)
     q=[normalized_article(a) for a in raw_q]
-    if q != raw_q:
+    if q != raw_q or _REWRITE_APPLIED:
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     repair_static_site()
     repair_published_articles(q, today)
+    prune_noindex_from_sitemap(q)
     pending=[a for a in q if not a.get('published')]
     hz=health()
     hz_ok=all(v==200 for v in hz.values())
@@ -922,6 +1038,14 @@ def main():
             cand['blocked']=True; cand['blocked_reasons']=why
             blocked.append((cand.get('slug','?'), why))
             log(f"blocked {cand.get('slug','?')}: {'; '.join(why)}")
+            continue
+        dup=duplicate_of(cand, [x for x in q if x.get('published')])
+        if dup:
+            why=['المحتوى مكرر بنسبة %d%% مع مقال منشور (%s). أعد كتابته بمحتوى مختلف.'
+                 % (round(dup[1]*100), dup[0])]
+            cand['blocked']=True; cand['blocked_reasons']=why
+            blocked.append((cand.get('slug','?'), why))
+            log(f"blocked {cand.get('slug','?')}: duplicate of {dup[0]} ({dup[1]:.2f})")
             continue
         target=shadowing_redirect(cand.get('slug',''))
         if target:
