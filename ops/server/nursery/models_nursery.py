@@ -1175,9 +1175,26 @@ class NurseryMonth(models.Model):
         return opening, movement
 
     # ==================== الرصيد الافتتاحي / الختامي المرحّل ====================
-    def _previous_month(self):
+    def _has_cash_activity(self):
+        """هل في الشهر حركة نقدية فعلية (تحصيل/قيود/شيت معتمد)؟ شهر اتفتح
+        بالكرون أو يدوياً وفيه فواتير بلا تحصيل ولا قيود لا يُعتبر «بيانات»."""
         self.ensure_one()
-        return self.search([('ym', '<', self.ym)], order='ym desc', limit=1)
+        if any((f.paid or 0.0) for f in self.fee_ids) or self.entry_ids:
+            return True
+        return bool(self._excel_metrics())
+
+    def _previous_month(self):
+        """آخر شهر سابق فيه حركة نقدية فعلية.
+
+        الشهور الفارغة (مثلاً شهر اتفتح تلقائياً قبل بداية الموسم) تُتجاهل حتى
+        لا تقلب قاعدة «أول شهر»: أول شهر فعلي هو اللي يأخذ سطر نسرين كرصيد
+        افتتاحي، وليس أول صف في الجدول.
+        """
+        self.ensure_one()
+        for m in self.search([('ym', '<', self.ym)], order='ym desc'):
+            if m._has_cash_activity():
+                return m
+        return self.browse()
 
     def _excel_metrics(self):
         """ملخص Excel المعتمد لهذا الشهر (لو مستورد من الشيت)، وإلا {}."""
@@ -1196,16 +1213,18 @@ class NurseryMonth(models.Model):
         قاعدة الحسابات (قرار المالك 2026-10-02): الرصيد الافتتاحي لأي شهر هو
         ختامي الشهر السابق (في يد رندة) ويُحسب حيّاً من بياناته — فلو اتعدّل
         الشهر السابق (إعادة استيراد شيت مثلاً) يتصحّح الافتتاحي تلقائياً.
-        يُدخل يدوياً فقط لأول شهر في النظام (لا سابق له). الشهر المقفول
-        يحتفظ بالقيمة المخزّنة وقت قفله.
+        أول شهر فعلي (لا سابق له فيه حركة): لو معتمد من الشيت فافتتاحيه هو
+        سطر نسرين الموجب في الشيت (الكاش اللي دخل به الموسم)، وإلا القيمة
+        المُدخلة يدوياً. بيانات الشهر المقفول ثابتة، فالمحسوب منها ثابت أيضاً.
         """
         self.ensure_one()
-        if self.state == 'closed':
-            return float(self.opening_balance or 0.0)
         prev = self._previous_month()
-        if not prev:
-            return float(self.opening_balance or 0.0)
-        return prev._carry_closing()
+        if prev:
+            return prev._carry_closing()
+        excel = self._excel_metrics()
+        if excel:
+            return float(excel.get('opening_balance') or 0.0)
+        return float(self.opening_balance or 0.0)
 
     def _sync_opening(self):
         """يخزّن الافتتاحي المحسوب في الحقل (للتقارير والقراءة المباشرة)."""

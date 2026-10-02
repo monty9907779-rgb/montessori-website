@@ -1772,9 +1772,12 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
         month.write({'state': 'open'})
     metrics = _excel_month_metrics(parsed, target_ym)
     # The opening balance is always the previous month's cash closing (On hand
-    # Randa). Only the very first month takes it from the workbook's positive
-    # Nesrin line; that entry stays in the ledger for audit either way.
-    previous = env['nursery.month'].sudo().search(
+    # Randa). Only the very first month with real cash activity takes it from
+    # the workbook's positive Nesrin line; that entry stays in the ledger for
+    # audit either way. Empty months opened ahead of the season do not count
+    # as "previous" (nursery.month._previous_month).
+    prev_fn = getattr(month, '_previous_month', None)
+    previous = prev_fn() if prev_fn else env['nursery.month'].sudo().search(
         [('ym', '<', target_ym)], order='ym desc', limit=1)
     if previous:
         closing_fn = (getattr(previous, '_carry_closing', None)
