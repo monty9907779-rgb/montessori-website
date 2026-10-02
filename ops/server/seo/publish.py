@@ -1169,7 +1169,54 @@ def repair_static_site():
             text = text.replace('</body>', _registration_script(english) + '</body>', 1)
         if 'id="montessori-pwa-fix"' not in text:
             text = text.replace('</body>', _pwa_script() + '</body>', 1)
-        return text
+        return add_home_faq(text, english)
+
+    # Questions AI assistants are asked where we were missing (Ubersuggest
+    # AISV): answered on the homepage, in the visible FAQ and in FAQPage.
+    HOME_FAQ_AR = [
+        ('هل توجد روضة في جدة تعلّم بالعربية والإنجليزية والقرآن معاً؟',
+         'نعم، روضة كوكب الطفل الحر في حي الفيصلية بجدة تجمع يومياً بين اللغة العربية الفصحى والإنجليزية وتعليم القرآن الكريم ضمن منهج مونتيسوري الأصيل، للأطفال من سنتين إلى ٥ سنوات.'),
+        ('ما المرحلة المناسبة لطفل عمره ٤ سنوات؟',
+         'طفل الرابعة يكون في المستوى الثاني (٤–٥) حسب التسمية السعودية الرسمية، ويركّز على القراءة الأولى والعدد والاعتماد على النفس في بيئة مونتيسوري مُعدّة. نستقبل الأطفال من سنتين إلى ٥ سنوات.'),
+        ('كم سنة خبرة لدى الروضة؟',
+         'أكثر من ١٠ سنوات في تعليم الطفولة المبكرة، مع معلمات مؤهلات. نستقبل الأطفال من سنتين إلى ٥ سنوات في حي الفيصلية بجدة.'),
+    ]
+    HOME_FAQ_EN = [
+        ('Which kindergarten in Jeddah teaches in both Arabic and English?',
+         'Kawkab Al-Tifl Al-Hurr Kindergarten in Al Faisaliyyah, Jeddah teaches every day in Modern Standard Arabic and English, alongside Quran, within an authentic Montessori programme for children aged 2 to 5.'),
+        ('Can my 2-year-old join a daycare in Jeddah?',
+         'Yes. Our Pre-KG stage is for children aged 2 to 3, with a gentle settling-in period, small groups and a prepared Montessori environment. We welcome children aged 2 to 5, Sunday to Thursday, 8:00 AM to 1:00 PM.'),
+        ('How much experience does the nursery have?',
+         'More than 10 years in early childhood education, with qualified teachers, in the Al Faisaliyyah district of Jeddah.'),
+    ]
+
+    def add_home_faq(text, english):
+        items = HOME_FAQ_EN if english else HOME_FAQ_AR
+        if facts is not None and not english:
+            items = [(q, a) for q, a in items if not facts.check_text(a)]
+        new = [(q, a) for q, a in items if q not in text]
+        if not new:
+            return text
+        m = re.search(r'<script type="application/ld\+json">(\{[^<]*"FAQPage".*?)</script>', text, re.S)
+        last = text.rfind('</details>')
+        if not m or last < 0:
+            return text
+        try:
+            data = json.loads(m.group(1))
+        except Exception:
+            return text
+        # visible FAQ: copy the markup of the existing last item
+        start = text.rfind('<details', 0, last)
+        tpl = text[start:last + len('</details>')]
+        sm = re.match(r'(<details[^>]*>\s*<summary[^>]*>).*?(</summary>\s*<div[^>]*>).*?(</div>)', tpl, re.S)
+        if not sm:
+            return text
+        html_items = ''.join(f'{sm.group(1)}{esc(q)}{sm.group(2)}{esc(a)}{sm.group(3)}</details>' for q, a in new)
+        data.setdefault('mainEntity', []).extend(
+            {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in new)
+        ld = json.dumps(data, ensure_ascii=False)
+        text = text[:last + len('</details>')] + html_items + text[last + len('</details>'):]
+        return text.replace(m.group(1), ld, 1)
     _patch_file(ROOT/'index.html', lambda t: patch_home(t, False))
     _patch_file(ROOT/'en'/'index.html', lambda t: patch_home(t, True))
     for install_page in (ROOT/'app'/'index.html', ROOT/'login'/'index.html'):
