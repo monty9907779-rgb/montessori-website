@@ -321,7 +321,7 @@ function renderLedger(B, closed, t){
   var cashAfterSalaries=(t.cash_after_salaries!=null?t.cash_after_salaries:(cashClosing-(t.salaries||0)));
   var excelDelta=(excelSummary.delta!=null?excelSummary.delta:0);
   var vh='<div class="acc-sum">'+
-    stat('is-forest','wallet','الرصيد الافتتاحي',NS.riyal(M.opening),closed?null:'edit-open',null,closed?null:'edit-open')+
+    stat('is-forest','wallet',(M.opening_auto?'الرصيد الافتتاحي (= ختامي الشهر السابق)':'الرصيد الافتتاحي'),NS.riyal(M.opening),(closed||M.opening_auto)?null:'edit-open',null,(closed||M.opening_auto)?null:'edit-open')+
     stat('is-forest','wallet','المُحصَّل من الطلبة (إجمالي)',NS.riyal(studentCollected),null,'#source-fees')+
     stat('is-forest','wallet','كاش رندا',NS.riyal(t.cash_collected||excelSummary.randa_cash||0),null,'#source-fees')+
     stat('is-clay','wallet','تحويل بنكي',NS.riyal(t.bank_transfer||excelSummary.bank_transfer||0),null,'#source-fees')+
@@ -338,6 +338,11 @@ function renderLedger(B, closed, t){
     stat(cashAfterSalaries>=0?'is-forest':'is-danger','users','المتاح بعد الرواتب',NS.riyal(cashAfterSalaries),null,'#source-salary')+
     stat(excelDelta>=0?'is-forest':'is-danger','alert','Delta الشيت (تدقيق فقط)',NS.riyal(excelDelta),null,'#source-salary')+
     stat((t.carry_forward||0)>=0?'is-forest':'is-danger','refresh','مُرحّل الطلبة للشهر التالي',((t.carry_forward||0)>=0?'+':'')+NS.riyal(t.carry_forward||0),null,'#source-fees')+
+  '</div>'+
+  '<div class="acc-sum acc-sum--second">'+
+    stat('is-forest','users','طلبة دافعين سنة',String((t.prepaid_counts||{}).year||0),null,'#source-fees')+
+    stat('is-forest','users','طلبة دافعين ترم',String((t.prepaid_counts||{}).term||0),null,'#source-fees')+
+    stat('is-forest','users','طلبة دافعين شهر مقدم',String((t.prepaid_counts||{}).month||0),null,'#source-fees')+
   '</div>'+
   '<div class="grand stat-source" id="source-closing"><span>الرصيد الختامي النقدي (يترحّل للشهر التالي)</span><b class="tabnum">'+NS.riyal(cashClosing)+'</b></div>';
 
