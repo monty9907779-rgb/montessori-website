@@ -154,6 +154,22 @@ class ExcelImportTests(unittest.TestCase):
         # a tab for a month that has not started yet is never picked
         self.assertEqual(excel_import._workbook_months(files, '2026-08'), [])
 
+    def test_import_unlock_window(self):
+        import datetime
+        original = excel_import.UNLOCK_FILE
+        excel_import.UNLOCK_FILE = os.path.join(HERE, 'import_unlock.json')
+        try:
+            self.assertTrue(excel_import._import_unlocked('2026-09', datetime.date(2026, 10, 10)))
+            self.assertFalse(excel_import._import_unlocked('2026-09', datetime.date(2026, 10, 11)))
+            self.assertFalse(excel_import._import_unlocked('2026-10', datetime.date(2026, 10, 2)))
+        finally:
+            excel_import.UNLOCK_FILE = original
+        excel_import.UNLOCK_FILE = os.path.join(HERE, 'does-not-exist.json')
+        try:
+            self.assertFalse(excel_import._import_unlocked('2026-09', datetime.date(2026, 10, 2)))
+        finally:
+            excel_import.UNLOCK_FILE = original
+
     def test_formula_serials_are_resolved(self):
         """openpyxl saves formulas without cached values; serials still count."""
         by_name = {row['name']: row for row in self.parsed['students']}
