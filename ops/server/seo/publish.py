@@ -1250,6 +1250,23 @@ html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-
     _patch_file(ROOT/'privacy'/'index.html', lambda t: patch_privacy(t, False))
     _patch_file(ROOT/'en'/'privacy'/'index.html', lambda t: patch_privacy(t, True))
 
+    # English blog: an old brand substitution replaced "Montessori Nursery"
+    # with the brand in the Montessori guide's title, H1, schema and every
+    # card linking to it, so the page lost its head term ("montessori
+    # nursery jeddah", "montessori school").
+    def patch_en_blog(text):
+        text = text.replace('<title>Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah</title>',
+            "<title>Montessori Nursery in Jeddah: A Parent's Guide | Kawkab Al-Tifl</title>")
+        text = text.replace('Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah', 'Montessori Nursery in Jeddah')
+        text = text.replace('<title>Blog | Kawkab Al-Tifl Al-Hurr Kindergarten &mdash; Parent Guides</title>',
+            '<title>Nursery, Preschool &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>')
+        return text
+    en_blog = ROOT/'en'/'blog'
+    if en_blog.is_dir():
+        for page in en_blog.rglob('index.html'):
+            if _patch_file(page, patch_en_blog) and page.parent != en_blog:
+                indexnow(f"{SITE}/en/blog/{page.parent.name}/")
+
 def article_date(article, fallback):
     raw = article.get('published')
     try:
