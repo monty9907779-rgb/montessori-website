@@ -2,15 +2,33 @@
 
 `excel_import.py` and `dashboard.py` are the server-side source of the
 `/dashboard/` numbers. They are **not** deployed by `deploy.sh` (that ships
-`public/` only). Copy them into the `nursery` addon on `187.127.79.242`,
-restart Odoo, then re-import the month.
+`public/` only).
+
+## Deploy
+
+`excel_import.py` and `import_month.py` ride the server's daily
+`ops/server/seo/self-update.sh` (root crontab, runs before the SEO
+publisher): it pulls them from GitHub `main`, compiles them, installs them
+into the `nursery` addon (`<addon>/controllers/excel_import.py`,
+`<addon>/import_month.py`; the addon dir is discovered once and cached in
+`/opt/seo/nursery-addon.path`), keeps the previous copy as `.prev`, and
+restarts the Odoo service. So: merge to `main`, and within a day the
+dashboard imports with the new parser. `/opt/seo/self-update.log` records
+what happened. By hand, the same thing is:
 
 ```bash
-# from a checkout of main
-scp ops/server/nursery/excel_import.py ops/server/nursery/import_month.py \
-    root@187.127.79.242:/opt/odoo/addons/nursery/        # adjust to the real addon path
+scp ops/server/nursery/excel_import.py root@187.127.79.242:<addon>/controllers/
+scp ops/server/nursery/import_month.py root@187.127.79.242:<addon>/
 ssh root@187.127.79.242 'systemctl restart odoo'
 ```
+
+## Re-importing a finished month from the dashboard
+
+`مزامنة Excel` → choose the month (e.g. سبتمبر 2026) → upload the workbook →
+اعتماد. The roster (serials, classes, dates) is rebuilt as long as no later
+month has a payment yet (`_roster_allowed`); after a successful import of a
+month that already ended, the month is **closed automatically**
+(`_close_finished_month`). From then on the site refuses every change to it.
 
 ## How the month gets its numbers
 

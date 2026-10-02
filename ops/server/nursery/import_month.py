@@ -24,11 +24,25 @@ import os
 import sys
 
 
+def _excel_import_module():
+    """The installed addon's controller, whatever the addon directory is."""
+    try:
+        from odoo.addons.nursery.controllers import excel_import
+        return excel_import
+    except ImportError:
+        pass
+    here = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+    for candidate in (here, os.path.join(here, 'controllers')):
+        if os.path.exists(os.path.join(candidate, 'excel_import.py')):
+            sys.path.insert(0, os.path.dirname(candidate))
+            package = os.path.basename(candidate)
+            return __import__('%s.excel_import' % package, fromlist=['excel_import'])
+    raise SystemExit('لم أجد excel_import.py بجانب هذا السكريبت أو في addon nursery')
+
+
 def run(env, path, ym, lock=True, roster=True):
     from odoo import fields
-    here = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else ''
-    sys.path.insert(0, here or os.getcwd())
-    from nursery import excel_import  # noqa: E402  (the installed addon)
+    excel_import = _excel_import_module()
 
     if not excel_import._valid_ym(ym):
         raise SystemExit('شهر غير صالح: %s' % ym)
