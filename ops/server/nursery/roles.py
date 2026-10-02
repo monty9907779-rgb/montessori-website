@@ -1616,6 +1616,58 @@ class NurserySSO(http.Controller):
             return ('حضور اليوم: %s حاضر، %s غائب، %s متأخر، وتم تسجيل %s طالب.%s' %
                     (number(att['present']), number(att['absent']), number(att['late']),
                      number(att['marked']), names))
+        # سؤال مالي عن شهر محدّد بالاسم (سبتمبر، أكتوبر…): اقرأ أرقامه من
+        # months_excel حرفياً للشهور المقفولة، أو من كشف الشهر الجاري لو كان هو
+        # المطلوب — بدل الرد دائماً بأرقام الشهر الحالي.
+        _AR_MONTH_NUM = {
+            'يناير': 1, 'فبراير': 2, 'مارس': 3, 'ابريل': 4, 'مايو': 5,
+            'يونيو': 6, 'يوليو': 7, 'اغسطس': 8, 'سبتمبر': 9, 'اكتوبر': 10,
+            'نوفمبر': 11, 'ديسمبر': 12,
+        }
+        _fin_words = ('مرتب', 'رواتب', 'مصاريف', 'مصروف', 'صافي', 'دخل',
+                      'ايراد', 'محصل', 'مستلم', 'استلم', 'تحويل', 'بنك',
+                      'راندا', 'كتب', 'متبقي', 'باقي', 'مالي')
+        _named_mnum = next((n for nm, n in _AR_MONTH_NUM.items() if nm in q), None)
+        if _named_mnum and any(w in q for w in _fin_words):
+            _me = data.get('months_excel') or {}
+            _key = next((k for k in _me
+                         if len(k) >= 7 and k[5:7].isdigit()
+                         and int(k[5:7]) == _named_mnum), None)
+            _cur_ym = fin.get('ym') or ''
+            _cur_mnum = int(_cur_ym[5:7]) if len(_cur_ym) >= 7 and _cur_ym[5:7].isdigit() else None
+            if _key:
+                m = _me[_key]
+                lbl = m.get('label') or _key
+                if ('مرتب' in q or 'رواتب' in q) and ('مصاريف' in q or 'مصروف' in q):
+                    return 'في %s: المرتبات %s، والمصروفات %s.' % (
+                        lbl, money(m['salaries']), money(m['expenses']))
+                if 'مرتب' in q or 'رواتب' in q:
+                    return 'مرتبات %s هي %s.' % (lbl, money(m['salaries']))
+                if 'صافي' in q:
+                    return 'صافي %s هو %s.' % (lbl, money(m['net']))
+                if 'كتب' in q:
+                    return 'قيمة الكتب في %s هي %s.' % (lbl, money(m['books']))
+                if 'متبقي' in q or 'باقي' in q:
+                    return 'المتبقي على الطلاب في %s هو %s.' % (lbl, money(m['remaining_total']))
+                if 'راندا' in q:
+                    return 'المتبقي نقداً مع راندا في %s هو %s.' % (lbl, money(m['on_hand_randa']))
+                if 'تحويل' in q or 'بنك' in q:
+                    return 'التحويلات البنكية في %s هي %s.' % (lbl, money(m['bank_transfer']))
+                if ('مصاريف' in q or 'مصروف' in q) and 'دخل' not in q and 'مالي' not in q:
+                    return 'مصروفات %s هي %s.' % (lbl, money(m['expenses']))
+                if any(w in q for w in ('محصل', 'مستلم', 'استلم', 'ايراد')) and 'دخل' not in q:
+                    return 'إجمالي المُحصّل في %s هو %s.' % (lbl, money(m['received']))
+                return ('ملخص %s: المُحصّل %s (نقداً مع راندا %s، تحويل بنكي %s)، '
+                        'المصروفات %s، المرتبات %s، الصافي %s، '
+                        'المتبقي على الطلاب %s، الكتب %s، وعدد الطلاب %s.' % (
+                            lbl, money(m['received']), money(m['randa_cash']),
+                            money(m['bank_transfer']), money(m['expenses']),
+                            money(m['salaries']), money(m['net']),
+                            money(m['remaining_total']), money(m['books']),
+                            number(m['students'])))
+            if not (_cur_mnum == _named_mnum and fin.get('open')):
+                return ('لا توجد أرقام محفوظة لشهر %s بعد؛ تُضاف بعد إقفال الشهر '
+                        'ورفع ملف الإكسل.' % self._AR_MONTHS[_named_mnum - 1])
         if ('دخل الطلب' in q or 'دخل الطلاب' in q) and 'شهر' in q:
             if not fin['open']:
                 return 'لم يُفتح كشف الشهر الحالي بعد، لذلك لا يوجد دخل مؤكّد.'
