@@ -1537,19 +1537,45 @@ class NurserySSO(http.Controller):
             Sal = env['nursery.salary'].sudo()
             Ded = env['nursery.deduction'].sudo()
             rows = []
+            ded_by_month = {}
             for emp in Emp.search([('active', '=', True)], order='name'):
                 sal = (Sal.search([('employee_id', '=', emp.id), ('term', '=', term)], limit=1)
                        or Sal.search([('teacher', '=', emp.name), ('term', '=', term)], limit=1))
-                ded_total = sum(Ded.search([('employee_id', '=', emp.id),
-                                            ('state', '=', 'confirmed')]).mapped('amount'))
+                # الخصومات تُسجَّل من الداشبورد (تلقائياً من الحضور أو يدوياً) وتبدأ
+                # «قيد المراجعة» ثم تُعتمد؛ نعرض كل خصم بتاريخه ونوعه وحالته حتى
+                # يُجاب سؤال «خصومات شهر كذا» بالترشيح على التاريخ.
+                deds = Ded.search([('employee_id', '=', emp.id),
+                                   ('state', '!=', 'cancelled')], order='date')
+                LBL = getattr(Ded, 'DTYPE_LABELS', None) or {}
+                ded_rows = [{
+                    'date': d.date.strftime('%Y-%m-%d') if d.date else '',
+                    'month': d.date.strftime('%Y-%m') if d.date else '',
+                    'type': LBL.get(d.dtype, d.dtype) if LBL else d.dtype,
+                    'days': float(d.days or 0.0),
+                    'minutes_late': int(d.minutes_late or 0),
+                    'amount': round(float(d.amount or 0.0), 2),
+                    'state': d.state, 'note': d.note or '',
+                } for d in deds]
+                ded_confirmed = sum(r['amount'] for r in ded_rows if r['state'] == 'confirmed')
+                ded_pending = sum(r['amount'] for r in ded_rows if r['state'] == 'draft')
+                for r in ded_rows:
+                    bucket = ded_by_month.setdefault(r['month'], {
+                        'confirmed': 0.0, 'pending': 0.0, 'count': 0})
+                    bucket['count'] += 1
+                    bucket['confirmed' if r['state'] == 'confirmed' else 'pending'] += r['amount']
                 expected = float(sal.expected or 0.0) if sal else 0.0
                 actual = float(sal.actual or 0.0) if sal else 0.0
                 rows.append({
                     'name': emp.name, 'job': emp.job_title or '',
                     'expected': expected, 'actual': actual,
+                    'shortfall': round(max(0.0, expected - actual), 2),
+                    'notes': (sal.notes or '') if sal else '',
                     'paid_date': sal.paid_date.strftime('%Y-%m-%d') if (sal and sal.paid_date) else '',
-                    'deductions_total': round(float(ded_total), 2),
-                    'net': round((actual or expected) - float(ded_total), 2),
+                    'deductions': ded_rows,
+                    'deductions_confirmed_total': round(float(ded_confirmed), 2),
+                    'deductions_pending_total': round(float(ded_pending), 2),
+                    'deductions_total': round(float(ded_confirmed), 2),
+                    'net': round((actual or expected) - float(ded_confirmed), 2),
                     'attendance_exempt': bool(emp.attendance_exempt),
                 })
             context['staff_salaries'] = {
@@ -1558,6 +1584,9 @@ class NurserySSO(http.Controller):
                 'rows': rows,
                 'total_expected': round(sum(r['expected'] for r in rows), 2),
                 'total_net': round(sum(r['net'] for r in rows), 2),
+                'deductions_by_month': {k: {kk: (round(vv, 2) if isinstance(vv, float) else vv)
+                                            for kk, vv in v.items()}
+                                        for k, v in sorted(ded_by_month.items())},
             }
         except Exception:
             context['staff_salaries'] = {}
@@ -1596,6 +1625,11 @@ class NurserySSO(http.Controller):
                     'closing': round(float(t.get('closing') or 0.0), 2),
                     'closed_at': m.closed_at.strftime('%Y-%m-%d') if m.closed_at else '',
                     'closed_by': m.closed_by.name if m.closed_by else '',
+                    'salary_entries': [{
+                        'name': e.name or '', 'amount': round(float(e.amount or 0.0), 2),
+                        'date': e.date.strftime('%Y-%m-%d') if e.date else '',
+                        'note': e.note or '',
+                    } for e in m.entry_ids if e.etype == 'salary'],
                 })
             context['accounting_months'] = out
         except Exception:
@@ -1645,7 +1679,11 @@ class NurserySSO(http.Controller):
             'الفصل، المستوى، الرسوم، الكتب، حالة السداد، paid_until، آخر دفعة، '
             'المفوتر/المحصّل/المتبقي receivable). '
             'new_year_applicants: طلبات السنة الجديدة. classes: الفصول ومعلماتها وطلابها. '
-            'staff_salaries: الموظفون ومرتباتهم وخصوماتهم. receivables_totals: إجماليات الذمم. '
+            'staff_salaries: الموظفون ومرتباتهم؛ لكل موظف deductions = قائمة الخصومات '
+            'المسجّلة من الداشبورد بالتاريخ والنوع والحالة (draft = قيد المراجعة، '
+            'confirmed = معتمد)، وshortfall = الفرق بين المستحق والمدفوع، وnotes = ملاحظة '
+            'الراتب من الشيت (سُلف). deductions_by_month يجمّع الخصومات لكل شهر YYYY-MM. '
+            'receivables_totals: إجماليات الذمم. '
             'accounting_months: كل الشهور المحاسبية من النظام. months_excel: أرقام الشهور '
             'المقفولة من ملف الإكسل (المعتمدة). monthly_finance: الشهر الجاري. '
             'visits_scheduled: الزيارات القادمة. internal_messages_pending: رسائل تنتظر الموافقة. '
@@ -2007,6 +2045,9 @@ class NurserySSO(http.Controller):
             'وأولياء الأمور وهواتفهم وبريدهم، الفصول، الموظفين والمرتبات، الذمم، '
             'الشهور المحاسبية، الزيارات، الرسائل الداخلية، الحضور) — أجب منها عن أي '
             'سؤال عن أي طالب أو فصل أو موظف أو شهر. راجع المفتاح _guide لمعنى كل قسم. '
+            'خصومات الموظفين مسجّلة في staff_salaries.rows[].deductions بالتاريخ والحالة؛ '
+            'لسؤال عن شهر معيّن رشّح بالتاريخ (أو استخدم deductions_by_month) واذكر '
+            'المعتمد والقيد المراجعة كلاً على حدة، ولا تقل «لا توجد خصومات» إلا لو القائمة فارغة فعلاً. '
             'لا تعرض مفاتيح أو كلمات مرور، ولا تخترع معلومات ليست موجودة في اللقطة. '
             'عند طلب صياغة رسالة قدّم نصاً عملياً جاهزاً، من دون ادعاء أنه أُرسل. '
             'أرقام كل شهر محاسبي في months_excel بمفتاح YYYY-MM (2026-09 = سبتمبر). '
