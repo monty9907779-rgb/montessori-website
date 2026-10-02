@@ -72,6 +72,7 @@ if [ -n "$addon" ] && [ -f "$addon/controllers/excel_import.py" ]; then
     rm -f "$(dirname "$dst")"/__pycache__/"$(basename "${dst%.py}")".*.pyc 2>/dev/null
     log "updated $dst"; nursery_changed=$((nursery_changed+1))
   done <<< "nursery/excel_import.py|$addon/controllers/excel_import.py
+nursery/roles.py|$addon/controllers/roles.py
 nursery/import_month.py|$addon/import_month.py
 nursery/import_unlock.json|$addon/import_unlock.json"
   if [ "$nursery_changed" -gt 0 ]; then
