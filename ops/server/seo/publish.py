@@ -1104,6 +1104,18 @@ def repair_static_site():
                  '<meta name="twitter:description" content="Montessori nursery, preschool and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>'),
                 ('<h1 class="rev">Kawkab Al-Tifl Al-Hurr Nursery in Jeddah<br/><span class="em">Pre-K &amp; kindergarten, ages 2–5</span></h1>',
                  '<h1 class="rev">Montessori Nursery in Jeddah<br/><span class="em">Kawkab Al-Tifl Al-Hurr · preschool &amp; kindergarten, ages 2–5</span></h1>'),
+                # SEO plan 2026-10-02, section 7: the English page ranks for
+                # «nursery jeddah» (20), «kindergarten jeddah» (11) and
+                # «daycare jeddah» (32). Carry all three head terms in the
+                # title and description; the H1 keeps its Montessori lead.
+                ('<title>Montessori Nursery &amp; Preschool in Jeddah | Kawkab Al-Tifl</title>',
+                 '<title>Montessori Nursery, Daycare &amp; Kindergarten in Jeddah | Kawkab Al-Tifl</title>'),
+                ('<meta name="description" content="Kawkab Al-Tifl Al-Hurr is a Montessori nursery, preschool and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with Arabic, English and Quran."/>',
+                 '<meta name="description" content="Kawkab Al-Tifl Al-Hurr: Montessori nursery, daycare and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with Arabic, English and Quran. Open Sun–Thu 08:00–13:00."/>'),
+                ('<meta property="og:title" content="Montessori Nursery &amp; Preschool in Jeddah | Kawkab Al-Tifl"/>',
+                 '<meta property="og:title" content="Montessori Nursery, Daycare &amp; Kindergarten in Jeddah | Kawkab Al-Tifl"/>'),
+                ('<meta name="twitter:title" content="Montessori Nursery &amp; Preschool in Jeddah | Kawkab Al-Tifl"/>',
+                 '<meta name="twitter:title" content="Montessori Nursery, Daycare &amp; Kindergarten in Jeddah | Kawkab Al-Tifl"/>'),
             ]
         else:
             repl = [
@@ -1343,6 +1355,16 @@ def repair_static_site():
             ]))
         return fees, areas, guides
 
+    def _home_seo_fees_en():
+        return _seo_section('fees', 'seo-fees', 'Fees &amp; admissions', 'Fees, stages and how to enrol',
+            'Fees depend on your child&#8217;s age, the number of days and the hours you choose; we confirm the exact figure by phone or during a visit. These guides explain the details before you get in touch.',
+            _seo_cards([
+                ('/en/blog/kindergarten-in-jeddah/', 'Which stage is right for my child?', 'Pre-KG (ages 2 to 3), KG1 (3 to 4) and KG2 (4 to 5), and what each year focuses on'),
+                ('/en/blog/daycare-in-jeddah/', 'Half day or full day?', 'Our morning runs Sunday to Thursday, 08:00 to 13:00, with hourly care when you need it'),
+                ('/en/blog/nursery-in-jeddah/', 'How to compare nurseries', 'The questions to ask on a visit and the signs of a safe, well-run setting'),
+                ('/en/#register', 'Book a visit', 'Visits run Sunday to Thursday, 10:00 AM to 12:00 PM; message us on WhatsApp to pick a time'),
+            ]))
+
     def _home_seo_sections_en():
         return _seo_section('guides', 'seo-guides', 'Parent guides', 'Guides before you choose a nursery in Jeddah',
             'Practical answers for parents comparing nurseries, daycares and kindergartens in Jeddah.',
@@ -1391,6 +1413,8 @@ def repair_static_site():
 
     def add_home_seo_sections(text, english):
         if english:
+            if 'id="fees"' not in text:
+                text = text.replace('<section id="register"', _home_seo_fees_en() + '<section id="register"', 1)
             if 'id="guides"' not in text:
                 text = text.replace('</main>', _home_seo_sections_en() + '</main>', 1)
             if 'href="/en/blog/daycare-in-jeddah/">Daycare in Jeddah</a>' not in text:
