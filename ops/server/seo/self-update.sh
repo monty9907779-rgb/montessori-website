@@ -117,7 +117,8 @@ if [ -d "$WEBROOT/dashboard" ]; then
 dashboard/dashboard-inline-1.js
 dashboard/index.html
 ai/index.html
-assets/ai.js"
+assets/ai.js
+assets/ai.css"
 else
   log "webroot $WEBROOT/dashboard not found — dashboard files not installed"
 fi
