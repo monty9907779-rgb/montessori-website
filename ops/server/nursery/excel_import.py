@@ -331,6 +331,27 @@ def _valid_ym(value):
     return text
 
 
+def _workbook_months(files, current_ym):
+    """Season months named by the workbook's sheet tabs, newest first.
+
+    Only months up to current_ym count: the first preview carries no month,
+    and when the running month has no data in the workbook the newest
+    finished tab (e.g. "September 2026" opened in October) is the one meant.
+    """
+    found = set()
+    for item in files or []:
+        try:
+            raw = base64.b64decode(item.get('content') or '', validate=True)
+            sheets = _read_file(_clean(item.get('name'), 160), raw)
+        except Exception:
+            continue
+        for title, _rows in sheets:
+            ym = _valid_ym(_ym_from_text(title, current_ym[:4]))
+            if ym and ym <= current_ym:
+                found.add(ym)
+    return sorted(found, reverse=True)
+
+
 def _month_label(ym):
     try:
         year, month = ym.split('-')
@@ -2129,27 +2150,42 @@ class NurseryExcelImport(http.Controller):
                 # would import one month's numbers into another.
                 return {'ok': False,
                         'error': 'الشهر المطلوب غير صالح. اختاري شهراً من الموسم الحالي.'}
+        parsed = _parse_records(files, target_ym)
+        if not requested and not parsed['students'] and not parsed['entries']:
+            # The first preview carries no month. When the workbook holds
+            # nothing for the running month, open the review on its newest
+            # finished month tab instead of failing before the month picker
+            # is even shown (September's workbook uploaded in October).
+            for candidate in _workbook_months(files, current_ym):
+                if candidate == current_ym:
+                    continue
+                attempt = _parse_records(files, candidate)
+                if attempt['students'] or attempt['entries']:
+                    target_ym, parsed = candidate, attempt
+                    break
         # The roster is rebuilt from the newest workbook only. An older month
         # imports payments only once a later month already holds payments:
         # rewriting the roster from it would archive every student who joined
         # after it and restore stale class and guardian values.
         roster = _roster_allowed(request.env, target_ym, current_ym)
-        parsed = _parse_records(files, target_ym)
         _apply_class_map(parsed, class_map, request.env)
         if not parsed['students'] and not parsed['entries']:
-            return {'ok': False, 'error': 'لم أجد جداول مفهومة. تأكدي من وجود أعمدة الاسم والمبلغ/الرسوم.'}
+            return {'ok': False, 'current_ym': current_ym,
+                    'error': 'لم أجد جداول مفهومة. تأكدي من وجود أعمدة الاسم والمبلغ/الرسوم.'}
         if mode == 'replace' or replace:
             try:
                 summary = _replace_month_from_excel(parsed, target_ym, request.env, roster=roster)
             except ValueError as exc:
                 return {'ok': False, 'error': _clean(exc, 180)}
             summary['closed'] = _close_finished_month(request.env, target_ym, current_ym, manager)
-            return {'ok': True, 'target_ym': target_ym,
+            return {'ok': True, 'target_ym': target_ym, 'current_ym': current_ym,
                     'target_label': _month_label(target_ym),
                     'summary': summary, 'warnings': parsed['warnings']}
         if mode == 'preview':
             result = _preview(parsed, target_ym, request.env)
             result['class_choices'] = _class_choices(parsed, request.env)
+            result['current_ym'] = current_ym
+            result['roster'] = roster
             return result
         if mode != 'commit':
             return {'ok': False, 'error': 'وضع استيراد غير صالح.'}
@@ -2168,5 +2204,6 @@ class NurseryExcelImport(http.Controller):
         # balances, and roster cannot retain data from an older import.
         summary = _replace_month_from_excel(parsed, target_ym, request.env, roster=roster)
         summary['closed'] = _close_finished_month(request.env, target_ym, current_ym, manager)
-        return {'ok': True, 'target_ym': target_ym, 'target_label': _month_label(target_ym),
+        return {'ok': True, 'target_ym': target_ym, 'current_ym': current_ym,
+                'target_label': _month_label(target_ym),
                 'summary': summary, 'warnings': parsed['warnings']}
