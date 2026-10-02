@@ -135,13 +135,55 @@ function paintQuestions(){
   });
 }
 
+/* 2/10: ردود المساعد تُعرض كـ Markdown مبسّط — جداول | عريض | قوائم | فقرات.
+   النص يُهرَّب أولاً (NS.esc) ثم تُبنى الوسوم من العلامات البنيوية فقط، فلا يمرّ
+   أي HTML من الموديل. رسائل المستخدم تبقى نصاً خاماً (textContent). */
+function renderMd(src){
+  var lines=String(src||'').replace(/\r\n?/g,'\n').split('\n'), out=[], i=0;
+  var LI=/^\s*([-*•]|\d+[.)])\s+/, H=/^\s*#{1,4}\s+/;
+  function inline(s){
+    s=NS.esc(s);
+    s=s.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');
+    s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+    return s;
+  }
+  function isRow(l){return /^\s*\|/.test(l);}
+  function isSep(l){return /^\s*\|?[\s:|-]*-[\s:|-]*$/.test(l)&&/-/.test(l);}
+  function cells(l){return l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(function(c){return c.trim();});}
+  while(i<lines.length){
+    var l=lines[i];
+    if(isRow(l)&&i+1<lines.length&&isSep(lines[i+1])){
+      var head=cells(l), rows=[]; i+=2;
+      while(i<lines.length&&isRow(lines[i])){rows.push(cells(lines[i]));i++;}
+      var h='<div class="md-table"><table><thead><tr>'+head.map(function(c){return '<th>'+inline(c)+'</th>';}).join('')+'</tr></thead><tbody>';
+      rows.forEach(function(r){
+        var tot=/إجمالي|الإجمالي|المجموع|total/i.test(r[0]||'');
+        h+='<tr'+(tot?' class="md-total"':'')+'>'+r.map(function(c){return '<td>'+inline(c)+'</td>';}).join('')+'</tr>';
+      });
+      out.push(h+'</tbody></table></div>'); continue;
+    }
+    if(LI.test(l)){
+      var OL=/^\s*\d+[.)]\s+/, ordered=OL.test(l), items=[];
+      while(i<lines.length&&LI.test(lines[i])&&OL.test(lines[i])===ordered){items.push(lines[i].replace(LI,''));i++;}
+      var tag=ordered?'ol':'ul';
+      out.push('<'+tag+'>'+items.map(function(t){return '<li>'+inline(t)+'</li>';}).join('')+'</'+tag+'>'); continue;
+    }
+    if(H.test(l)){out.push('<p><b>'+inline(l.replace(H,''))+'</b></p>');i++;continue;}
+    if(!l.trim()){i++;continue;}
+    var para=[];
+    while(i<lines.length&&lines[i].trim()&&!isRow(lines[i])&&!LI.test(lines[i])&&!H.test(lines[i])){para.push(inline(lines[i]));i++;}
+    out.push('<p>'+para.join('<br>')+'</p>');
+  }
+  return out.join('');
+}
 function addMessage(role,text,source,id){
   var list=document.getElementById('messages'), row=document.createElement('div');
   row.className='msg '+role+(id?' '+id:'');
   if(id)row.id=id;
-  row.innerHTML='<span class="msg-avatar">'+NS.icon(role==='user'?'user':'sparkle')+'</span><div class="msg-body"><div class="msg-text"></div>'+ 
+  row.innerHTML='<span class="msg-avatar">'+NS.icon(role==='user'?'user':'sparkle')+'</span><div class="msg-body"><div class="msg-text"></div>'+
     (source?'<div class="msg-meta">'+NS.esc(source)+'</div>':'')+'</div>';
-  row.querySelector('.msg-text').textContent=text;
+  var box=row.querySelector('.msg-text');
+  if(role==='assistant'){box.innerHTML=renderMd(text);}else{box.textContent=text;}
   list.appendChild(row); scrollBottom(); return row;
 }
 function addTyping(){
