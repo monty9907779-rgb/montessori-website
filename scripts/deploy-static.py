@@ -189,5 +189,37 @@ def main():
     print('DEPLOYED ' + manifest['revision'] + ' BACKUP=' + str(backup))
 
 
+def refresh_csp_only():
+    """Regenerate the inline script/style CSP hashes from the HTML that is
+    currently in SITE and reload nginx, without touching any page.
+
+    For a page that was replaced on the server outside a full release (e.g.
+    accounts/index.html copied by hand on 2026-10-02): its inline <script>
+    hash is no longer in the CSP header, the browser blocks the script and the
+    page renders blank. Usage: python3 deploy-static.py --refresh-csp
+    """
+    subprocess.run(['nginx', '-t'], check=True)
+    stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+    backup = Path('/opt/montessori/backups') / ('csp-' + stamp)
+    backup.mkdir(parents=True)
+    for file in [PARTS, HEADERS]:
+        shutil.copy2(file, backup / file.name)
+    try:
+        refresh_csp()
+        subprocess.run(['nginx', '-t'], check=True)
+        subprocess.run(['systemctl', 'reload', 'nginx'], check=True)
+        refresh_tamper_baseline()
+    except Exception:
+        for file in [PARTS, HEADERS]:
+            shutil.copy2(backup / file.name, file)
+        subprocess.run(['nginx', '-t'], check=True)
+        subprocess.run(['systemctl', 'reload', 'nginx'], check=True)
+        raise
+    print('CSP HASHES REFRESHED BACKUP=' + str(backup))
+
+
 if __name__ == '__main__':
-    main()
+    if sys.argv[1:] == ['--refresh-csp']:
+        refresh_csp_only()
+    else:
+        main()
