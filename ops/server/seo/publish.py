@@ -16,6 +16,13 @@
 import hashlib
 import json, re, html as H, datetime, pathlib, subprocess, urllib.request, sys
 
+# Cloudflare answers 403 to the default "Python-urllib/3.x" agent, so the
+# health check, the live check after publishing and the SEO check all read
+# the site as down ("seo=fail", "live=HTTP Error 403"). Identify ourselves.
+_opener = urllib.request.build_opener()
+_opener.addheaders = [('User-Agent', 'Mozilla/5.0 (compatible; KawkabHealthCheck/1.0; +https://montessori-ksa.com)')]
+urllib.request.install_opener(_opener)
+
 sys.path.insert(0, "/opt/nursery-facts")
 try:
     import facts  # مرجع الحقائق المشترك — يُستخدم قبل نشر أي مقال
