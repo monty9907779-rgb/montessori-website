@@ -394,6 +394,13 @@ CANONICAL_TO = {
     'montessori-nursery-faisaliyah-jeddah-details': '/',
 }
 
+# Slugs nginx 301-redirects to another article (ops/nginx/montessori-ksa.conf).
+# A redirecting URL must not sit in the sitemap (Search Console: "Page with
+# redirect"), be linked from the blog index or related cards, or be published.
+REDIRECTED = {
+    'questions-before-nursery-registration-jeddah': 'nursery-registration-documents-jeddah',
+}
+
 REWRITES = OPT/"rewrites.json"
 _REWRITE_APPLIED = []
 
@@ -454,7 +461,8 @@ def prune_templated_pending(raw_q):
     blocked-articles email never stops."""
     if not isinstance(raw_q, list):
         return raw_q
-    keep = [a for a in raw_q if a.get('published') or not _DATED_AUTO.search(a.get('slug', ''))]
+    keep = [a for a in raw_q if a.get('published') or not (
+        _DATED_AUTO.search(a.get('slug', '')) or a.get('slug') in REDIRECTED)]
     if len(keep) != len(raw_q):
         log(f"pruned {len(raw_q) - len(keep)} dated auto-generated pending articles")
         _REWRITE_APPLIED.append('__pruned__')
@@ -469,7 +477,7 @@ def prune_noindex_from_sitemap(q):
     new = sm
     for a in q:
         slug = a.get('slug')
-        if a.get('published') and slug in CANONICAL_TO:
+        if slug in REDIRECTED or (a.get('published') and slug in CANONICAL_TO):
             new = re.sub(r'\s*<url>\s*<loc>[^<]*/blog/%s/</loc>.*?</url>' % re.escape(slug), '', new, flags=re.S)
             continue
         if not a.get('published') or slug not in NOINDEX_SLUGS:
@@ -533,7 +541,7 @@ def faq_block(faq):
 def related_block(a, allslugs, titles):
     # Link only to articles that are actually published. Queue entries that
     # are unpublished (or were dropped from the queue) have no page and 404.
-    allslugs={s for s in allslugs if titles.get(s,{}).get('pub')}
+    allslugs={s for s in allslugs if titles.get(s,{}).get('pub') and s not in REDIRECTED}
     rel=[s for s in (a.get('related') or []) if s in allslugs and s!=a['slug']][:3]
     if len(rel)<3:
         # allslugs is a set, so iterating it directly picked different fillers
@@ -1153,6 +1161,12 @@ html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-
         en = f'{SITE}/en/privacy/'
         tags = f'<link rel="alternate" hreflang="ar" href="{ar}"/><link rel="alternate" hreflang="en" href="{en}"/><link rel="alternate" hreflang="x-default" href="{ar}"/>'
         return text[:canonical.end()] + tags + text[canonical.end():]
+    def fix_redirect_links(text):
+        # drop the redirected article's card; its target already has one
+        for old in REDIRECTED:
+            text = re.sub(r'<a class="bcard" href="/blog/%s/">.*?</a>' % re.escape(old), '', text, flags=re.S)
+        return text
+    _patch_file(ROOT/'blog'/'index.html', fix_redirect_links)
     _patch_file(ROOT/'privacy'/'index.html', lambda t: patch_privacy(t, False))
     _patch_file(ROOT/'en'/'privacy'/'index.html', lambda t: patch_privacy(t, True))
 
