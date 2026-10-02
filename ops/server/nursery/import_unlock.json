@@ -1,0 +1,4 @@
+{
+  "_comment": "Closed months temporarily reopened for Excel import: \"YYYY-MM\": last day (inclusive). Remove the entry, or let the date pass, to lock again. A successful import closes the month immediately anyway.",
+  "2026-09": "2026-10-10"
+}

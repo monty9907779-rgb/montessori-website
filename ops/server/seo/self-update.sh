@@ -58,7 +58,10 @@ if [ -n "$addon" ] && [ -f "$addon/controllers/excel_import.py" ]; then
     f="$TMP/nursery-$(basename "$dst")"
     if ! curl -fsSL --max-time 60 -o "$f" "$RAW/$rel?t=$(date +%s)"; then log "skip $rel: download failed"; continue; fi
     [ -s "$f" ] || { log "skip $rel: empty"; continue; }
-    python3 -m py_compile "$f" 2>>"$LOG" || { log "skip $rel: compile failed"; continue; }
+    case "$rel" in
+      *.py)   python3 -m py_compile "$f" 2>>"$LOG" || { log "skip $rel: compile failed"; continue; } ;;
+      *.json) python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$f" 2>>"$LOG" || { log "skip $rel: bad json"; continue; } ;;
+    esac
     if [ -f "$dst" ] && cmp -s "$f" "$dst"; then continue; fi
     if [ -f "$dst" ]; then
       cp -p "$dst" "$dst.prev"
@@ -69,7 +72,8 @@ if [ -n "$addon" ] && [ -f "$addon/controllers/excel_import.py" ]; then
     rm -f "$(dirname "$dst")"/__pycache__/"$(basename "${dst%.py}")".*.pyc 2>/dev/null
     log "updated $dst"; nursery_changed=$((nursery_changed+1))
   done <<< "nursery/excel_import.py|$addon/controllers/excel_import.py
-nursery/import_month.py|$addon/import_month.py"
+nursery/import_month.py|$addon/import_month.py
+nursery/import_unlock.json|$addon/import_unlock.json"
   if [ "$nursery_changed" -gt 0 ]; then
     unit="$(systemctl list-units --type=service --all --no-legend 2>/dev/null | awk '{print $1}' | grep -iE '^odoo' | head -1)"
     if [ -n "$unit" ]; then

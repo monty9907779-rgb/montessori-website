@@ -1415,7 +1415,7 @@ def _preview(parsed, target_ym, env):
     warnings = list(parsed['warnings'])
     blocking = [warning for warning in warnings
                 if not warning.startswith('تم تجاهل شيت')]
-    if month and month.state == 'closed':
+    if _import_blocked(month):
         blocking.append('الشهر %s مقفول، لذلك تم منع التحديث.' % _month_label(target_ym))
     changes = []
     for record in parsed['students']:
@@ -1763,8 +1763,12 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
     Excel row exactly once. It is used by the explicit `replace` import mode.
     """
     month = _open_month(env, target_ym)
-    if month.state == 'closed':
+    if _import_blocked(month):
         raise ValueError('الشهر مقفول — لا يمكن استبدال بياناته.')
+    if month.state == 'closed':
+        # Temporarily unlocked: reopen for the rebuild; _close_finished_month
+        # (or the caller) closes it again once the import succeeded.
+        month.write({'state': 'open'})
     metrics = _excel_month_metrics(parsed, target_ym)
     # The positive Nesrin line is the opening cash source. Keep the original
     # entry for auditability, but do not count it again in cash closing.
@@ -1964,6 +1968,35 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
         'salaries_rebuilt': salary_count,
         'metrics': metrics,
     }
+
+
+UNLOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'import_unlock.json')
+
+
+def _import_unlocked(ym, today=None):
+    """True while a closed month is temporarily reopened for Excel import.
+
+    The addon-level ``import_unlock.json`` maps "YYYY-MM" to the last day
+    (inclusive) on which that closed month may still be re-imported from the
+    workbook. It is shipped from the repository, so reopening a closed month
+    is a reviewed change, not a dashboard click; a successful import closes
+    the month again straight away (see _close_finished_month).
+    """
+    try:
+        with open(UNLOCK_FILE, encoding='utf-8') as handle:
+            table = json.load(handle)
+    except (OSError, ValueError):
+        return False
+    until = table.get(ym) if isinstance(table, dict) else None
+    if not until:
+        return False
+    today = today or datetime.now(pytz.timezone('Asia/Riyadh')).date()
+    return str(today.isoformat()) <= str(until)[:10]
+
+
+def _import_blocked(month):
+    """A closed month refuses imports unless it is temporarily unlocked."""
+    return bool(month and month.state == 'closed' and not _import_unlocked(month.ym))
 
 
 def _roster_allowed(env, target_ym, current_ym):
@@ -2197,7 +2230,7 @@ class NurseryExcelImport(http.Controller):
         if preview.get('blocked'):
             return {'ok': False, 'error': 'لا يمكن الاعتماد قبل حل التحذيرات.', 'warnings': preview.get('warnings', [])}
         month = _open_month(request.env, target_ym)
-        if month.state == 'closed':
+        if _import_blocked(month):
             return {'ok': False, 'error': 'الشهر مقفول — لا يمكن التعديل.'}
         # Excel is the accounting master. Commit must rebuild the selected
         # month from the parsed workbook so its summary values, remaining

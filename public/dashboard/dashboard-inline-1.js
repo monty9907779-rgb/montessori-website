@@ -51,6 +51,12 @@ function periodShort(rows){
   }
   return 'من البداية';
 }
+var SEASON_MONTHS=['2026-09','2026-10','2026-11','2026-12','2027-01','2027-02','2027-03','2027-04','2027-05'];
+function monthOptions(rows){
+  var has={}; rows.forEach(function(r){ has[r.label]=true; });
+  var all={}; SEASON_MONTHS.concat(Object.keys(has)).forEach(function(k){ all[k]=true; });
+  return Object.keys(all).sort().reverse().map(function(k){ return {ym:k,has:!!has[k]}; });
+}
 function periodBar(){
   var rows=((D&&D.money)||{}).by_month||[];
   var lo=rows.length?rows[0].label:'', hi=rows.length?rows[rows.length-1].label:'';
@@ -58,11 +64,12 @@ function periodBar(){
   return '<div class="pbar" id="pbar">'+
     '<span class="pbar__t">'+I('calendar')+' الفترة</span>'+
     '<span class="seg">'+seg('all','من البداية')+seg('last3','آخر ٣ أشهر')+seg('cur','هذا الشهر')+seg('custom','مخصّص')+'</span>'+
-    /* قائمة منسدلة بالشهور اللي فيها بيانات — اختيار شهر = فترة مخصّصة من/إلى نفس الشهر */
+    /* قائمة منسدلة بكل شهور الموسم (الماضي والحالي والجاي) + أي شهر تاني فيه بيانات.
+       اختيار شهر = فترة مخصّصة من/إلى نفس الشهر؛ الشهر اللي ملوش بيانات بيتعلّم كده. */
     '<select id="p-month" title="اختيار شهر" style="margin-inline-start:8px;padding:6px 10px;border:1px solid #e9e0cf;border-radius:8px;background:#fff;font:inherit;color:#184e3e">'+
       '<option value="">— اختر شهر —</option>'+
-      rows.slice().reverse().map(function(r){ var on=(P.mode==='custom'&&P.from===r.label&&P.to===r.label);
-        return '<option value="'+NS.attr(r.label)+'"'+(on?' selected':'')+'>'+NS.esc(mLabel(r.label))+'</option>'; }).join('')+
+      monthOptions(rows).map(function(k){ var on=(P.mode==='custom'&&P.from===k.ym&&P.to===k.ym);
+        return '<option value="'+NS.attr(k.ym)+'"'+(on?' selected':'')+'>'+NS.esc(mLabel(k.ym))+(k.has?'':' (لا بيانات)')+(k.ym===CUR_YM?' — الحالي':'')+'</option>'; }).join('')+
     '</select>'+
     '<span class="custom" '+(P.mode==='custom'?'':'hidden')+'>من '+
       '<input type="month" id="p-from" min="'+NS.attr(lo)+'" max="'+NS.attr(hi)+'" value="'+NS.attr(P.from||lo)+'"/> إلى '+
