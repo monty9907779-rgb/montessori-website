@@ -1691,6 +1691,52 @@ class NurserySSO(http.Controller):
         )
         return context
 
+    @classmethod
+    def _deductions_table(cls, rows, label):
+        """صف واحد لكل موظف: الاسم مرة واحدة، عدد الخصومات، تفاصيلها، المبلغ، الحالة.
+
+        rows: قواميس {employee, type, amount, state}. الحالة: «معتمد» لو كلها معتمدة،
+        «قيد المراجعة» لو كلها مسودّة، وإلا تُذكر القيمتان.
+        """
+        def number(v):
+            return '{:,}'.format(int(round(float(v or 0))))
+
+        def money(v):
+            return '%s ر.س' % number(v)
+
+        by_emp = {}
+        for r in rows:
+            e = by_emp.setdefault(r.get('employee') or 'غير محدد',
+                                  {'n': 0, 'types': {}, 'confirmed': 0.0, 'pending': 0.0})
+            e['n'] += 1
+            e['types'][r.get('type') or 'أخرى'] = e['types'].get(r.get('type') or 'أخرى', 0) + 1
+            amt = float(r.get('amount') or 0)
+            if r.get('state') == 'confirmed':
+                e['confirmed'] += amt
+            else:
+                e['pending'] += amt
+        if not by_emp:
+            return 'لا توجد خصومات مسجّلة للموظفين في %s.' % label
+        out_rows = []
+        for name, e in sorted(by_emp.items(), key=lambda kv: -(kv[1]['confirmed'] + kv[1]['pending'])):
+            total = e['confirmed'] + e['pending']
+            details = '، '.join('%s ×%s' % (t, c) for t, c in sorted(e['types'].items(), key=lambda kv: -kv[1]))
+            if e['pending'] <= 0.005:
+                state = 'معتمد'
+            elif e['confirmed'] <= 0.005:
+                state = 'قيد المراجعة'
+            else:
+                state = 'معتمد %s / قيد المراجعة %s' % (money(e['confirmed']), money(e['pending']))
+            out_rows.append([name, number(e['n']), details, money(total), state])
+        grand = sum(e['confirmed'] + e['pending'] for e in by_emp.values())
+        pend = sum(e['pending'] for e in by_emp.values())
+        total_row = ['الإجمالي (%s موظف)' % number(len(by_emp)),
+                     number(sum(e['n'] for e in by_emp.values())), '',
+                     money(grand),
+                     ('منها قيد المراجعة %s' % money(pend)) if pend > 0.005 else 'معتمد']
+        return ('خصومات الموظفين — %s:\n' % label) + cls._md_table(
+            ['الموظف', 'عدد الخصومات', 'التفاصيل', 'المبلغ', 'الحالة'], out_rows, total=total_row)
+
     @staticmethod
     def _md_table(headers, rows, total=None):
         """جدول Markdown تعرضه صفحة الذكاء كجدول HTML (renderMd).
@@ -1886,6 +1932,28 @@ class NurserySSO(http.Controller):
                       'ايراد', 'محصل', 'مستلم', 'استلم', 'تحويل', 'بنك',
                       'راندا', 'كتب', 'متبقي', 'باقي', 'مالي')
         _named_mnum = next((n for nm, n in _AR_MONTH_NUM.items() if nm in q), None)
+        # خصومات الموظفين: رد مباشر بصف واحد لكل موظف (الاسم مرة واحدة + خصوماته
+        # + حالته) من جدول nursery.deduction، مرشّحاً بالشهر المذكور بالاسم أو
+        # بالشهر الجاري («هذا الشهر» / «الشهر ده» / بلا شهر).
+        if 'خصم' in q or 'خصومات' in q:
+            today = fields.Date.today()
+            if _named_mnum:
+                try:
+                    start_year = int((self._cur_term() or 'term_%s' % today.year).split('_')[-1])
+                except Exception:
+                    start_year = today.year
+                ym = '%d-%02d' % (start_year if _named_mnum >= 9 else start_year + 1, _named_mnum)
+            else:
+                ym = today.strftime('%Y-%m')
+            Ded = request.env['nursery.deduction'].sudo()
+            LBL = getattr(Ded, 'DTYPE_LABELS', None) or {}
+            deds = Ded.search([('state', '!=', 'cancelled'),
+                               ('date', '>=', '%s-01' % ym),
+                               ('date', '<=', self._month_last_day(ym))], order='date')
+            rows = [{'employee': d.employee_id.name if d.employee_id else '',
+                     'type': LBL.get(d.dtype, d.dtype) if LBL else d.dtype,
+                     'amount': d.amount, 'state': d.state} for d in deds]
+            return self._deductions_table(rows, self._month_label(ym))
         if _named_mnum and any(w in q for w in _fin_words):
             _me = data.get('months_excel') or {}
             _key = next((k for k in _me
