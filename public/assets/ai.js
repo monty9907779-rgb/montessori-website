@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 var TOKEN=NS.token('mt'), app=document.getElementById('app');
-var CONTEXT=null, SUGGESTIONS=[], HISTORY=[], BUSY=false;
+var CONTEXT=null, SUGGESTIONS=[], GROUPS=[], HISTORY=[], BUSY=false;
 
 if(!TOKEN){ gate(); } else { render(); loadContext(false); }
 
@@ -65,7 +65,7 @@ function loadContext(toast){
   var refresh=document.getElementById('refresh-data'); if(refresh)refresh.disabled=true;
   NS.api('/api/manager/ai/context',{mt:TOKEN}).then(function(data){
     if(!data||!data.ok){throw new NS.ApiError('app',(data&&data.error)||'تعذّر تحميل البيانات');}
-    CONTEXT=data.context||{}; SUGGESTIONS=data.suggestions||[];
+    CONTEXT=data.context||{}; SUGGESTIONS=data.suggestions||[]; GROUPS=data.suggestion_groups||[];
     paintStatus(); paintKpis(); paintQuestions();
     if(toast)NS.toast('تم تحديث البيانات','ok');
   }).catch(function(err){
@@ -96,7 +96,9 @@ function paintQuestions(){
   /* 2/10: ترتيب المجموعات بحسب الأهمية للمديرة — الطلاب والسداد أولاً ثم
      المال والتشغيل؛ الفهارس (slices) تبقى كما هي لأنها تشير إلى ترتيب
      SUGGESTIONS القادم من الخادم. */
-  var groups=[
+  /* 2/10: المجموعات تأتي جاهزة من الخادم (suggestion_groups: الأهم → الشهور →
+     …)؛ التقسيم بالأرقام أدناه احتياط لخادم أقدم. */
+  var groups=(GROUPS&&GROUPS.length)?GROUPS.map(function(g){return [g.label,g.items||[]];}):[
     ['الطلاب والسداد',SUGGESTIONS.slice(7,18)],
     ['المال والتشغيل',SUGGESTIONS.slice(32)],
     ['واتساب',SUGGESTIONS.slice(0,7)],
@@ -106,7 +108,8 @@ function paintQuestions(){
   /* 2/10: قائمة منسدلة واحدة مقسّمة بمجموعات؛ الاختيار يرسل السؤال فوراً
      ويرجّع القائمة لعنوانها. السؤال الحر = خانة الكتابة نفسها. */
   var sel=document.getElementById('q-select'); if(!sel)return;
-  var h='<option value="">أسئلة مقترحة…</option>';
+  var h='<option value="">أسئلة مقترحة…</option>'+
+    '<option value="__free__">✦ سؤال حر — اكتبي سؤالك بنفسك</option>';
   groups.forEach(function(group){
     if(!group[1].length)return;
     h+='<optgroup label="'+NS.attr(group[0])+'">'+
@@ -116,7 +119,15 @@ function paintQuestions(){
   sel.innerHTML=h;
   if(!sel.dataset.wired){
     sel.dataset.wired='1';
-    sel.addEventListener('change',function(){var q=sel.value; sel.value=''; if(q)ask(q);});
+    sel.addEventListener('change',function(){
+      var q=sel.value; sel.value='';
+      if(q==='__free__'){
+        var input=document.getElementById('prompt'); if(!input)return;
+        input.value=''; input.rows=1; input.placeholder='اكتبي سؤالك الحر هنا ثم اضغطي إرسال…';
+        setTimeout(function(){input.focus();},50); return;
+      }
+      if(q)ask(q);
+    });
   }
 }
 
