@@ -74,6 +74,7 @@ if [ -n "$addon" ] && [ -f "$addon/controllers/excel_import.py" ]; then
     log "updated $dst"; nursery_changed=$((nursery_changed+1))
   done <<< "nursery/excel_import.py|$addon/controllers/excel_import.py
 nursery/roles.py|$addon/controllers/roles.py
+nursery/models_nursery.py|$addon/models/nursery.py
 nursery/import_month.py|$addon/import_month.py
 nursery/import_unlock.json|$addon/import_unlock.json"
   if [ "$nursery_changed" -gt 0 ]; then
