@@ -1467,7 +1467,8 @@ def _open_month(env, ym):
         # The monthly workbook carries the cash closing balance forward, not
         # the accounting net.  The model method is the shared source for this
         # calculation when available.
-        closing_fn = getattr(previous, '_month_closing', None)
+        closing_fn = (getattr(previous, '_carry_closing', None)
+                      or getattr(previous, '_month_closing', None))
         opening = float(closing_fn() if closing_fn else (previous.opening_balance or 0.0))
         if not closing_fn:
             opening += sum((f.paid or 0.0) for f in previous.fee_ids
@@ -1770,9 +1771,18 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
         # (or the caller) closes it again once the import succeeded.
         month.write({'state': 'open'})
     metrics = _excel_month_metrics(parsed, target_ym)
-    # The positive Nesrin line is the opening cash source. Keep the original
-    # entry for auditability, but do not count it again in cash closing.
-    month.write({'opening_balance': metrics['opening_balance']})
+    # The opening balance is always the previous month's cash closing (On hand
+    # Randa). Only the very first month takes it from the workbook's positive
+    # Nesrin line; that entry stays in the ledger for audit either way.
+    previous = env['nursery.month'].sudo().search(
+        [('ym', '<', target_ym)], order='ym desc', limit=1)
+    if previous:
+        closing_fn = (getattr(previous, '_carry_closing', None)
+                      or getattr(previous, '_month_closing', None))
+        month.write({'opening_balance': float(
+            closing_fn() if closing_fn else (previous.opening_balance or 0.0))})
+    else:
+        month.write({'opening_balance': metrics['opening_balance']})
 
     Fee = env['nursery.month.fee'].sudo()
     Payment = env['nursery.fee.payment'].sudo()

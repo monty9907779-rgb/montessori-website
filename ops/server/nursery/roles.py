@@ -1615,7 +1615,7 @@ class NurserySSO(http.Controller):
                 t = self._month_totals(m)
                 out.append({
                     'ym': m.ym, 'label': self._month_label(m.ym), 'state': m.state,
-                    'opening_balance': round(float(m.opening_balance or 0.0), 2),
+                    'opening_balance': round(float(t.get('opening_balance') or 0.0), 2),
                     'income_students': round(float(t.get('income_students') or 0.0), 2),
                     'income_other': round(float(t.get('income_other') or 0.0), 2),
                     'income_books': round(float(t.get('income_books') or 0.0), 2),
@@ -2670,10 +2670,15 @@ class NurserySSO(http.Controller):
         expenses = sum(e.amount for e in month.entry_ids if e.etype == 'expense')
         salaries = sum(e.amount for e in month.entry_ids if e.etype == 'salary')
         opening_from_entries, expenses_paid_out = self._expense_cash_movement(month)
-        opening_balance = float(month.opening_balance or 0.0)
+        # الافتتاحي = ختامي الشهر السابق (محسوب حيّاً)؛ يدوي لأول شهر فقط
+        has_prev = bool(month._previous_month())
+        opening_balance = month._sync_opening()
+        # سطر نسرين الموجب: افتتاحي في أول شهر، دخل نقدي جديد في أي شهر لاحق
+        nesrin_inflow = opening_from_entries if has_prev else 0.0
         # صافي التشغيل: بلا الحجوزات المقدّمة (لأنها عربون خدمة لاحقة، ليست دخل الشهر)
         net = inc_students + books_collected + inc_other - expenses - salaries
-        cash_closing = opening_balance + cash_collected + inc_other + reservations + expenses_paid_out
+        cash_closing = (opening_balance + nesrin_inflow + cash_collected + inc_other
+                        + reservations + expenses_paid_out)
         accrued = sum(month.fee_ids.mapped('fees'))              # المستحق المُكتسَب
         carry_fwd = sum((f.carry_in or 0.0) + (f.paid or 0.0) - (f.fees or 0.0)
                         for f in month.fee_ids)                   # يُرحّل للشهر التالي
@@ -2699,12 +2704,14 @@ class NurserySSO(http.Controller):
             bank_transfer = float(excel.get('bank_transfer', bank_transfer) or 0.0)
             expenses = float(excel.get('expenses', expenses) or 0.0)
             salaries = float(excel.get('salaries', salaries) or 0.0)
-            opening_balance = float(excel.get('opening_balance', opening_balance) or 0.0)
             opening_from_entries = float(excel.get('opening_balance', opening_from_entries) or 0.0)
+            if not has_prev:
+                # أول شهر فقط: سطر نسرين في الشيت هو الافتتاحي
+                opening_balance = float(excel.get('opening_balance', opening_balance) or 0.0)
+            nesrin_inflow = opening_from_entries if has_prev else 0.0
             expenses_paid_out = float(excel.get('expenses_paid_out', expenses_paid_out) or 0.0)
-            cash_closing = float(
-                excel.get('cash_closing', opening_balance + cash_collected
-                          + expenses_paid_out) or 0.0)
+            # الختامي يُعاد حسابه دائماً على الافتتاحي المرحّل، لا على رقم الشيت المجمّد
+            cash_closing = opening_balance + nesrin_inflow + cash_collected + expenses_paid_out
             net = float(excel.get('net', net) or 0.0)
             accrued = 0.0
             carry_fwd = 0.0
@@ -2723,6 +2730,8 @@ class NurserySSO(http.Controller):
             'reservations': reservations,
             'expenses': expenses, 'expenses_paid_out': expenses_paid_out,
             'opening_from_entries': opening_from_entries,
+            'opening_balance': opening_balance,
+            'opening_auto': has_prev,
             'salaries': salaries, 'net': net,
             'cash_closing': cash_closing,
             'cash_after_salaries': cash_after_salaries,
@@ -2740,7 +2749,35 @@ class NurserySSO(http.Controller):
             'overdue_count': len(month.fee_ids.filtered(
                 lambda f: f.student_id.paid_until
                 and f.student_id.paid_until < fields.Date.today())),
+            # الدافعون مقدّماً حسب تغطية «مدفوع حتى» بعد نهاية هذا الشهر
+            'prepaid_counts': self._prepaid_counts(month),
         }
+
+    def _prepaid_counts(self, month):
+        """عدد الطلاب الدافعين مقدّماً، مصنّفين بعدد الشهور المغطّاة بعد نهاية
+        هذا الشهر (من حقل «مدفوع حتى» للطالب):
+        شهر مقدّم = شهر واحد، ترم = ٢–٥ شهور، سنة = ٦ شهور فأكثر.
+        نفس التصنيف المكتوب في ملاحظات الشيت (شهر مقدم / ترم / دفع سنة)."""
+        y, mo = int(month.ym[:4]), int(month.ym[5:7])
+        counts = {'month': 0, 'term': 0, 'year': 0}
+        seen = set()
+        for f in month.fee_ids:
+            st = f.student_id
+            if not st or st.id in seen or not st.paid_until:
+                continue
+            seen.add(st.id)
+            pu = st.paid_until
+            months_ahead = (pu.year - y) * 12 + (pu.month - mo)
+            if months_ahead <= 0:
+                continue
+            if months_ahead >= 6:
+                counts['year'] += 1
+            elif months_ahead >= 2:
+                counts['term'] += 1
+            else:
+                counts['month'] += 1
+        counts['total'] = counts['month'] + counts['term'] + counts['year']
+        return counts
 
     def _closed_month_of(self, date_str):
         """True لو التاريخ يقع داخل شهر محاسبي مقفول."""
@@ -2765,7 +2802,8 @@ class NurserySSO(http.Controller):
         for m in months:
             t = self._month_totals(m)
             out.append({'ym': m.ym, 'label': self._month_label(m.ym),
-                        'state': m.state, 'opening': m.opening_balance or 0.0,
+                        'state': m.state, 'opening': t['opening_balance'],
+                        'opening_auto': t['opening_auto'],
                         'net': t['net'], 'closing': t['closing'],
                         'closed_at': (m.closed_at.strftime('%Y-%m-%d %H:%M:%S')
                                       if m.closed_at else ''),
@@ -2828,9 +2866,11 @@ class NurserySSO(http.Controller):
             avail = request.env['nursery.student'].sudo().search(
                 self._month_student_domain(ym, in_month), order='name')
         MLBL = dict(request.env['nursery.month.fee']._fields['method'].selection or [])
+        _totals = self._month_totals(m)
         return {
             'ok': True, 'ym': m.ym, 'label': self._month_label(m.ym),
-            'state': m.state, 'opening': m.opening_balance or 0.0,
+            'state': m.state, 'opening': _totals['opening_balance'],
+            'opening_auto': _totals['opening_auto'],
             'closed_at': (m.closed_at.strftime('%Y-%m-%d %H:%M:%S')
                           if m.closed_at else ''),
             'closed_by': m.closed_by.name if m.closed_by else '',
@@ -3029,6 +3069,11 @@ class NurserySSO(http.Controller):
         m, err = self._open_month_or_err(ym)
         if err:
             return err
+        prev = m._previous_month()
+        if prev:
+            return {'ok': False, 'error': 'الرصيد الافتتاحي يُحسب تلقائياً من ختامي %s '
+                    '(في يد رندة) ولا يُعدَّل يدوياً — عدّلي بيانات الشهر السابق.'
+                    % self._month_label(prev.ym)}
         try:
             _ob = float(value)
         except (TypeError, ValueError):

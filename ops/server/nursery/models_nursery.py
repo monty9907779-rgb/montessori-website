@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import secrets
 from datetime import date, datetime, time, timedelta
 
@@ -1173,6 +1174,64 @@ class NurseryMonth(models.Model):
             movement += amount if amount < 0 else -amount
         return opening, movement
 
+    # ==================== الرصيد الافتتاحي / الختامي المرحّل ====================
+    def _previous_month(self):
+        self.ensure_one()
+        return self.search([('ym', '<', self.ym)], order='ym desc', limit=1)
+
+    def _excel_metrics(self):
+        """ملخص Excel المعتمد لهذا الشهر (لو مستورد من الشيت)، وإلا {}."""
+        self.ensure_one()
+        try:
+            raw = self.env['ir.config_parameter'].sudo().get_param(
+                'nursery.excel_month_%s' % self.ym, '')
+            data = json.loads(raw) if raw else {}
+        except Exception:
+            data = {}
+        return data if isinstance(data, dict) and data.get('ym') == self.ym else {}
+
+    def _effective_opening(self):
+        """الرصيد الافتتاحي الفعلي للشهر.
+
+        قاعدة الحسابات (قرار المالك 2026-10-02): الرصيد الافتتاحي لأي شهر هو
+        ختامي الشهر السابق (في يد رندة) ويُحسب حيّاً من بياناته — فلو اتعدّل
+        الشهر السابق (إعادة استيراد شيت مثلاً) يتصحّح الافتتاحي تلقائياً.
+        يُدخل يدوياً فقط لأول شهر في النظام (لا سابق له). الشهر المقفول
+        يحتفظ بالقيمة المخزّنة وقت قفله.
+        """
+        self.ensure_one()
+        if self.state == 'closed':
+            return float(self.opening_balance or 0.0)
+        prev = self._previous_month()
+        if not prev:
+            return float(self.opening_balance or 0.0)
+        return prev._carry_closing()
+
+    def _sync_opening(self):
+        """يخزّن الافتتاحي المحسوب في الحقل (للتقارير والقراءة المباشرة)."""
+        self.ensure_one()
+        opening = self._effective_opening()
+        if self.state != 'closed' and abs(float(self.opening_balance or 0.0) - opening) > 0.005:
+            self.write({'opening_balance': opening})
+        return opening
+
+    def _carry_closing(self):
+        """الختامي النقدي الذي يُرحَّل كرصيد افتتاحي للشهر التالي (On hand Randa).
+
+        لو الشهر معتمد من Excel يُحسب من أرقام الشيت: افتتاحي + كاش رندا
+        + المصروفات الخارجة (بالسالب)؛ وإلا من قيود الموقع (_month_closing).
+        """
+        self.ensure_one()
+        excel = self._excel_metrics()
+        if excel:
+            # سطر نسرين الموجب هو الافتتاحي في أول شهر فقط؛ في أي شهر لاحق
+            # هو دخل نقدي جديد يُضاف للحركة.
+            nesrin = float(excel.get('opening_balance') or 0.0) if self._previous_month() else 0.0
+            return (self._effective_opening() + nesrin
+                    + float(excel.get('randa_cash') or 0.0)
+                    + float(excel.get('expenses_paid_out') or 0.0))
+        return self._month_closing()
+
     def _month_closing(self):
         """الرصيد الختامي النقدي المرحّل، وليس صافي التشغيل.
 
@@ -1185,8 +1244,10 @@ class NurseryMonth(models.Model):
                         if not methods or f.method in (False, 'cash'))
         inc = sum(e.amount for e in self.entry_ids if e.etype == 'income')
         res = sum(e.amount for e in self.entry_ids if e.etype == 'reservation')
-        _opening_entry, expense_movement = self._expense_cash_movement()
-        return (self.opening_balance or 0.0) + collected + inc + res + expense_movement
+        opening_entry, expense_movement = self._expense_cash_movement()
+        # سطر نسرين الموجب = الافتتاحي في أول شهر فقط؛ بعدها دخل نقدي جديد
+        nesrin = opening_entry if self._previous_month() else 0.0
+        return self._effective_opening() + nesrin + collected + inc + res + expense_movement
 
     @api.model
     def _open_month(self, ym):
@@ -1197,7 +1258,7 @@ class NurseryMonth(models.Model):
         if existing:
             return existing
         prev = self.search([('ym', '<', ym)], order='ym desc', limit=1)
-        open_bal = prev._month_closing() if prev else 0.0
+        open_bal = prev._carry_closing() if prev else 0.0
         month = self.create({'ym': ym, 'opening_balance': open_bal})
         Fee = self.env['nursery.month.fee']
         import calendar as _cal
