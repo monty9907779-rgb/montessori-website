@@ -805,6 +805,10 @@ def repair_static_site():
                  '<h1 class="rev">Kawkab Al-Tifl Al-Hurr Nursery in Jeddah<br/><span class="em">Pre-K &amp; kindergarten, ages 2–5</span></h1>'),
                 ('<div class="t"><b>8–1</b><span>Daily · Sun–Thu</span></div>',
                  '<div class="t"><b>08:00–13:00</b><span>Daily · Sun–Thu</span></div>'),
+                # Full street address (matches facts.py and the Google Business
+                # Profile) so search engines tie the site to the Maps listing.
+                ('"streetAddress": "Al Faisaliyyah District",',
+                 '"streetAddress": "Mohammed Abdulkarim St, Al Faisaliyyah District",'),
             ]
         else:
             repl = [
@@ -838,6 +842,8 @@ def repair_static_site():
                  '<h1 class="rev">حضانة كوكب الطفل الحر في جدة<br/><span class="em">تمهيدي وروضة للأطفال ٢–٥ سنوات</span></h1>'),
                 ('<div class="t"><b>٨–١</b><span>يومياً · الأحد–الخميس</span></div>',
                  '<div class="t"><b>٨:٠٠–١٣:٠٠</b><span>يومياً · الأحد–الخميس</span></div>'),
+                ('"streetAddress": "حي الفيصلية",',
+                 '"streetAddress": "شارع محمد عبدالكريم، حي الفيصلية",'),
             ]
         for old, new in repl:
             if old in text:
