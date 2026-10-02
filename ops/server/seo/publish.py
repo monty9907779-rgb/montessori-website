@@ -399,6 +399,22 @@ NOINDEX_SLUGS = frozenset({
 CANONICAL_TO = {
     'nursery-al-faisaliyah-jeddah': '/',
     'montessori-nursery-faisaliyah-jeddah-details': '/',
+    # SEO plan 2026-10-02, appendix B: pairs of articles that answer the same
+    # search with the same target keyword. The weaker one stays live for
+    # readers but points its canonical at the kept article and leaves the
+    # sitemap, so the two stop competing. Kept: the article the homepage
+    # links (districts) or the hand-rewritten, Jeddah-specific version.
+    'safe-educational-nursery-jeddah-options': '/blog/safe-educational-nursery-options-jeddah/',
+    'reliable-nursery-recommendation-jeddah': '/blog/trusted-nursery-recommendation-jeddah/',
+    'montessori-nursery-al-marwah-jeddah-guide': '/blog/nursery-al-marwah-jeddah/',
+    'montessori-nursery-al-safa-jeddah-guide': '/blog/nursery-al-safa-jeddah/',
+    'montessori-nursery-al-naeem-jeddah-guide': '/blog/nursery-an-naim-jeddah/',
+    'montessori-nursery-al-rawdah-jeddah-guide': '/blog/nursery-ar-rawdah-jeddah/',
+    'child-independence-development': '/blog/child-independence-nursery-jeddah/',
+    'social-skills-in-children': '/blog/child-social-skills-nursery-jeddah/',
+    'separation-anxiety-in-nursery': '/blog/nursery-separation-anxiety-jeddah-plan/',
+    'signs-child-ready-for-nursery': '/blog/nursery-readiness-signs-child-jeddah/',
+    'montessori-vs-traditional-education': '/blog/montessori-vs-traditional-nursery-jeddah/',
 }
 
 # Slugs nginx 301-redirects to another article (ops/nginx/montessori-ksa.conf).
@@ -1503,6 +1519,31 @@ a.seo-card:hover b{color:var(--clay-600)}
             text = re.sub(r'<a class="bcard" href="/blog/%s/">.*?</a>' % re.escape(old), '', text, flags=re.S)
         return text
     _patch_file(ROOT/'blog'/'index.html', fix_redirect_links)
+
+    # /en/blog/ was the one thin page in the site audit (182 words). A short
+    # guide to the English articles, class-based only (the CSP hashes inline
+    # style values), inserted once before the article cards.
+    EN_BLOG_GUIDE = '''<section id="en-blog-guide" class="article__body en-blog-guide">
+<h2>What you will find in these guides</h2>
+<p>Choosing childcare in a city the size of Jeddah raises the same questions for almost every family: which option suits a two-year-old, what a Montessori classroom actually looks like, how fees are calculated, and how to make the first weeks calm for a child who has never been away from home. The guides below answer those questions in plain English, drawing on more than 10 years of working with children aged 2 to 5 in our Al Faisaliyyah nursery.</p>
+<ul>
+<li><a href="/en/blog/nursery-in-jeddah/">Nursery in Jeddah</a>: how to compare nurseries, the questions worth asking on a visit, and the signs of a safe, well-run setting.</li>
+<li><a href="/en/blog/daycare-in-jeddah/">Daycare in Jeddah</a>: full-day and half-day options, hourly care, and what to check about supervision, hygiene and communication with parents.</li>
+<li><a href="/en/blog/kindergarten-in-jeddah/">Kindergarten in Jeddah</a>: the official stage names (Pre-KG for ages 2 to 3, KG1 for 3 to 4, KG2 for 4 to 5), what each year focuses on, and how school readiness is built.</li>
+<li><a href="/en/blog/montessori-nursery-jeddah-guide/">Montessori nursery guide</a>: the prepared environment, the role of the guide, practical life and sensorial work, and how Arabic, English and Quran fit into a Montessori morning.</li>
+</ul>
+<h2>How to use them</h2>
+<p>Start with the guide that matches your child's age, then read the Montessori guide to understand how a prepared environment differs from a traditional classroom. Each article ends with a short checklist you can take on a visit. If you would like to see our environment in person, book a visit from the English homepage or message us on WhatsApp; visits run Sunday to Thursday between 10:00 AM and 12:00 PM.</p>
+</section>
+'''
+    def patch_en_blog_index(text):
+        if 'id="en-blog-guide"' in text:
+            return text
+        anchor = '<nav class="related" aria-label="All articles">'
+        if anchor not in text:
+            return text
+        return text.replace(anchor, EN_BLOG_GUIDE + anchor, 1)
+    _patch_file(ROOT/'en'/'blog'/'index.html', patch_en_blog_index)
     _patch_file(ROOT/'privacy'/'index.html', lambda t: patch_privacy(t, False))
     _patch_file(ROOT/'en'/'privacy'/'index.html', lambda t: patch_privacy(t, True))
 
