@@ -103,10 +103,14 @@ function monthPickerHtml(targetYm){
     '<select data-target-ym>'+options+'</select></label>';
 }
 
-function paymentsOnlyNoteHtml(targetYm){
+function paymentsOnlyNoteHtml(targetYm,roster){
   if(!targetYm||!CURRENT_YM||targetYm===CURRENT_YM) return '';
+  if(roster===false){
+    return '<div class="excel-review__warning">'+NS.icon('alert')+
+      ' شهر سابق وبعده شهر فيه دفعات: هيتم تحديث الدفعات والمصروفات فقط. بيانات الطلاب (الفصل، الرسوم، ولي الأمر) لن تتغير.</div>';
+  }
   return '<div class="excel-review__warning">'+NS.icon('alert')+
-    ' شهر سابق: هيتم تحديث الدفعات والمصروفات فقط. بيانات الطلاب (الفصل، الرسوم، ولي الأمر) والكشف الحالي لن تتغير.</div>';
+    ' شهر منتهي: هيتم إعادة بناء الشهر كاملاً من الملف (الطلاب والدفعات والمصروفات والرواتب)، وبعد الاعتماد هيتقفل تلقائياً ولن يقبل أي مزامنة من الموقع.</div>';
 }
 
 function renderPreview(result, files){
@@ -119,7 +123,7 @@ function renderPreview(result, files){
     '<h3>مراجعة تحديث Excel</h3>'+
     '<p class="excel-review__intro">لن يتغير أي شيء قبل الضغط على اعتماد التحديث.</p>'+
     monthPickerHtml(result.target_ym)+
-    paymentsOnlyNoteHtml(result.target_ym)+
+    paymentsOnlyNoteHtml(result.target_ym,result.roster)+
     '<div class="excel-review__meta"><span>'+NS.icon('book')+' '+files.length+' ملف</span><span>'+NS.icon('users')+' '+(result.summary&&result.summary.rows||0)+' صف مقروء</span><span>'+NS.icon('refresh')+' '+changes.length+' تغيير</span></div>'+
     warningsHtml(result.warnings)+
     classChoicesHtml(choices)+
@@ -181,8 +185,9 @@ function open(token){
       NS.toast('جاري قراءة الملفات ومقارنتها بالبيانات الحالية...','ok');
       return NS.api(ENDPOINT,{mt:token,mode:'preview',files:files}).then(function(result){
         if(!result||!result.ok) throw new Error((result&&result.error)||'تعذر قراءة ملف Excel');
-        // أول معاينة بترجع الشهر الجاري من الخادم — هو المرجع لتحديد «شهر سابق».
-        CURRENT_YM=result.target_ym||CURRENT_YM;
+        // الخادم بيرجع الشهر الجاري (current_ym) والشهر اللي اختاره للملف (target_ym):
+        // لو الملف ملوش بيانات للشهر الجاري بيفتح المراجعة على آخر شهر منتهي فيه.
+        CURRENT_YM=result.current_ym||result.target_ym||CURRENT_YM;
         renderPreview(result,files);
       });
     }).catch(function(err){ NS.toast(err.message||'تعذر قراءة الملف','err'); });
@@ -238,6 +243,7 @@ function syncSheet(token,button){
     if(!files.length) throw new Error('الشيت رجع فاضياً');
     return NS.api(ENDPOINT,{mt:token,mode:'preview',files:files}).then(function(result){
       if(!result||!result.ok) throw new Error((result&&result.error)||'تعذر قراءة الشيت');
+      CURRENT_YM=result.current_ym||result.target_ym||CURRENT_YM;
       renderPreview(result,files);
     });
   });

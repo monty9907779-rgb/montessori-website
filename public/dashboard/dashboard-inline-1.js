@@ -58,6 +58,12 @@ function periodBar(){
   return '<div class="pbar" id="pbar">'+
     '<span class="pbar__t">'+I('calendar')+' الفترة</span>'+
     '<span class="seg">'+seg('all','من البداية')+seg('last3','آخر ٣ أشهر')+seg('cur','هذا الشهر')+seg('custom','مخصّص')+'</span>'+
+    /* قائمة منسدلة بالشهور اللي فيها بيانات — اختيار شهر = فترة مخصّصة من/إلى نفس الشهر */
+    '<select id="p-month" title="اختيار شهر" style="margin-inline-start:8px;padding:6px 10px;border:1px solid #e9e0cf;border-radius:8px;background:#fff;font:inherit;color:#184e3e">'+
+      '<option value="">— اختر شهر —</option>'+
+      rows.slice().reverse().map(function(r){ var on=(P.mode==='custom'&&P.from===r.label&&P.to===r.label);
+        return '<option value="'+NS.attr(r.label)+'"'+(on?' selected':'')+'>'+NS.esc(mLabel(r.label))+'</option>'; }).join('')+
+    '</select>'+
     '<span class="custom" '+(P.mode==='custom'?'':'hidden')+'>من '+
       '<input type="month" id="p-from" min="'+NS.attr(lo)+'" max="'+NS.attr(hi)+'" value="'+NS.attr(P.from||lo)+'"/> إلى '+
       '<input type="month" id="p-to" min="'+NS.attr(lo)+'" max="'+NS.attr(hi)+'" value="'+NS.attr(P.to||hi)+'"/></span>'+
@@ -77,6 +83,11 @@ function wirePeriod(){
   function upd(){ P.from=(f&&f.value)||null; P.to=(t&&t.value)||null; P.mode='custom'; savePeriod(); render(); }
   if(f) f.addEventListener('change',upd);
   if(t) t.addEventListener('change',upd);
+  var mo=document.getElementById('p-month');
+  if(mo) mo.addEventListener('change',function(){
+    if(!mo.value) return;
+    P.mode='custom'; P.from=mo.value; P.to=mo.value; savePeriod(); render();
+  });
 }
 
 /* colors pulled from the design system (light theme) */

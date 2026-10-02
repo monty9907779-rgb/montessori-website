@@ -81,3 +81,25 @@ nursery/import_month.py|$addon/import_month.py"
 else
   log "nursery addon not found — excel_import.py not installed (set $ADDON_CACHE to the addon dir)"
 fi
+
+# ── dashboard page files (public/dashboard) ──────────────────────────────────
+# deploy.sh is the full static release. These three files are the token-gated
+# dashboard only (served no-store, never cached by the service worker), and
+# they change together with the Excel importer above, so they ride here too.
+PUBRAW="https://raw.githubusercontent.com/monty9907779-rgb/montessori-website/main/public"
+WEBROOT=/var/www/montessori-ksa
+if [ -d "$WEBROOT/dashboard" ]; then
+  while IFS= read -r rel; do
+    dst="$WEBROOT/$rel"; f="$TMP/pub-$(basename "$rel")"
+    if ! curl -fsSL --max-time 60 -o "$f" "$PUBRAW/$rel?t=$(date +%s)"; then log "skip public/$rel: download failed"; continue; fi
+    [ "$(wc -c < "$f")" -gt 500 ] || { log "skip public/$rel: too small"; continue; }
+    case "$rel" in *.js) grep -q '})();' "$f" || { log "skip public/$rel: not a complete script"; continue; } ;; esac
+    if [ -f "$dst" ] && cmp -s "$f" "$dst"; then continue; fi
+    if [ -f "$dst" ]; then cp -p "$dst" "$dst.prev"; cat "$f" > "$dst"; else install -m 644 "$f" "$dst"; fi
+    log "updated $dst"
+  done <<< "dashboard/excel-sync.js
+dashboard/dashboard-inline-1.js
+dashboard/index.html"
+else
+  log "webroot $WEBROOT/dashboard not found — dashboard files not installed"
+fi

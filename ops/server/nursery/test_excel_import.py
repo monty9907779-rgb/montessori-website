@@ -147,6 +147,13 @@ class ExcelImportTests(unittest.TestCase):
             '2026-09')
         cls.metrics = excel_import._excel_month_metrics(cls.parsed, '2026-09')
 
+    def test_workbook_months_prefers_newest_finished_tab(self):
+        files = [{'name': 'sep.xlsx', 'content': base64.b64encode(_workbook()).decode('ascii')}]
+        self.assertEqual(excel_import._workbook_months(files, '2026-10'), ['2026-09'])
+        self.assertEqual(excel_import._workbook_months(files, '2026-09'), ['2026-09'])
+        # a tab for a month that has not started yet is never picked
+        self.assertEqual(excel_import._workbook_months(files, '2026-08'), [])
+
     def test_formula_serials_are_resolved(self):
         """openpyxl saves formulas without cached values; serials still count."""
         by_name = {row['name']: row for row in self.parsed['students']}
