@@ -952,6 +952,7 @@ def write_llms_txt():
         f'- [الصفحة الرئيسية]({SITE}/): البرامج والمنهج وحجز الزيارات',
         f'- [English version]({SITE}/en/): English site',
         f'- [المدوّنة]({SITE}/blog/): أدلة تربوية بالعربية لأولياء الأمور في جدة',
+        f'- [llms-full.txt]({SITE}/llms-full.txt): الحقائق والأسئلة الشائعة وفهرس كل المقالات في ملف واحد',
         '',
         '## أدلة للإجابة عن أسئلة الأهالي / Key guides',
     ]
@@ -981,6 +982,68 @@ def write_llms_txt():
         log('llms.txt updated')
     except Exception as ex:
         log(f'llms.txt write failed: {ex}')
+
+def _home_faq():
+    """(question, answer) pairs from the homepage FAQPage JSON-LD."""
+    try:
+        h = (ROOT/'index.html').read_text(encoding='utf-8')
+    except Exception:
+        return []
+    out = []
+    for b in re.findall(r'<script type="application/ld\+json">(.*?)</script>', h, re.S):
+        try:
+            d = json.loads(b)
+        except Exception:
+            continue
+        for item in (d.get('@graph') or [d]) if isinstance(d, dict) else d:
+            if isinstance(item, dict) and item.get('@type') == 'FAQPage':
+                for qa in item.get('mainEntity') or []:
+                    q = (qa.get('name') or '').strip()
+                    a = ((qa.get('acceptedAnswer') or {}).get('text') or '').strip()
+                    if q and a:
+                        out.append((q, re.sub(r'<[^>]+>', '', a)))
+    return out
+
+def write_llms_full(q):
+    """/llms-full.txt: the llms.txt facts plus the homepage FAQ and an index of
+    every indexable article (title, summary, URL), so an AI assistant can
+    answer and cite from one fetch. Each FAQ/article line must pass the facts
+    gate on its own; a failing line is left out rather than blocking the file."""
+    try:
+        base = (ROOT/'llms.txt').read_text(encoding='utf-8').rstrip()
+    except Exception:
+        return
+    gate = (lambda t: facts.check_text(t)) if facts is not None else (lambda t: [])
+    anchor = 'روضة كوكب الطفل الحر تستقبل الأطفال من سنتين إلى ٥ سنوات.\n'
+    ok = lambda line: not gate(anchor + line)
+    lines = [base, '', '## الأسئلة الشائعة / FAQ']
+    for qq, aa in _home_faq():
+        line = f'- **{qq}** {aa}'
+        if ok(line):
+            lines.append(line)
+    lines += ['', '## فهرس المقالات / Article index']
+    for a in sorted(q, key=lambda x: str(x.get('published') or ''), reverse=True):
+        slug = a.get('slug', '')
+        if (not a.get('published') or is_noindex(a) or slug in REDIRECTED
+                or slug in CANONICAL_TO or not (ROOT/'blog'/slug/'index.html').exists()):
+            continue
+        title = (a.get('seoTitle') or a.get('title') or slug).strip()
+        line = f'- [{title}]({SITE}/blog/{slug}/): {(a.get("metaDescription") or "").strip()}'
+        if ok(line):
+            lines.append(line)
+    txt = '\n'.join(lines) + '\n'
+    why = gate(txt)
+    if why:
+        log(f"llms-full.txt not written: {'; '.join(why)}")
+        return
+    p = ROOT/'llms-full.txt'
+    try:
+        if p.exists() and p.read_text(encoding='utf-8') == txt:
+            return
+        p.write_text(txt, encoding='utf-8')
+        log(f"llms-full.txt updated ({len(lines)} lines)")
+    except Exception as ex:
+        log(f'llms-full.txt write failed: {ex}')
 
 def repair_static_site():
     """Patch static pages after deployment from the same publisher job."""
@@ -1061,6 +1124,23 @@ def repair_static_site():
             text = text.replace('"priceRange": "$$",',
                 '"priceRange": "$$",\n  "sameAs": ["https://www.tiktok.com/@montessori_nursery23"],'
                 '\n  "hasMap": "https://www.google.com/maps/search/?api=1&query=21.5795281,39.194829",', 1)
+        # Facts AI assistants quote: programs with ages, and amenities.
+        if '"amenityFeature"' not in text and '"hasMap"' in text:
+            if english:
+                progs = [('Pre-KG', 2, 3), ('KG1', 3, 4), ('KG2', 4, 5), ('Summer programme', 2, 5), ('Hourly care', 2, 5)]
+                amen = ['Montessori prepared environment', 'Qualified teachers', 'CCTV cameras', 'Daily parent app', 'Arabic, English and Quran']
+            else:
+                progs = [('ما قبل الروضة', 2, 3), ('المستوى الأول', 3, 4), ('المستوى الثاني', 4, 5), ('برنامج صيفي', 2, 5), ('ضيافة بالساعة', 2, 5)]
+                amen = ['بيئة مونتيسوري مُعدّة', 'معلمات مؤهلات', 'كاميرات مراقبة', 'تطبيق تواصل يومي مع الأسرة', 'العربية والإنجليزية والقرآن']
+            extra = {
+                'amenityFeature': [{'@type': 'LocationFeatureSpecification', 'name': n, 'value': True} for n in amen],
+                'hasOfferCatalog': {'@type': 'OfferCatalog', 'name': 'Programs' if english else 'البرامج',
+                    'itemListElement': [{'@type': 'Offer', 'itemOffered': {'@type': 'Service', 'name': n,
+                        'audience': {'@type': 'PeopleAudience', 'suggestedMinAge': lo, 'suggestedMaxAge': hi}}}
+                        for n, lo, hi in progs]},
+            }
+            frag = ',\n  '.join(f'"{k}": {json.dumps(v, ensure_ascii=False)}' for k, v in extra.items())
+            text = re.sub(r'("hasMap": "[^"]*",)', lambda m: m.group(1) + '\n  ' + frag + ',', text, count=1)
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
@@ -1232,6 +1312,7 @@ def main():
     repair_static_site()
     repair_published_articles(q, today)
     write_llms_txt()
+    write_llms_full(q)
     prune_noindex_from_sitemap(q)
     announce_rewrites(q, today)
     pending=[a for a in q if not a.get('published')]
