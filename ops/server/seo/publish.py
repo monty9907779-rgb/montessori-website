@@ -672,6 +672,31 @@ def render_article(a, iso, d, allslugs, titles):
 {footer()}
 </body></html>'''
 
+def announce_rewrites(q, today):
+    """Rewritten articles changed in place: bump their sitemap <lastmod> so
+    Google recrawls them, and notify IndexNow (Bing, Yandex...). Pending
+    articles are skipped; they are announced when published."""
+    live = {a.get('slug') for a in q if a.get('published')}
+    slugs = [x for x in _REWRITE_APPLIED if x in live]
+    if not slugs:
+        return
+    smp = ROOT/"sitemap.xml"
+    try:
+        sm = smp.read_text()
+        new = sm
+        for slug in slugs:
+            new = re.sub(r'(<loc>[^<]*/blog/%s/</loc>\s*<lastmod>)[^<]*(</lastmod>)' % re.escape(slug),
+                         r'\g<1>%s\g<2>' % today.isoformat(), new)
+        if new != sm:
+            smp.write_text(new, encoding='utf-8')
+    except Exception as ex:
+        log(f"sitemap lastmod update failed: {ex}")
+    sent = 0
+    for slug in slugs[:50]:
+        if indexnow(f"{SITE}/blog/{slug}/") is not None:
+            sent += 1
+    log(f"announced {len(slugs)} rewritten articles (indexnow ok={sent})")
+
 def indexnow(url):
     try:
         key=KEYF.read_text().strip()
@@ -1167,6 +1192,7 @@ def main():
     repair_published_articles(q, today)
     write_llms_txt()
     prune_noindex_from_sitemap(q)
+    announce_rewrites(q, today)
     pending=[a for a in q if not a.get('published')]
     hz=health()
     hz_ok=all(v==200 for v in hz.values())
