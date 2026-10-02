@@ -85,3 +85,10 @@ daily cron only re-syncs today and yesterday:
 ```
 
 Only automatic *draft* deductions are removed; manual or confirmed ones stay.
+
+To see exactly what the AI answers for a month's staff deductions (the
+per-employee table) without logging in:
+
+```
+/opt/seo/show-deductions.sh 2026-09   # defaults to the current month
+```
