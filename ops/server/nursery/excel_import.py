@@ -111,7 +111,12 @@ ALIASES = {
     'amount': ('amount', 'value', 'expense amount', 'المبلغ', 'القيمة', 'التكلفة'),
     'date': ('date', 'expense date', 'التاريخ', 'تاريخ المصروف'),
     'teacher': ('teacher name', 'teacher', 'employee', 'اسم المعلمة', 'المعلمة',
-                'اسم الموظف'),
+                'اسم الموظف', 'اسم المعلم'),
+    # Salary tables carry the paid amount under their own headers.
+    'salary_actual': ('actual salary', 'actual', 'salary paid', 'paid salary',
+                      'المدفوع فعليا', 'الراتب المدفوع', 'الراتب الفعلي'),
+    'salary_expected': ('forecast salary', 'expected salary', 'forecast', 'expected',
+                        'الراتب المستحق', 'الراتب المتوقع', 'المستحق'),
 }
 
 
@@ -425,43 +430,76 @@ def _header_index(headers, aliases, start=0):
     return None
 
 
+def _entry_spec(headers, name_index, kind, end=None, amount_aliases=None):
+    """Build one entry-table spec whose columns stay between name_index and end."""
+    end = len(headers) if end is None else end
+    window = list(headers[:end])
+    amount_index = None
+    if amount_aliases:
+        amount_index = _header_index(window, amount_aliases, start=name_index + 1)
+    if amount_index is None:
+        amount_index = _header_index(window, ALIASES['amount'], start=name_index + 1)
+    date_index = _header_index(window, ALIASES['date'], start=name_index + 1)
+    if amount_index is None or date_index is None:
+        return None
+    indexes = [name_index, amount_index, date_index]
+    note_index = _header_index(window, ALIASES['note'], start=name_index + 1)
+    if note_index is not None and note_index not in indexes:
+        indexes.append(note_index)
+    spec = {'kind': kind, 'headers': [headers[index] for index in indexes],
+            'indexes': indexes}
+    if kind == 'salary':
+        expected_index = _header_index(window, ALIASES['salary_expected'],
+                                       start=name_index + 1)
+        if expected_index is not None and expected_index not in indexes:
+            spec['expected_index'] = len(indexes)
+            indexes.append(expected_index)
+            spec['headers'].append(headers[expected_index])
+    return spec
+
+
 def _table_specs(headers):
-    """Find the student table and any side-by-side expense/salary table."""
+    """Find the student table and any side-by-side expense/salary tables.
+
+    The accounting workbook lays the salary table (Teacher Name | Date |
+    Forecast Salary | Actual Salary | Notes) and the expense table (Serial |
+    Expense Name | Expense Date | Value) on the same header row. Each table
+    only looks for its amount/date inside its own column window, so salaries
+    never pick up the expense "Value" column.
+    """
     specs = []
     main_kind = _header_kind(headers)
     student_name_index = _header_index(
         headers, ('student name', 'student', 'name', 'اسم الطالب', 'الاسم', 'اسم الطفل'))
     student_hint = any(_header_index(headers, ALIASES[key]) is not None
                        for key in ('serial', 'db_id', 'class_name'))
-    if main_kind == 'student' or (student_name_index is not None and student_hint):
+    # A salary/expense header row also carries "Teacher Name" and "Serial",
+    # which look like a student table; never read staff rows as students.
+    if main_kind == 'student' or (main_kind not in ('salary', 'expense')
+                                  and student_name_index is not None and student_hint):
         specs.append({'kind': 'student', 'headers': headers})
 
-    amount_aliases = ALIASES['amount']
-    date_aliases = ALIASES['date']
     teacher_index = _header_index(headers, ALIASES['teacher'])
     expense_index = _header_index(headers, ('expense name', 'اسم المصروف', 'البيان'))
     generic_name_index = _header_index(headers, ('name', 'الاسم'))
 
     if teacher_index is not None:
-        name_index, kind = teacher_index, 'salary'
-    elif expense_index is not None:
-        name_index, kind = expense_index, 'expense'
-    elif main_kind != 'student' and generic_name_index is not None:
-        name_index, kind = generic_name_index, 'expense'
-    else:
-        name_index, kind = None, ''
-
-    if name_index is not None:
-        amount_index = _header_index(headers, amount_aliases, start=name_index + 1)
-        date_index = _header_index(headers, date_aliases, start=name_index + 1)
-        if amount_index is not None and date_index is not None:
-            note_index = _header_index(headers, ALIASES['note'], start=name_index + 1)
-            indexes = [name_index, amount_index, date_index]
-            table_headers = [headers[index] for index in indexes]
-            if note_index is not None and note_index not in indexes:
-                indexes.append(note_index)
-                table_headers.append(headers[note_index])
-            specs.append({'kind': kind, 'headers': table_headers, 'indexes': indexes})
+        end = (expense_index if expense_index is not None
+               and expense_index > teacher_index else None)
+        spec = _entry_spec(headers, teacher_index, 'salary', end, ALIASES['salary_actual'])
+        if spec:
+            specs.append(spec)
+    if expense_index is not None:
+        end = (teacher_index if teacher_index is not None
+               and teacher_index > expense_index else None)
+        spec = _entry_spec(headers, expense_index, 'expense', end)
+        if spec:
+            specs.append(spec)
+    if (teacher_index is None and expense_index is None
+            and main_kind != 'student' and generic_name_index is not None):
+        spec = _entry_spec(headers, generic_name_index, 'expense')
+        if spec:
+            specs.append(spec)
     return specs
 
 
@@ -504,9 +542,161 @@ def _project_row(row, indexes):
     return [row[index] if index < len(row) else None for index in indexes]
 
 
+_CELL_RE = re.compile(r'\$?([A-Z]{1,3})\$?([0-9]{1,5})')
+_RANGE_RE = re.compile(r'\$?([A-Z]{1,3})\$?([0-9]{1,5}):\$?([A-Z]{1,3})\$?([0-9]{1,5})')
+_FORMULA_FUNCS = ('IF', 'OR', 'AND', 'COUNT', 'COUNTA', 'SUM', 'MAX', 'MIN', 'R', 'RNG')
+_FORMULA_ALLOWED = re.compile(r'^[A-Z0-9$:(),.+\-*/<>=" ]+$')
+
+
+def _col_number(letters):
+    number = 0
+    for char in letters:
+        number = number * 26 + (ord(char) - 64)
+    return number
+
+
+def _resolve_formula_rows(values, formulas):
+    """Fill cached-less formula cells with their evaluated value.
+
+    openpyxl-written workbooks (and some Google Sheets exports) save the
+    serial/remaining formulas without a cached result, so ``data_only`` reads
+    them as blank and every numbered student disappears from the import.
+    Only the small formula vocabulary used by the accounting workbook is
+    evaluated (IF/OR/AND/COUNT/COUNTA/SUM/MAX/MIN, cell refs, ranges and
+    arithmetic); anything else stays blank exactly as before.
+    """
+    grid = {}
+    for row_index, row in enumerate(values):
+        for col_index, value in enumerate(row):
+            if value not in (None, ''):
+                grid[(row_index, col_index)] = value
+
+    class Blank(str):
+        """An empty cell: equal to "" in comparisons, zero in arithmetic."""
+        __slots__ = ()
+
+        def __add__(self, other):
+            return 0 + other
+
+        __radd__ = __add__
+
+        def __sub__(self, other):
+            return 0 - other
+
+        def __rsub__(self, other):
+            return other - 0
+
+        def __mul__(self, other):
+            return 0
+
+        __rmul__ = __mul__
+
+        def __neg__(self):
+            return 0
+
+        def __float__(self):
+            return 0.0
+
+        def __bool__(self):
+            return False
+
+    blank = Blank()
+    unresolved = set()
+
+    def ref(cell):
+        value = grid.get(cell)
+        if value is None and cell in unresolved:
+            # A formula this evaluator cannot (yet) compute: do not treat it
+            # as an empty cell, or "=C3-G3" would turn into "0 - G3".
+            raise ValueError('unresolved %r' % (cell,))
+        return blank if value is None or value == '' else value
+
+    def rng(top_left, bottom_right):
+        (r1, c1), (r2, c2) = top_left, bottom_right
+        return [grid.get((r, c)) for r in range(min(r1, r2), max(r1, r2) + 1)
+                for c in range(min(c1, c2), max(c1, c2) + 1)]
+
+    def numeric(items):
+        return [item for item in items if isinstance(item, (int, float))
+                and not isinstance(item, bool)]
+
+    def total(item):
+        return sum(numeric(item)) if isinstance(item, list) else float(item or 0)
+
+    env = {
+        '__builtins__': {},
+        'IF': lambda cond, yes, no: yes if cond else no,
+        'OR': lambda *args: any(args),
+        'AND': lambda *args: all(args),
+        'COUNT': lambda *ranges: sum(len(numeric(item)) for item in ranges),
+        'COUNTA': lambda *ranges: sum(1 for item in ranges for value in item
+                                      if value not in (None, '')),
+        'SUM': lambda *items: sum(total(item) for item in items),
+        'MAX': lambda *items: max(total(item) for item in items),
+        'MIN': lambda *items: min(total(item) for item in items),
+        'R': ref, 'RNG': rng,
+    }
+
+    def to_python(formula):
+        expr = formula[1:].strip().upper()
+        if not _FORMULA_ALLOWED.match(expr):
+            return None
+        expr = _RANGE_RE.sub(
+            lambda m: 'RNG((%d,%d),(%d,%d))' % (
+                int(m.group(2)) - 1, _col_number(m.group(1)) - 1,
+                int(m.group(4)) - 1, _col_number(m.group(3)) - 1), expr)
+        expr = _CELL_RE.sub(
+            lambda m: 'R((%d,%d))' % (int(m.group(2)) - 1, _col_number(m.group(1)) - 1),
+            expr)
+        expr = expr.replace('<>', '!=').replace('>=', '>~').replace('<=', '<~')
+        expr = expr.replace('=', '==').replace('>~', '>=').replace('<~', '<=')
+        if any(name not in _FORMULA_FUNCS for name in re.findall(r'([A-Z]+)\(', expr)):
+            return None
+        return expr
+
+    pending = []
+    for row_index, row in enumerate(formulas):
+        for col_index, formula in enumerate(row):
+            if (isinstance(formula, str) and formula.startswith('=')
+                    and (row_index, col_index) not in grid):
+                unresolved.add((row_index, col_index))
+                expr = to_python(formula)
+                if expr:
+                    pending.append((row_index, col_index, expr))
+
+    # Summary cells sit above the rows they sum, so evaluate in passes until
+    # every reachable value settles (the workbook nests at most three deep).
+    for _pass in range(6):
+        changed = False
+        for row_index, col_index, expr in pending:
+            try:
+                result = eval(expr, env)  # restricted vocabulary, see to_python
+            except Exception:
+                continue
+            if isinstance(result, float) and result.is_integer():
+                result = int(result)
+            if result in (None, ''):
+                # An empty result ("" from IF) is a real value: the cell is
+                # settled and reads as blank for everything that uses it.
+                unresolved.discard((row_index, col_index))
+                continue
+            if grid.get((row_index, col_index)) == result:
+                continue
+            unresolved.discard((row_index, col_index))
+            grid[(row_index, col_index)] = result
+            if row_index < len(values) and col_index < len(values[row_index]):
+                values[row_index][col_index] = result
+            changed = True
+        if not changed:
+            break
+    return values
+
+
 def _read_xlsx(raw):
     from openpyxl import load_workbook
     workbook = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+    formula_book = load_workbook(io.BytesIO(raw), read_only=True, data_only=False)
+    formula_sheets = {sheet.title: sheet for sheet in formula_book.worksheets}
     out = []
     for sheet in workbook.worksheets:
         rows = []
@@ -514,6 +704,16 @@ def _read_xlsx(raw):
             rows.append(list(row[:80]))
             if len(rows) >= 2500:
                 break
+        formula_sheet = formula_sheets.get(sheet.title)
+        if formula_sheet is not None:
+            formulas = []
+            for row in formula_sheet.iter_rows(values_only=True):
+                formulas.append(list(row[:80]))
+                if len(formulas) >= len(rows):
+                    break
+            if any(isinstance(value, str) and value.startswith('=')
+                   for row in formulas for value in row):
+                rows = _resolve_formula_rows(rows, formulas)
         out.append((sheet.title, rows))
     return out
 
@@ -613,12 +813,26 @@ def _student_record(headers, row, source, is_master, target_ym=None):
     return record
 
 
-def _entry_record(headers, row, source, kind, target_ym=None, extra_note=''):
+def _entry_amount_col(headers, kind):
+    """Salary rows are paid under "Actual Salary"; everything else under Amount."""
+    if kind == 'salary':
+        actual_index = _col(headers, 'salary_actual', exact=True)
+        if actual_index is not None:
+            return actual_index
+    return _col(headers, 'amount')
+
+
+def _entry_record(headers, row, source, kind, target_ym=None, extra_note='',
+                  expected_index=None):
     name_index = _col(headers, 'name')
-    amount_index = _col(headers, 'amount')
+    amount_index = _entry_amount_col(headers, kind)
     date_index = _col(headers, 'date')
     name = _clean(row[name_index] if name_index is not None and name_index < len(row) else '')
     amount = _number(row[amount_index] if amount_index is not None and amount_index < len(row) else None)
+    expected = (_number(row[expected_index]) if expected_index is not None
+                and expected_index < len(row) else None)
+    if kind == 'salary' and amount is None and expected is not None:
+        amount = 0.0
     if not name or amount is None:
         return None
     date_cell = row[date_index] if date_index is not None and date_index < len(row) else None
@@ -626,13 +840,16 @@ def _entry_record(headers, row, source, kind, target_ym=None, extra_note=''):
                   and _col(headers, 'note') < len(row) else '')
     if extra_note:
         note = ('%s · %s' % (note, extra_note)) if note else extra_note
-    return {
+    record = {
         'kind': kind, 'name': name, 'amount': amount,
         'date': (_entry_date_string(date_cell, target_ym) if target_ym
                  else _date_string(date_cell)),
         'note': note[:200],
         'source': source,
     }
+    if kind == 'salary':
+        record['expected'] = expected if expected is not None else amount
+    return record
 
 
 def _salary_name_key(value):
@@ -677,14 +894,15 @@ def _sync_salary_records(records, term, env):
         if not employee:
             employee = Employee.create({'name': name, 'active': True})
             by_key[_salary_name_key(name)] = employee
+        expected = record.get('expected')
         Salary.create({
             'teacher': employee.name,
             'employee_id': employee.id,
-            'expected': amount,
-            'actual': 0.0,
-            'paid_date': False,
+            'expected': float(expected) if expected is not None else amount,
+            'actual': amount,
+            'paid_date': record.get('date') or False,
             'term': term,
-            'notes': '',
+            'notes': _clean(record.get('note'), 200),
         })
         synced += 1
     return synced
@@ -767,7 +985,7 @@ def _parse_records(files, target_ym):
                         continue
 
                     name_index = _col(spec_headers, 'name')
-                    amount_index = _col(spec_headers, 'amount')
+                    amount_index = _entry_amount_col(spec_headers, spec_kind)
                     date_index = _col(spec_headers, 'date')
                     relevant = [spec_row[index] for index in (name_index, amount_index, date_index)
                                 if index is not None and index < len(spec_row)]
@@ -801,7 +1019,8 @@ def _parse_records(files, target_ym):
                         extra_note = ' '.join(
                             _clean(_norm_value(value), 60) for value in extras).strip()
                     record = _entry_record(spec_headers, spec_row, source, spec_kind,
-                                           target_ym, extra_note)
+                                           target_ym, extra_note,
+                                           spec.get('expected_index'))
                     if record:
                         entries.append(record)
                         row_count += 1
@@ -1423,7 +1642,10 @@ def _excel_month_metrics(parsed, target_ym):
     book_remaining = sum(float(row.get('book_remaining') or 0.0) for row in students
                          if row.get('book_remaining_present'))
     expense_rows = [row for row in entries if row.get('kind') == 'expense']
-    calculated_expenses = sum(float(row.get('amount') or 0.0) for row in expense_rows)
+    # The workbook writes outflows as negative values and its "Expenses" cell
+    # is the positive magnitude of the whole movement (E3 = -SUM(values)).
+    expense_movement = sum(float(row.get('amount') or 0.0) for row in expense_rows)
+    calculated_expenses = -expense_movement
     # The first positive expense line is the workbook's opening cash brought
     # in by Nesrin.  It is kept as a source entry, but is also stored as the
     # month's opening balance so it is not counted twice in the closing cash.
@@ -1439,9 +1661,21 @@ def _excel_month_metrics(parsed, target_ym):
         for row in expense_rows
         if row is not opening_row and float(row.get('amount') or 0.0) < 0
     )
+    # The "مرتبات" expense line is the cash hand-over of the salaries that the
+    # salary table already lists one by one; keep it out of "other expenses"
+    # so the dashboard does not subtract the payroll twice.
+    salary_payout = -sum(
+        float(row.get('amount') or 0.0)
+        for row in expense_rows
+        if float(row.get('amount') or 0.0) < 0
+        and re.search(r'مرتب|راتب|رواتب|salar', str(row.get('name') or ''), re.I)
+    )
+    other_expenses = -expenses_paid_out - salary_payout
     calculated_cash_closing = opening_balance + calculated_cash + expenses_paid_out
     calculated_salaries = sum(float(row.get('amount') or 0.0) for row in entries
                    if row.get('kind') == 'salary')
+    if not calculated_salaries and salary_payout:
+        calculated_salaries = salary_payout
     calculated_numbered_students = sum(1 for row in students if row.get('serial') is not None)
     calculated_remaining_total = sum(
         float(row.get('remaining') or 0.0)
@@ -1464,7 +1698,9 @@ def _excel_month_metrics(parsed, target_ym):
     cash_closing = on_hand_randa
     randa_on_hand = exact('audit_on_hand_randa', 0.0)
     excel_delta = exact('delta', randa_on_hand - salaries)
-    net = exact('net', collected - expenses - salaries)
+    # Workbook Net = Total Received - Expenses; the expense table already
+    # carries the payroll hand-over line, so salaries are not deducted again.
+    net = exact('net', collected - expenses)
     return {
         'ym': target_ym,
         'student_count': numbered_students,
@@ -1479,13 +1715,17 @@ def _excel_month_metrics(parsed, target_ym):
         'books_remaining_total': book_remaining,
         'remaining_total': remaining_total,
         'expenses': expenses,
+        'expense_movement': expense_movement,
         'expenses_paid_out': expenses_paid_out,
+        'salary_payout': salary_payout,
+        'other_expenses': other_expenses,
         'opening_balance': opening_balance,
         'opening_source': (opening_row.get('name') if opening_row else ''),
         'cash_closing': cash_closing,
         'cash_after_salaries': cash_closing - salaries,
         'salaries': salaries,
-        'expected_salaries': salaries,
+        'expected_salaries': sum(float(row.get('expected') or 0.0) for row in entries
+                                 if row.get('kind') == 'salary') or salaries,
         'on_hand_randa': on_hand_randa,
         'randa_on_hand': randa_on_hand,
         'delta': excel_delta,
@@ -1657,13 +1897,18 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
         ext = {}
     if not isinstance(ext, dict):
         ext = {}
+    # Dashboard arithmetic is income - salaries - other. Feed it the workbook's
+    # own pieces: student fees plus the opening cash line as income, the
+    # itemised salaries, and the remaining outflows (payroll hand-over
+    # excluded) as other expenses — so its net equals the workbook's Net.
     ext[target_ym] = {
         'ym': target_ym,
-        'income': metrics['collected'],
+        'income': metrics['collected'] + metrics['opening_balance'],
         'student_income': metrics['collected'],
-        'extra_income': 0.0,
+        'extra_income': metrics['opening_balance'],
         'salaries': metrics['salaries'],
-        'other': metrics['expenses'],
+        'other': metrics['other_expenses'],
+        'expenses': metrics['expenses'],
         'cash': metrics['randa_cash'],
         'transfer': metrics['bank_transfer'],
         'books': metrics['books'],
