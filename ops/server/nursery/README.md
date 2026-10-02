@@ -92,3 +92,24 @@ per-employee table) without logging in:
 ```
 /opt/seo/show-deductions.sh 2026-09   # defaults to the current month
 ```
+
+## Deploy channel (how changes reach the server)
+
+`ops/server/seo/self-update.sh` runs daily from root's cron on the VPS and
+pulls from `main`: the SEO publisher files, the nursery addon files
+(`excel_import.py`, `roles.py`, `models_nursery.py` → `models/nursery.py`,
+`import_month.py`, `import_unlock.json` — Odoo is restarted when any changed),
+the AI page files (`public/ai/index.html`, `public/assets/ai.js`, `ai.css`)
+and the maintenance scripts (`resync-deductions.sh`, `show-deductions.sh`).
+To deploy right now: `bash /opt/seo/self-update.sh`. When the script itself
+changed it re-runs once automatically, so a single run is always enough.
+
+Rules learned the hard way:
+- Never edit an inline `<style>` or `style=` in a served page: the site's
+  CSP allows inline styles by sha256 hash only (`scripts/deploy-static.py`
+  generates them). Put page CSS in an external file under `/assets/`.
+- Browser assets are cached by Cloudflare per URL: bump `?v=N` on
+  `ai.js` / `ai.css` in `index.html` whenever they change.
+- The controllers/models on the server had drifted from the `work/`
+  snapshots before; edit the files in `ops/server/nursery/` (the deployed
+  source of truth) and let self-update ship them.
