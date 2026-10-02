@@ -104,10 +104,32 @@ and the maintenance scripts (`resync-deductions.sh`, `show-deductions.sh`).
 To deploy right now: `bash /opt/seo/self-update.sh`. When the script itself
 changed it re-runs once automatically, so a single run is always enough.
 
+The accounts page (`public/accounts/index.html`) is **not** on that list: it
+has inline `<script>` blocks, and the CSP hash for each is regenerated only by
+the static release (`bash deploy.sh` from a workstation). When a single page
+had to be copied onto the server by hand, regenerate the hashes afterwards,
+on the server, from a clone of `main`:
+
+```bash
+rm -rf /tmp/mw && git clone -q --depth 1 https://github.com/monty9907779-rgb/montessori-website /tmp/mw \
+  && python3 /tmp/mw/scripts/deploy-static.py --refresh-csp
+```
+
+A full release can also be built on the server without Node
+(`python3 scripts/package-static.py /tmp/rel && python3 /tmp/rel/deploy-static.py /tmp/rel`;
+`package-static.py` is a byte-identical twin of `package-static.mjs`), but
+only once `public/` on `main` matches what is live: on 2026-10-02 the live
+`assets/app.js` (release `mk-shell-46e8d3a05147`, a commit that is not on
+GitHub) carried a newer notification bell than `main`, so a full release from
+`main` would have regressed it.
+
 Rules learned the hard way:
 - Never edit an inline `<style>` or `style=` in a served page: the site's
   CSP allows inline styles by sha256 hash only (`scripts/deploy-static.py`
   generates them). Put page CSS in an external file under `/assets/`.
+- The same holds for inline `<script>` blocks (2026-10-02: accounts/index.html
+  copied by hand → CSP blocked its script → blank page). Pages with inline
+  scripts ship only through the static release, never through self-update.
 - Browser assets are cached by Cloudflare per URL: bump `?v=N` on
   `ai.js` / `ai.css` in `index.html` whenever they change.
 - The controllers/models on the server had drifted from the `work/`
