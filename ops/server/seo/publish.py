@@ -394,7 +394,7 @@ def is_noindex(a):
 
 def apply_rewrites(raw_q):
     """Swap in hand-written replacements (/opt/seo/rewrites.json, shipped from
-    the repo by self-update.sh) for published templated articles. Each one must
+    the repo by self-update.sh) for templated articles, published or pending. Each one must
     pass the facts gate and the duplicate gate first; the article then drops
     out of NOINDEX handling. Idempotent: a rewrite is re-applied only when its
     content changes."""
@@ -408,7 +408,7 @@ def apply_rewrites(raw_q):
     by_slug = {a.get('slug'): a for a in raw_q}
     for slug, new in (rw or {}).items():
         a = by_slug.get(slug)
-        if not a or not a.get('published') or not isinstance(new, dict):
+        if not a or not isinstance(new, dict):
             continue
         tag = hashlib.sha1(json.dumps(new, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()[:12]
         if a.get('rewritten') == tag:
@@ -424,6 +424,21 @@ def apply_rewrites(raw_q):
         _REWRITE_APPLIED.append(slug)
         log(f"rewrite applied {slug}")
     return raw_q
+
+_DATED_AUTO = re.compile(r'-20\d{6}$')
+
+def prune_templated_pending(raw_q):
+    """Drop unpublished entries made by the old dated auto-refill
+    (slug ends in -YYYYMMDD). They are one template with the district name
+    swapped, so the duplicate gate blocks them forever and the daily
+    blocked-articles email never stops."""
+    if not isinstance(raw_q, list):
+        return raw_q
+    keep = [a for a in raw_q if a.get('published') or not _DATED_AUTO.search(a.get('slug', ''))]
+    if len(keep) != len(raw_q):
+        log(f"pruned {len(raw_q) - len(keep)} dated auto-generated pending articles")
+        _REWRITE_APPLIED.append('__pruned__')
+    return keep
 
 def prune_noindex_from_sitemap(q):
     smp = ROOT/"sitemap.xml"
@@ -1005,6 +1020,7 @@ def main():
     today=datetime.date.today(); iso=today.isoformat()
     raw_q=json.loads(QUEUE.read_text())
     raw_q=ensure_auto_queue(raw_q, today)
+    raw_q=prune_templated_pending(raw_q)
     raw_q=apply_rewrites(raw_q)
     q=[normalized_article(a) for a in raw_q]
     if q != raw_q or _REWRITE_APPLIED:
