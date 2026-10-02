@@ -596,7 +596,10 @@ GA_TAG = '<!-- Google tag (gtag.js) -->\n<script>addEventListener("load",functio
 INLINE_LINKS = [
     ('روضة كوكب الطفل الحر', '/'),
     # pillar pages first, so they collect the most contextual links
-    ('حضانة أطفال في جدة', 'top-rated-nursery-kindergarten-jeddah'),
+    # The homepage is the page for this term (SEO plan 2026-10-02): the
+    # contextual links that used to go to the top-rated article now carry
+    # the money term to the page that targets it.
+    ('حضانة أطفال في جدة', '/'),
     ('روضة أطفال في جدة', 'kindergarten-rawda-jeddah'),
     ('مركز أطفال مونتيسوري', 'montessori-children-center-jeddah'),
     ('الفرق بين التمهيدي والروضة', 'pre-kg-vs-kg-difference'),
@@ -1115,6 +1118,30 @@ def repair_static_site():
                  '<meta name="description" content="روضة كوكب الطفل الحر: حضانة وروضة مونتيسوري (منتسوري) في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات، مع العربية والإنجليزية والقرآن."/>'),
                 ('<h1 class="rev">حضانة كوكب الطفل الحر في جدة<br/><span class="em">تمهيدي وروضة للأطفال ٢–٥ سنوات</span></h1>',
                  '<h1 class="rev">حضانة مونتيسوري في جدة<br/><span class="em">روضة كوكب الطفل الحر · من سنتين إلى ٥ سنوات</span></h1>'),
+                # SEO plan 2026-10-02, section 5: the homepage is the page for
+                # the buying terms «حضانة اطفال جدة» (390/mo, not ranking) and
+                # «حضانة جدة» / «روضة اطفال جدة» (ranking from a blog post
+                # instead). Title and H1 lead with «حضانة أطفال في جدة», keep
+                # the Montessori terms the page already ranks for, and name the
+                # district. Each pair maps the previous value, so the chain
+                # old → Montessori → this one stays idempotent.
+                ('<title>حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر – الفيصلية</title>',
+                 '<title>حضانة أطفال في جدة | روضة كوكب الطفل الحر – منتسوري بالفيصلية</title>'),
+                ('<meta name="description" content="روضة كوكب الطفل الحر: حضانة وروضة مونتيسوري (منتسوري) في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات، مع العربية والإنجليزية والقرآن."/>',
+                 '<meta name="description" content="حضانة أطفال وروضة مونتيسوري في جدة بحي الفيصلية للأعمار من سنتين إلى ٥ سنوات. فصول صغيرة، عربي وإنجليزي وقرآن، وتواصل يومي مع الأهل. احجزي زيارة عبر واتساب."/>'),
+                ('<meta property="og:title" content="حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر – الفيصلية"/>',
+                 '<meta property="og:title" content="حضانة أطفال في جدة | روضة كوكب الطفل الحر – منتسوري بالفيصلية"/>'),
+                ('<meta name="twitter:title" content="حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر – الفيصلية"/>',
+                 '<meta name="twitter:title" content="حضانة أطفال في جدة | روضة كوكب الطفل الحر – منتسوري بالفيصلية"/>'),
+                ('<meta property="og:description" content="حضانة مونتيسوري في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات — روضة كوكب الطفل الحر."/>',
+                 '<meta property="og:description" content="حضانة أطفال وروضة مونتيسوري في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات — روضة كوكب الطفل الحر."/>'),
+                ('<meta name="twitter:description" content="حضانة مونتيسوري في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات — روضة كوكب الطفل الحر."/>',
+                 '<meta name="twitter:description" content="حضانة أطفال وروضة مونتيسوري في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات — روضة كوكب الطفل الحر."/>'),
+                # The district already sits in the eyebrow line above the H1,
+                # and the accent line keeps its length so the hero stays the
+                # same height on desktop.
+                ('<h1 class="rev">حضانة مونتيسوري في جدة<br/><span class="em">روضة كوكب الطفل الحر · من سنتين إلى ٥ سنوات</span></h1>',
+                 '<h1 class="rev">حضانة أطفال مونتيسوري في جدة<br/><span class="em">روضة كوكب الطفل الحر · من سنتين إلى ٥ سنوات</span></h1>'),
             ]
         for old, new in repl:
             if old in text:
@@ -1176,6 +1203,7 @@ def repair_static_site():
             text = text.replace('</body>', _registration_script(english) + '</body>', 1)
         if 'id="montessori-pwa-fix"' not in text:
             text = text.replace('</body>', _pwa_script() + '</body>', 1)
+        text = add_home_seo_sections(text, english)
         return add_home_faq(text, english)
 
     # Questions AI assistants are asked where we were missing (Ubersuggest
@@ -1224,13 +1252,170 @@ def repair_static_site():
         ld = json.dumps(data, ensure_ascii=False)
         text = text[:last + len('</details>')] + html_items + text[last + len('</details>'):]
         return text.replace(m.group(1), ld, 1)
+
+    # SEO plan 2026-10-02 (sections 5 and 10): three link sections on the
+    # homepage, so it carries 45+ internal links instead of 30, the district
+    # guides and the parent guides receive the homepage's authority, and the
+    # money terms resolve to the homepage. Markup is class-based (styles land
+    # in app.css through patch_css below): the CSP hashes inline style
+    # attributes, so a new style="" value would be blocked until the next
+    # deploy.sh refresh. The two attributes used here are copied byte for
+    # byte from the existing section headings, which are already hashed.
+    _H2 = 'style="margin-top:10px"'
+    _LEAD = 'style="max-width:520px;margin-inline:auto"'
+
+    def _seo_card(href, title, blurb):
+        return f'<a class="cc rev seo-card" href="{href}"><b>{title}</b><span>{blurb}</span></a>'
+
+    def _seo_section(sid, extra_class, eyebrow, heading, lead, body):
+        return (f'\n<!-- ===== {sid.upper()} (seo) ===== -->\n'
+                f'<section id="{sid}" class="section container {extra_class}">\n'
+                f'  <div class="center">\n'
+                f'    <span class="eyebrow rev">{eyebrow}</span>\n'
+                f'    <h2 class="rev" {_H2}>{heading}</h2>\n'
+                f'    <p class="lead rev" {_LEAD}>{lead}</p>\n'
+                f'  </div>\n{body}\n</section>\n')
+
+    def _seo_cards(items):
+        return '  <div class="cgrid">\n' + '\n'.join('    ' + _seo_card(h, t, b) for h, t, b in items) + '\n  </div>'
+
+    # Districts with a published guide (/blog/nursery-<district>-jeddah/).
+    # Al Faisaliyah is not listed: its guide is canonical to the homepage.
+    HOME_AREAS_AR = [
+        ('/blog/nursery-al-safa-jeddah/', 'حي الصفا'),
+        ('/blog/nursery-al-naseem-jeddah/', 'حي النسيم'),
+        ('/blog/nursery-ar-rawdah-jeddah/', 'حي الروضة'),
+        ('/blog/nursery-as-salamah-jeddah/', 'حي السلامة'),
+        ('/blog/nursery-al-hamdaniyah-jeddah/', 'حي الحمدانية'),
+        ('/blog/nursery-an-naim-jeddah/', 'حي النعيم'),
+        ('/blog/nursery-ar-rayyan-jeddah/', 'حي الريان'),
+        ('/blog/nursery-az-zahraa-jeddah/', 'حي الزهراء'),
+        ('/blog/nursery-al-marwah-jeddah/', 'حي المروة'),
+    ]
+    # Profiles the site already links from its own pages (site-facts.ts, Footer).
+    HOME_SAME_AS = [
+        'https://www.tiktok.com/@montessori_nursery23',
+        'https://www.instagram.com/montessori_nursery/',
+        'https://www.facebook.com/p/Montessori-nursery-100063063920027/',
+    ]
+
+    def _home_seo_sections_ar():
+        fees = _seo_section('fees', 'seo-fees', 'الرسوم والتسجيل', 'رسوم الحضانة وخطوات التسجيل',
+            'الرسوم تُحدَّد حسب عمر الطفل وعدد الأيام وساعات الدوام، ويُؤكَّد الرقم عبر مكالمة أو زيارة. هذه الأدلة تشرح التفاصيل قبل أن تتواصلي معنا.',
+            _seo_cards([
+                ('/blog/nursery-prices-jeddah/', 'رسوم الحضانات في جدة', 'كيف تُحسب الرسوم وما الذي يشمله الاشتراك عادةً'),
+                ('/blog/nursery-registration-documents-jeddah/', 'أوراق التسجيل وخطواته', 'المستندات المطلوبة والمواعيد خطوة بخطوة'),
+                ('/blog/nursery-entry-age-guide/', 'من أي عمر نستقبل؟', 'من سنتين إلى ٥ سنوات: ما قبل الروضة، المستوى الأول، المستوى الثاني'),
+                ('/blog/nursery-half-full-day-jeddah/', 'نصف يوم أم دوام كامل؟', 'الدوام من الأحد إلى الخميس، ٨:٠٠ ص – ١:٠٠ م'),
+            ]))
+        links = '\n'.join(f'    <a href="{h}">حضانة أطفال في {n}</a>' for h, n in HOME_AREAS_AR)
+        areas = _seo_section('areas', 'seo-areas', 'حضانة قريبة منك', 'حضانة أطفال قريبة من حيّك في جدة',
+            'روضة كوكب الطفل الحر في حي الفيصلية تستقبل الأطفال من سنتين إلى ٥ سنوات من الأحياء المجاورة. اقرئي دليل الحضانة في حيّك:',
+            '  <nav class="seo-links" aria-label="أدلة الأحياء">\n' + links +
+            '\n    <a href="/blog/nursery-near-me-jeddah/" class="seo-more">كل أحياء جدة التي نخدمها</a>\n  </nav>')
+        guides = _seo_section('guides', 'seo-guides', 'أدلة الأمهات', 'أدلة تساعدك قبل اختيار الحضانة',
+            'من المدوّنة: إجابات عملية عن أكثر ما تسأل عنه الأمهات في جدة.',
+            _seo_cards([
+                ('/blog/how-to-choose-nursery-jeddah/', 'كيف تختارين حضانة أطفال في جدة؟', 'معايير عملية وأسئلة تطرحينها في الزيارة الأولى'),
+                ('/blog/best-nursery-guide-jeddah/', 'أفضل حضانة أطفال في جدة', 'دليل المقارنة بين الحضانات بالمعايير لا بالإعلانات'),
+                ('/blog/what-is-montessori-method/', 'ما هو منهج مونتيسوري؟', 'ولماذا يناسب الطفل من سنتين إلى ٥ سنوات'),
+                ('/blog/nursery-readiness-signs-child-jeddah/', 'هل طفلك جاهز للحضانة؟', 'علامات تساعدك على القرار'),
+                ('/blog/nursery-separation-anxiety-jeddah-plan/', 'قلق الأيام الأولى', 'خطة لطيفة للطفل والأم في أسبوع التكيّف'),
+                ('/blog/nursery-safety-checklist-jeddah/', 'قائمة الأمان داخل الروضة', 'ما الذي نلتزم به يومياً لحماية طفلك'),
+                ('/blog/kindergarten-rawda-jeddah/', 'روضة أطفال في جدة', 'الفرق بين الروضة والتمهيدي والحضانة قبل التسجيل'),
+                ('/blog/', 'كل المقالات', 'أدلة تربوية بالعربية لأولياء الأمور في جدة'),
+            ]))
+        return fees, areas, guides
+
+    def _home_seo_sections_en():
+        return _seo_section('guides', 'seo-guides', 'Parent guides', 'Guides before you choose a nursery in Jeddah',
+            'Practical answers for parents comparing nurseries, daycares and kindergartens in Jeddah.',
+            _seo_cards([
+                ('/en/blog/montessori-nursery-jeddah-guide/', 'Montessori Nursery in Jeddah', "A parent's guide to the method for ages 2 to 5"),
+                ('/en/blog/daycare-in-jeddah/', 'Daycare in Jeddah', 'What to check before you enrol your child'),
+                ('/en/blog/kindergarten-in-jeddah/', 'Kindergarten in Jeddah', 'Ages, stages and curriculum explained'),
+                ('/en/blog/', 'All English guides', 'More articles for families in Jeddah'),
+            ]))
+
+    _LD_BUSINESS = re.compile(r'(<script type="application/ld\+json">)(\{[^<]*#business"[^<]*)(</script>)', re.S)
+
+    def _patch_business_ld(text):
+        """Entity links in the business JSON-LD: the social profiles the site
+        already links elsewhere (sameAs) and every district the areas section
+        links to (areaServed), so the schema and the visible page agree."""
+        m = _LD_BUSINESS.search(text)
+        if not m:
+            return text
+        try:
+            data = json.loads(m.group(2))
+        except Exception:
+            return text
+        changed = False
+        same = data.get('sameAs')
+        if not isinstance(same, list):
+            same = [same] if same else []
+        for url in HOME_SAME_AS:
+            if url not in same:
+                same.append(url)
+                changed = True
+        data['sameAs'] = same
+        area = data.get('areaServed')
+        if isinstance(area, dict):
+            area = [area]
+        if isinstance(area, list):
+            names = {a.get('name') for a in area if isinstance(a, dict)}
+            for _, name in HOME_AREAS_AR:
+                if name not in names:
+                    area.append({'@type': 'Place', 'name': name})
+                    changed = True
+            data['areaServed'] = area
+        if not changed:
+            return text
+        return text[:m.start(2)] + json.dumps(data, ensure_ascii=False, indent=2) + text[m.end(2):]
+
+    def add_home_seo_sections(text, english):
+        if english:
+            if 'id="guides"' not in text:
+                text = text.replace('</main>', _home_seo_sections_en() + '</main>', 1)
+            if 'href="/en/blog/daycare-in-jeddah/">Daycare in Jeddah</a>' not in text:
+                text = text.replace(
+                    '<a href="#programs">Programs</a><a href="#gallery">Moments</a>',
+                    '<a href="#programs">Programs</a><a href="/en/blog/">Guides</a>'
+                    '<a href="/en/blog/daycare-in-jeddah/">Daycare in Jeddah</a>'
+                    '<a href="/en/blog/kindergarten-in-jeddah/">Kindergarten in Jeddah</a>'
+                    '<a href="#gallery">Moments</a>', 1)
+            return text
+        fees, areas, guides = _home_seo_sections_ar()
+        # Reading order: … reviews → fees → register → contact → areas → guides.
+        if 'id="fees"' not in text:
+            text = text.replace('<section id="register"', fees + '<section id="register"', 1)
+        if 'id="areas"' not in text:
+            text = text.replace('</main>', areas + '</main>', 1)
+        if 'id="guides"' not in text:
+            text = text.replace('</main>', guides + '</main>', 1)
+        # Mobile drawer: one anchor to the fees section. The desktop header
+        # is already full at 1280px (the brand name wraps once more with an
+        # extra item), so it stays as it is.
+        if 'href="#fees"' not in text:
+            text = text.replace('<a class="dl" href="#programs" data-close>برامجنا</a>',
+                                '<a class="dl" href="#programs" data-close>برامجنا</a>\n  <a class="dl" href="#fees" data-close>الرسوم والتسجيل</a>', 1)
+        # Footer: the pillar pages, linked from the homepage.
+        if '<a href="/blog/nursery-jeddah/">حضانة في جدة</a>' not in text:
+            text = text.replace(
+                '<a href="/blog/">المدوّنة</a><a href="#gallery">لحظاتنا</a>',
+                '<a href="/blog/">المدوّنة</a><a href="/blog/nursery-jeddah/">حضانة في جدة</a>'
+                '<a href="/blog/nursery-prices-jeddah/">الرسوم</a>'
+                '<a href="/blog/nursery-registration-documents-jeddah/">التسجيل</a>'
+                '<a href="/blog/what-is-montessori-method/">منهج مونتيسوري</a>'
+                '<a href="#gallery">لحظاتنا</a>', 1)
+        return _patch_business_ld(text)
     _patch_file(ROOT/'index.html', lambda t: patch_home(t, False))
     _patch_file(ROOT/'en'/'index.html', lambda t: patch_home(t, True))
     for install_page in (ROOT/'app'/'index.html', ROOT/'login'/'index.html'):
         _patch_file(install_page, lambda t: re.sub(
             r'assets/install\.js\?v=\d+', 'assets/install.js?v=3', t))
     for css_page in (ROOT/'index.html', ROOT/'en'/'index.html', ROOT/'app'/'index.html', ROOT/'login'/'index.html'):
-        _patch_file(css_page, lambda t: re.sub(r'app\.css\?v=\d+', 'app.css?v=22', t))
+        _patch_file(css_page, lambda t: re.sub(r'app\.css\?v=\d+', 'app.css?v=23', t))
 
     css = ROOT/'assets'/'app.css'
     def patch_css(text):
@@ -1282,6 +1467,22 @@ html.ns-admin-shell .ns-ai-assistant svg{width:18px;height:18px;flex:none}
 html.ns-admin-shell #ns-logout{margin-top:0;align-self:auto;width:42px;height:42px;border-radius:14px}
 html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none}
 @media(max-width:640px){html.ns-admin-shell .appbar__in{padding:9px 12px;gap:10px}html.ns-admin-shell .brand span{font-size:.9rem}html.ns-admin-shell .brand .b-sub{display:none}html.ns-admin-shell .ns-ai-assistant{min-height:40px;padding:7px 9px;gap:5px;font-size:.72rem}html.ns-admin-shell .ns-ai-assistant svg{width:17px;height:17px}html.ns-admin-shell #ns-logout{width:40px;height:40px}html.ns-admin-shell .appnav{width:min(320px,88vw)}}
+''')
+        seo_marker = '/* montessori-home-seo-sections-v1 */'
+        if seo_marker not in text:
+            additions.append('''
+/* montessori-home-seo-sections-v1 */
+a.seo-card{display:block;color:inherit;text-decoration:none}
+a.seo-card b{color:var(--forest);display:block;margin-bottom:6px;font-size:1.02rem;line-height:1.5}
+a.seo-card span{color:var(--muted);font-size:.92rem;display:block;line-height:1.7}
+a.seo-card:hover b{color:var(--clay-600)}
+.section.seo-areas{background:var(--sand);border-radius:var(--r-lg);padding:clamp(36px,6vw,64px) clamp(16px,4vw,32px);margin-block:0 clamp(40px,7vw,80px)}
+.seo-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:30px}
+.seo-links a{display:block;padding:14px 16px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line-2);color:var(--forest);font-weight:700;text-align:center;box-shadow:var(--sh-1);transition:transform var(--dur),box-shadow var(--dur),color var(--dur)}
+.seo-links a:hover{transform:translateY(-3px);color:var(--clay-600)}
+.seo-links a.seo-more{grid-column:1/-1;background:var(--forest);border-color:var(--forest);color:#fff}
+.seo-links a.seo-more:hover{color:#fff}
+.section.seo-guides{padding-top:0}
 ''')
         return text + ''.join(additions)
     _patch_file(css, patch_css)
