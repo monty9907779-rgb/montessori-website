@@ -45,8 +45,7 @@ function render(){
 }
 
 function skeletonKpis(){
-  var h=''; for(var i=0;i<4;i++) h+='<div class="ai-kpi"><div class="ai-skel ai-skel--kpi-label"></div><div class="ai-skel ai-skel--kpi-value"></div></div>';
-  return h;
+  return '<div class="ai-kpi"><div class="ai-skel ai-skel--kpi-label"></div><div class="ai-skel ai-skel--kpi-value"></div></div>';
 }
 function wire(){
   var form=document.getElementById('compose'), input=document.getElementById('prompt');
@@ -85,14 +84,11 @@ function paintStatus(){
 }
 function fmt(n){return new Intl.NumberFormat('ar-SA').format(Number(n)||0);}
 function paintKpis(){
-  var wa=CONTEXT.whatsapp||{}, pay=CONTEXT.payments||{}, ny=CONTEXT.new_year||{};
-  var sent=wa.available?fmt(wa.sent_today):'—';
-  var wait=wa.available?fmt(wa.waiting_reply):'—';
+  /* 2/10: مؤشر واحد فقط بطلب المديرة — الطلاب المتأخرون في السداد
+     (paid_until قبل اليوم). */
+  var pay=CONTEXT.payments||{};
   document.getElementById('kpis').innerHTML=
-    kpi('رسائل واتساب اليوم',sent,'')+
-    kpi('تنتظر الرد',wait,'is-blue')+
-    kpi('يحتاجون متابعة سداد',fmt(pay.needs_payment),'is-red')+
-    kpi('طلبات بدون جريد',fmt(ny.without_grade),'is-gold');
+    kpi('الطلاب المتأخرون في السداد',fmt(pay.overdue),'is-red');
 }
 function kpi(label,value,cls){return '<div class="ai-kpi '+cls+'"><span>'+NS.esc(label)+'</span><b>'+NS.esc(value)+'</b></div>';}
 
