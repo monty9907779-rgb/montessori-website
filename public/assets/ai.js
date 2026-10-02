@@ -97,12 +97,15 @@ function paintKpis(){
 function kpi(label,value,cls){return '<div class="ai-kpi '+cls+'"><span>'+NS.esc(label)+'</span><b>'+NS.esc(value)+'</b></div>';}
 
 function paintQuestions(){
+  /* 2/10: ترتيب المجموعات بحسب الأهمية للمديرة — الطلاب والسداد أولاً ثم
+     المال والتشغيل؛ الفهارس (slices) تبقى كما هي لأنها تشير إلى ترتيب
+     SUGGESTIONS القادم من الخادم. */
   var groups=[
-    ['واتساب',SUGGESTIONS.slice(0,7)],
     ['الطلاب والسداد',SUGGESTIONS.slice(7,18)],
+    ['المال والتشغيل',SUGGESTIONS.slice(32)],
+    ['واتساب',SUGGESTIONS.slice(0,7)],
     ['طلبات السنة الجديدة',SUGGESTIONS.slice(18,24)],
-    ['الحضور والزيارات',SUGGESTIONS.slice(24,32)],
-    ['المال والتشغيل',SUGGESTIONS.slice(32)]
+    ['الحضور والزيارات',SUGGESTIONS.slice(24,32)]
   ];
   /* 2/10: قائمة منسدلة واحدة مقسّمة بمجموعات؛ الاختيار يرسل السؤال فوراً
      ويرجّع القائمة لعنوانها. السؤال الحر = خانة الكتابة نفسها. */
