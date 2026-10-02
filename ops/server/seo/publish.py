@@ -1134,6 +1134,14 @@ if __name__=="__main__":
                 print('   -', x)
         print('VIOLATING FILES:', len(rows))
         sys.exit(1 if rows else 0)
+    # self-update.sh runs right before this publisher from the same crontab,
+    # but a change to self-update.sh itself only acts on its *next* run. Run
+    # the freshly installed copy once more here (it is idempotent) so a new
+    # install step — e.g. the nursery Excel importer — lands the same day.
+    try:
+        subprocess.run(['/bin/bash', '/opt/seo/self-update.sh'], timeout=900, check=False)
+    except Exception as ex:
+        log(f"self-update rerun skipped: {ex}")
     try: main()
     except Exception as ex:
         log(f"FATAL {ex}")

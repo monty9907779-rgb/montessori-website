@@ -1945,6 +1945,42 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
     }
 
 
+def _roster_allowed(env, target_ym, current_ym):
+    """True when the workbook for target_ym may rebuild the student roster.
+
+    The running month always may. An earlier month may as long as no later
+    month has recorded a payment yet — e.g. September re-imported in early
+    October before any October payment exists. Once a later month carries
+    payments, an older workbook only updates its own fees and entries.
+    """
+    if target_ym >= current_ym:
+        return True
+    year, month = int(target_ym[:4]), int(target_ym[5:7])
+    next_first = '%04d-%02d-01' % ((year + 1, 1) if month == 12 else (year, month + 1))
+    Payment = env['nursery.fee.payment'].sudo()
+    return Payment.search_count([('date', '>=', next_first)]) == 0
+
+
+def _close_finished_month(env, target_ym, current_ym, manager=None):
+    """Close a month that already ended once its workbook has been imported.
+
+    After that, every site path refuses it (preview, commit, replace and the
+    sheet sync); only import_month.py on the server can change it again.
+    Returns True when the month was closed by this call.
+    """
+    if target_ym >= current_ym:
+        return False
+    month = _month(env, target_ym)
+    if not month or month.state == 'closed':
+        return False
+    vals = {'state': 'closed', 'closed_at': fields.Datetime.now()}
+    user = getattr(manager, 'user_id', None) if manager is not None else None
+    if user and getattr(user, 'id', False):
+        vals['closed_by'] = user.id
+    month.write(vals)
+    return True
+
+
 def _student_export_workbook(env):
     template = os.path.join(os.path.dirname(__file__), '..', 'assets',
                             'student-export-template.xlsx')
@@ -2093,10 +2129,11 @@ class NurseryExcelImport(http.Controller):
                 # would import one month's numbers into another.
                 return {'ok': False,
                         'error': 'الشهر المطلوب غير صالح. اختاري شهراً من الموسم الحالي.'}
-        # A month other than the running one imports payments only. Rewriting
-        # the roster from an old workbook would archive every student who
-        # joined after it and restore stale class and guardian values.
-        roster = (target_ym == current_ym)
+        # The roster is rebuilt from the newest workbook only. An older month
+        # imports payments only once a later month already holds payments:
+        # rewriting the roster from it would archive every student who joined
+        # after it and restore stale class and guardian values.
+        roster = _roster_allowed(request.env, target_ym, current_ym)
         parsed = _parse_records(files, target_ym)
         _apply_class_map(parsed, class_map, request.env)
         if not parsed['students'] and not parsed['entries']:
@@ -2106,6 +2143,7 @@ class NurseryExcelImport(http.Controller):
                 summary = _replace_month_from_excel(parsed, target_ym, request.env, roster=roster)
             except ValueError as exc:
                 return {'ok': False, 'error': _clean(exc, 180)}
+            summary['closed'] = _close_finished_month(request.env, target_ym, current_ym, manager)
             return {'ok': True, 'target_ym': target_ym,
                     'target_label': _month_label(target_ym),
                     'summary': summary, 'warnings': parsed['warnings']}
@@ -2129,5 +2167,6 @@ class NurseryExcelImport(http.Controller):
         # month from the parsed workbook so its summary values, remaining
         # balances, and roster cannot retain data from an older import.
         summary = _replace_month_from_excel(parsed, target_ym, request.env, roster=roster)
+        summary['closed'] = _close_finished_month(request.env, target_ym, current_ym, manager)
         return {'ok': True, 'target_ym': target_ym, 'target_label': _month_label(target_ym),
                 'summary': summary, 'warnings': parsed['warnings']}
