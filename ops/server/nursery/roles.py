@@ -1457,6 +1457,202 @@ class NurserySSO(http.Controller):
         context['attendance_today'] = attendance
         return context
 
+    def _ai_full_context(self, data):
+        """لقطة «مساعد المدير الكامل» للبوابة: كل بيانات الروضة في أودو.
+
+        تُبنى فوق لقطة الأرقام الأساسية بنفس الحقول التي تقرأها صفحات
+        الداشبورد (الطلاب، الالتحاق، الفصول، المرتبات، الذمم، الشهور،
+        الزيارات، الرسائل الداخلية، الحضور). كل قسم معزول في try/except:
+        لو تعذّر قسم يُترك فارغاً ولا تسقط صفحة الذكاء.
+        """
+        import pytz as _pytz
+        env = request.env
+        context = dict(data)
+        _tz = _pytz.timezone('Asia/Riyadh')
+
+        def _cap(seq, limit):
+            return list(seq)[:limit]
+
+        def _student_full(s):
+            row = self._student_row(s)
+            link = self._student_link_meta(s)
+            row['parent_email'] = link.get('parent_email') or ''
+            row['parent_name'] = link.get('parent_name') or row.get('guardian_name', '')
+            row['parent_phone'] = link.get('parent_phone') or row.get('guardian_phone', '')
+            row['billed_total'] = round(float(s.total_billed or 0.0), 2)
+            row['collected_total'] = round(float(s.total_collected or 0.0), 2)
+            row['receivable'] = round(float(s.receivable or 0.0), 2)
+            last = s.payment_ids.filtered(
+                lambda p: p.payment_type != 'books'
+            ).sorted(lambda p: (p.date or fields.Date.today()), reverse=True)[:1]
+            row['last_payment'] = ({
+                'date': last.date.strftime('%Y-%m-%d') if last.date else '',
+                'amount': round(float(last.amount or 0.0), 2),
+            } if last else None)
+            row['remark'] = (row.get('remark') or '')[:160]
+            row.pop('id', None); row.pop('class_id', None)
+            row.pop('link_request_id', None)
+            return row
+
+        # ── الطلاب الحاليون (الفصل الدراسي الجاري) ──
+        try:
+            students = env['nursery.student'].sudo().search(
+                self._visible_student_domain(), order='name')
+            context['students_current'] = _cap((_student_full(s) for s in students), 400)
+        except Exception:
+            context['students_current'] = []
+
+        # ── طلبات السنة الجديدة (نفس سجل الطلاب، term_2027) ──
+        try:
+            new_year = env['nursery.student'].sudo().search(
+                [('active', '=', True), ('term', '=', 'term_2027')],
+                order='joining_date, name')
+            rows = []
+            for s in new_year:
+                row = _student_full(s)
+                row['reservation_status'] = 'ready' if row.get('joining_date') else 'needs_date'
+                rows.append(row)
+            context['new_year_applicants'] = _cap(rows, 300)
+        except Exception:
+            context['new_year_applicants'] = []
+
+        # ── الفصول والمعلمات ──
+        try:
+            students = env['nursery.student'].sudo().search(
+                self._visible_student_domain(), order='name')
+            context['classes'] = [{
+                'name': c.name,
+                'teacher': c.teacher_id.name or '',
+                'capacity': c.capacity,
+                'student_count': len(students.filtered(lambda s, cid=c.id: s.class_id.id == cid)),
+                'students': students.filtered(lambda s, cid=c.id: s.class_id.id == cid).mapped('name'),
+            } for c in env['nursery.class'].sudo().search([], order='name')]
+        except Exception:
+            context['classes'] = []
+
+        # ── الموظفون والمرتبات (الفصل الجاري) ──
+        try:
+            term = self._cur_term()
+            Emp = env['hr.employee'].sudo()
+            Sal = env['nursery.salary'].sudo()
+            Ded = env['nursery.deduction'].sudo()
+            rows = []
+            for emp in Emp.search([('active', '=', True)], order='name'):
+                sal = (Sal.search([('employee_id', '=', emp.id), ('term', '=', term)], limit=1)
+                       or Sal.search([('teacher', '=', emp.name), ('term', '=', term)], limit=1))
+                ded_total = sum(Ded.search([('employee_id', '=', emp.id),
+                                            ('state', '=', 'confirmed')]).mapped('amount'))
+                expected = float(sal.expected or 0.0) if sal else 0.0
+                actual = float(sal.actual or 0.0) if sal else 0.0
+                rows.append({
+                    'name': emp.name, 'job': emp.job_title or '',
+                    'expected': expected, 'actual': actual,
+                    'paid_date': sal.paid_date.strftime('%Y-%m-%d') if (sal and sal.paid_date) else '',
+                    'deductions_total': round(float(ded_total), 2),
+                    'net': round((actual or expected) - float(ded_total), 2),
+                    'attendance_exempt': bool(emp.attendance_exempt),
+                })
+            context['staff_salaries'] = {
+                'term': term,
+                'term_label': dict(Sal._fields['term'].selection).get(term, term),
+                'rows': rows,
+                'total_expected': round(sum(r['expected'] for r in rows), 2),
+                'total_net': round(sum(r['net'] for r in rows), 2),
+            }
+        except Exception:
+            context['staff_salaries'] = {}
+
+        # ── إجماليات الذمم المدينة (A/R) ──
+        try:
+            students = env['nursery.student'].sudo().search(
+                self._visible_student_domain(), order='name')
+            tb = sum(float(s.total_billed or 0.0) for s in students)
+            tc = sum(float(s.total_collected or 0.0) for s in students)
+            context['receivables_totals'] = {
+                'billed': round(tb, 2), 'collected': round(tc, 2),
+                'receivable': round(tb - tc, 2),
+                'books_billed': round(sum(float(s.books_fees or 0.0) for s in students), 2),
+                'books_collected': round(sum(float(s.books_paid or 0.0) for s in students), 2),
+                'debtors': len([s for s in students if float(s.receivable or 0.0) > 0.01]),
+                'prepaid': len([s for s in students if float(s.receivable or 0.0) < -0.01]),
+            }
+        except Exception:
+            context['receivables_totals'] = {}
+
+        # ── كل الشهور المحاسبية (مفتوحة ومقفولة) ──
+        try:
+            out = []
+            for m in env['nursery.month'].sudo().search([], order='ym desc'):
+                t = self._month_totals(m)
+                out.append({
+                    'ym': m.ym, 'label': self._month_label(m.ym), 'state': m.state,
+                    'opening_balance': round(float(m.opening_balance or 0.0), 2),
+                    'income_students': round(float(t.get('income_students') or 0.0), 2),
+                    'income_other': round(float(t.get('income_other') or 0.0), 2),
+                    'income_books': round(float(t.get('income_books') or 0.0), 2),
+                    'expenses': round(float(t.get('expenses') or 0.0), 2),
+                    'salaries': round(float(t.get('salaries') or 0.0), 2),
+                    'net': round(float(t.get('net') or 0.0), 2),
+                    'closing': round(float(t.get('closing') or 0.0), 2),
+                    'closed_at': m.closed_at.strftime('%Y-%m-%d') if m.closed_at else '',
+                    'closed_by': m.closed_by.name if m.closed_by else '',
+                })
+            context['accounting_months'] = out
+        except Exception:
+            context['accounting_months'] = []
+
+        # ── الزيارات المجدولة القادمة ──
+        try:
+            rows = []
+            for v in env['nursery.visit'].sudo().search(
+                    [('state', '=', 'scheduled')], order='when_dt asc', limit=60):
+                when = (v.when_dt.replace(tzinfo=_pytz.UTC).astimezone(_tz)
+                        .strftime('%Y-%m-%d %H:%M')) if v.when_dt else ''
+                rows.append({'lead_name': v.lead_name or '', 'phone': v.phone or '',
+                             'when': when, 'note': v.note or '', 'source': v.source or ''})
+            context['visits_scheduled'] = rows
+        except Exception:
+            context['visits_scheduled'] = []
+
+        # ── الرسائل الداخلية المعلّقة للموافقة ──
+        try:
+            rows = []
+            for msg in env['nursery.message'].sudo().search(
+                    [('state', '=', 'pending')], order='create_date desc', limit=40):
+                rows.append({
+                    'student': msg.student_id.name if msg.student_id else '',
+                    'author': msg.author_id.name if msg.author_id else '',
+                    'from_parent': bool(msg.is_parent),
+                    'body': (msg.body or '')[:300],
+                    'created': msg.create_date.strftime('%Y-%m-%d %H:%M') if msg.create_date else '',
+                })
+            context['internal_messages_pending'] = rows
+        except Exception:
+            context['internal_messages_pending'] = []
+
+        # ── حضور اليوم بالتفصيل ──
+        try:
+            today = fields.Date.today()
+            att = env['nursery.attendance'].sudo().search([('date', '=', today)])
+            context['attendance_today_detail'] = [{
+                'student': a.student_id.name, 'status': a.status,
+            } for a in att]
+        except Exception:
+            context['attendance_today_detail'] = []
+
+        context['_guide'] = (
+            'students_current: الطلاب الحاليون بكل بياناتهم (ولي الأمر، الهاتف، البريد، '
+            'الفصل، المستوى، الرسوم، الكتب، حالة السداد، paid_until، آخر دفعة، '
+            'المفوتر/المحصّل/المتبقي receivable). '
+            'new_year_applicants: طلبات السنة الجديدة. classes: الفصول ومعلماتها وطلابها. '
+            'staff_salaries: الموظفون ومرتباتهم وخصوماتهم. receivables_totals: إجماليات الذمم. '
+            'accounting_months: كل الشهور المحاسبية من النظام. months_excel: أرقام الشهور '
+            'المقفولة من ملف الإكسل (المعتمدة). monthly_finance: الشهر الجاري. '
+            'visits_scheduled: الزيارات القادمة. internal_messages_pending: رسائل تنتظر الموافقة. '
+            'attendance_today_detail: حضور اليوم لكل طالب. whatsapp: إحصاءات Chatwoot.'
+        )
+        return context
+
     def _ai_direct_answer(self, prompt, data):
         """الأسئلة الرقمية تُجاب من المصدر مباشرة؛ الصياغة والتحليل فقط لـMsty Go."""
         q = (prompt or '').strip().lower()
@@ -1801,12 +1997,17 @@ class NurserySSO(http.Controller):
             if content:
                 safe_history.append({'role': item['role'], 'content': content})
 
-        gateway_data = self._ai_gateway_context(data)
+        # مساعد المدير الكامل: اللقطة الموسّعة بكل بيانات أودو (محمية بتوكن المدير).
+        gateway_data = self._ai_full_context(data)
         system = (
             'أنت ذكاء إدارة روضة كوكب الطفل الحر. أجب بالعربية الواضحة وباختصار. '
             'اعتمد حصراً على لقطة البيانات المرفقة في أي أرقام، ولا تخمّن أو تخترع أسماء. '
             'ميّز بين واتساب الحي من Chatwoot ورسائل التطبيق الداخلية. '
-            'لا تعرض هواتف أو بريد أو مفاتيح أو معلومات ليست موجودة في اللقطة. '
+            'أنت مساعد المدير الكامل: اللقطة تشمل كل بيانات الروضة في أودو (الطلاب '
+            'وأولياء الأمور وهواتفهم وبريدهم، الفصول، الموظفين والمرتبات، الذمم، '
+            'الشهور المحاسبية، الزيارات، الرسائل الداخلية، الحضور) — أجب منها عن أي '
+            'سؤال عن أي طالب أو فصل أو موظف أو شهر. راجع المفتاح _guide لمعنى كل قسم. '
+            'لا تعرض مفاتيح أو كلمات مرور، ولا تخترع معلومات ليست موجودة في اللقطة. '
             'عند طلب صياغة رسالة قدّم نصاً عملياً جاهزاً، من دون ادعاء أنه أُرسل. '
             'أرقام كل شهر محاسبي في months_excel بمفتاح YYYY-MM (2026-09 = سبتمبر). '
             'لو السؤال عن شهر محدد استخدم أرقام ذلك الشهر من months_excel حرفياً. '
