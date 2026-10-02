@@ -75,11 +75,20 @@ if [ -n "$addon" ] && [ -f "$addon/controllers/excel_import.py" ]; then
 nursery/import_month.py|$addon/import_month.py
 nursery/import_unlock.json|$addon/import_unlock.json"
   if [ "$nursery_changed" -gt 0 ]; then
-    unit="$(systemctl list-units --type=service --all --no-legend 2>/dev/null | awk '{print $1}' | grep -iE '^odoo' | head -1)"
-    if [ -n "$unit" ]; then
-      if systemctl restart "$unit" 2>>"$LOG"; then log "restarted $unit for the nursery addon"; else log "restart $unit FAILED — restart Odoo by hand"; fi
+    # Odoo runs as the docker container "odoo" on this host (odoo-db is the
+    # database; odoo-backup.service is only the backup timer). Restart the
+    # container so the new controller is loaded; fall back to a systemd unit
+    # only when no container exists.
+    container="$(docker ps --format '{{.Names}}' 2>/dev/null | grep -iE '^odoo' | grep -viE 'db|postgres|backup|proxy' | head -1)"
+    if [ -n "$container" ]; then
+      if docker restart "$container" >>"$LOG" 2>&1; then log "restarted docker container $container for the nursery addon"; else log "docker restart $container FAILED — restart Odoo by hand"; fi
     else
-      log "odoo service not found — restart Odoo by hand so the new excel_import.py loads"
+      unit="$(systemctl list-units --type=service --all --no-legend 2>/dev/null | awk '{print $1}' | grep -iE '^odoo' | grep -viE 'backup' | head -1)"
+      if [ -n "$unit" ]; then
+        if systemctl restart "$unit" 2>>"$LOG"; then log "restarted $unit for the nursery addon"; else log "restart $unit FAILED — restart Odoo by hand"; fi
+      else
+        log "odoo container/service not found — restart Odoo by hand so the new excel_import.py loads"
+      fi
     fi
   fi
 else
