@@ -70,3 +70,18 @@ python3 ops/server/nursery/test_excel_import.py
 The test builds a synthetic workbook with the real layout (formula serials,
 a mid-month leaver without a serial, side-by-side salary/expense tables) and
 checks the parsed records and the metrics against hand-computed values.
+
+## Staff deductions and holidays
+
+`models/nursery.py` (shipped from `ops/server/nursery/models_nursery.py`) skips
+Friday, Saturday **and every day inside `nursery.holiday`** when generating
+automatic deductions. Register official holidays in that table before the day
+if you can. If a holiday is registered late, re-sync its date once — the
+daily cron only re-syncs today and yesterday:
+
+```
+/opt/seo/resync-deductions.sh 2026-09-23 "اليوم الوطني"   # registers + re-syncs
+/opt/seo/resync-deductions.sh 2026-09-23                 # re-sync only
+```
+
+Only automatic *draft* deductions are removed; manual or confirmed ones stay.
