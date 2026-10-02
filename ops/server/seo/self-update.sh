@@ -13,7 +13,8 @@ log() { printf '%s  %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
 # remote path | local path | kind
 FILES="seo/publish.py|/opt/seo/publish.py|py
 seo/rewrites.json|/opt/seo/rewrites.json|json
-seo/self-update.sh|/opt/seo/self-update.sh|sh"
+seo/self-update.sh|/opt/seo/self-update.sh|sh
+nursery-facts/facts.py|/opt/nursery-facts/facts.py|py"
 
 changed=0
 while IFS='|' read -r rel dst kind; do
