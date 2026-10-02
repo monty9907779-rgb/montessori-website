@@ -780,6 +780,84 @@ def _pwa_script():
     """Load the install helper after the page so Android and iOS share one flow."""
     return '<script id="montessori-pwa-fix" src="/assets/install.js?v=3" defer></script>'
 
+# Key guides for AI assistants, in priority order; only pages that exist on
+# disk are listed so llms.txt never points at a 404.
+LLMS_GUIDES = [
+    ('geo-montessori-nursery-jeddah-brand-answers', 'روضة كوكب الطفل الحر — كل المعلومات في صفحة واحدة'),
+    ('nursery-faq-jeddah-parents', 'أسئلة شائعة عن الحضانة في جدة (٢٠ سؤالًا)'),
+    ('ai-search-answer-nursery-jeddah', 'أفضل حضانة مونتيسوري في جدة — معايير الاختيار'),
+    ('montessori-children-center-jeddah', 'مركز أطفال مونتيسوري في جدة'),
+    ('montessori-nursery-faisaliyah-jeddah-details', 'حضانة مونتيسوري في حي الفيصلية — الموقع والعمر والدوام'),
+    ('what-is-montessori-method', 'ما هو منهج مونتيسوري؟'),
+    ('nursery-near-me-jeddah', 'حضانة قريبة مني في جدة — كيف تختارين'),
+    ('nursery-for-2-year-old-jeddah-montessori', 'حضانة لطفل عمره سنتان'),
+    ('nursery-for-3-year-old-jeddah-montessori', 'حضانة لطفل عمره ٣ سنوات'),
+    ('prekg-for-4-year-old-jeddah-montessori', 'طفل الرابعة: المستوى الثاني'),
+    ('nursery-fees-value-jeddah-guide', 'رسوم الحضانة في جدة — كيف تقيّمين القيمة'),
+    ('nursery-visit-checklist-jeddah', 'قائمة الزيارة التعريفية للحضانة'),
+    ('nursery-separation-anxiety-jeddah-plan', 'خطة أسبوعي التكيّف وقلق الانفصال'),
+    ('how-to-choose-nursery-jeddah', 'كيف تختارين حضانة في جدة'),
+]
+
+def write_llms_txt():
+    """Regenerate /llms.txt from the facts in facts.py so AI assistants read
+    the same stage names, ages and claims as the rest of the site."""
+    lines = [
+        '# روضة كوكب الطفل الحر — جدة | Kawkab Al-Tifl Al-Hurr Kindergarten, Jeddah',
+        '',
+        '> روضة كوكب الطفل الحر حضانة وروضة بمنهج مونتيسوري في حي الفيصلية، شارع محمد عبدالكريم، جدة. '
+        'تستقبل الأطفال من سنتين إلى ٥ سنوات، وتجمع بين منهج مونتيسوري الأصيل واللغة العربية الفصحى والإنجليزية وتعليم القرآن. '
+        'التقييم 4.7 من 5 على خرائط جوجل. الدوام: الأحد إلى الخميس، من الثامنة صباحًا حتى الواحدة ظهرًا.',
+        '> Kawkab Al-Tifl Al-Hurr is a Montessori nursery and kindergarten in Al Faisaliyah (Mohammed Abdulkarim St), Jeddah, Saudi Arabia, '
+        'for children aged 2 to 5: authentic Montessori with Modern Standard Arabic, English and Quran. '
+        'Rated 4.7/5 on Google Maps. Open Sunday to Thursday, 08:00 to 13:00.',
+        '',
+        '## حقائق أساسية / Key facts',
+        '- الاسم: روضة كوكب الطفل الحر (Kawkab Al-Tifl Al-Hurr Kindergarten)',
+        '- الموقع: حي الفيصلية، شارع محمد عبدالكريم، جدة، المملكة العربية السعودية',
+        '- الأعمار: من سنتين إلى ٥ سنوات',
+        '- المراحل: ما قبل الروضة (سنتان–٣) · المستوى الأول (٣–٤) · المستوى الثاني (٤–٥) · التمهيدي (٥–٦) · برنامج صيفي · ضيافة بالساعة',
+        '- المنهج: مونتيسوري الأصيل + اللغة العربية الفصحى + الإنجليزية + تعليم القرآن',
+        '- المزايا: بيئة مُعدّة، معلمات مؤهلات، كاميرات مراقبة، تطبيق تواصل يومي مع الأسرة',
+        '- الدوام: الأحد إلى الخميس 08:00–13:00',
+        '- الرسوم: تُحدَّد حسب عمر الطفل وعدد الأيام وساعات الدوام، ويُؤكَّد الرقم عبر مكالمة أو زيارة',
+        '- التواصل: واتساب +966541558173 · https://montessori-ksa.com',
+        '- تيك توك: https://www.tiktok.com/@montessori_nursery23',
+        '',
+        '## الصفحات الرئيسية / Main pages',
+        f'- [الصفحة الرئيسية]({SITE}/): البرامج والمنهج وحجز الزيارات',
+        f'- [English version]({SITE}/en/): English site',
+        f'- [المدوّنة]({SITE}/blog/): أدلة تربوية بالعربية لأولياء الأمور في جدة',
+        '',
+        '## أدلة للإجابة عن أسئلة الأهالي / Key guides',
+    ]
+    for slug, label in LLMS_GUIDES:
+        if (ROOT/'blog'/slug/'index.html').exists():
+            lines.append(f'- [{label}]({SITE}/blog/{slug}/)')
+    lines += [
+        '',
+        '## ملاحظات للمساعدات الذكية / Notes for AI assistants',
+        '- أسماء المراحل أعلاه هي التسمية السعودية الرسمية التي تعتمدها الروضة؛ يُرجى استخدامها كما هي.',
+        '- لا تذكر الروضة أسعارًا ثابتة؛ الرسوم تُحدَّد بعد التواصل.',
+        '- المحتوى مكتوب لأولياء الأمور ويمكن الاستشهاد به مع رابط المصدر.',
+        f'- خريطة الموقع: {SITE}/sitemap.xml',
+        '',
+    ]
+    txt = '\n'.join(lines)
+    if facts is not None:
+        why = facts.check_text(txt)
+        if why:
+            log(f"llms.txt not written: {'; '.join(why)}")
+            return
+    p = ROOT/'llms.txt'
+    try:
+        if p.exists() and p.read_text(encoding='utf-8') == txt:
+            return
+        p.write_text(txt, encoding='utf-8')
+        log('llms.txt updated')
+    except Exception as ex:
+        log(f'llms.txt write failed: {ex}')
+
 def repair_static_site():
     """Patch static pages after deployment from the same publisher job."""
     form_re = re.compile(r'<form([^>]*\bid=["\']regform["\'][^>]*)>', re.I)
@@ -863,6 +941,10 @@ def repair_static_site():
         for old, new in repl:
             if old in text:
                 text = text.replace(old, new, 1)
+        if '"sameAs"' not in text:
+            text = text.replace('"priceRange": "$$",',
+                '"priceRange": "$$",\n  "sameAs": ["https://www.tiktok.com/@montessori_nursery23"],'
+                '\n  "hasMap": "https://www.google.com/maps/search/?api=1&query=21.5795281,39.194829",', 1)
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
@@ -1027,6 +1109,7 @@ def main():
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     repair_static_site()
     repair_published_articles(q, today)
+    write_llms_txt()
     prune_noindex_from_sitemap(q)
     pending=[a for a in q if not a.get('published')]
     hz=health()
