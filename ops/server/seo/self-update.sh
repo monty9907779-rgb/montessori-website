@@ -18,7 +18,7 @@ nursery-facts/facts.py|/opt/nursery-facts/facts.py|py
 nursery/resync_deductions.sh|/opt/seo/resync-deductions.sh|sh
 nursery/show_deductions.sh|/opt/seo/show-deductions.sh|sh"
 
-changed=0
+changed=0; self_changed=0
 while IFS='|' read -r rel dst kind; do
   f="$TMP/$(basename "$dst")"
   if ! curl -fsSL --max-time 60 -o "$f" "$RAW/$rel?t=$(date +%s)"; then log "skip $rel: download failed"; continue; fi
@@ -35,8 +35,20 @@ while IFS='|' read -r rel dst kind; do
   [ "$kind" = sh ] && chmod 755 "$dst"
   case "$dst" in /opt/seo/*|/opt/geo-watch/*) chown www-data:www-data "$dst" ;; esac
   log "updated $dst"; changed=$((changed+1))
+  [ "$dst" = /opt/seo/self-update.sh ] && self_changed=1
 done <<< "$FILES"
 log "done, $changed file(s) updated"
+
+# ── re-run once with the new version of this script ─────────────────────────
+# A run executes the copy that was loaded at start, so a change to the deploy
+# lists below (a new file to ship) only took effect on the *next* run and had
+# to be triggered twice by hand. When our own file was just replaced, re-exec
+# the new one once (guarded by SELF_UPDATE_REEXEC) so one run always suffices.
+if [ "${self_changed:-0}" = 1 ] && [ "${SELF_UPDATE_REEXEC:-0}" != 1 ]; then
+  log "self-update.sh changed — re-running once with the new version"
+  rm -rf "$TMP"
+  SELF_UPDATE_REEXEC=1 exec bash /opt/seo/self-update.sh
+fi
 
 # ── nursery addon (Odoo): the dashboard's Excel importer ─────────────────────
 # ops/server/nursery/*.py are the source of /api/manager/excel/import. The
