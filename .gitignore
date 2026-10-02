@@ -62,3 +62,6 @@ tsconfig.tsbuildinfo
 
 # Claude Code worktrees and session scratch
 /.claude/
+
+# python
+__pycache__/
