@@ -1968,15 +1968,9 @@ class NurserySSO(http.Controller):
             return 'عدد الطلاب الحاليين في النظام هو %s.' % number(st['total'])
         return None
 
-    @http.route('/api/manager/ai/context', type='json', auth='public',
-                methods=['POST'], csrf=False, cors=WEBSITE)
-    def api_manager_ai_context(self, mt=None, **kw):
-        mgr = _manager_by_token(mt)
-        if not mgr:
-            return {'ok': False, 'error': 'unauthorized'}
-        if _mgr_page_blocked(mgr, 'ai'):
-            return {'ok': False, 'error': PAGE_BLOCKED_MSG}
-        return {'ok': True, 'context': self._ai_context_data(), 'suggestions': [
+    # الأسئلة المقترحة لصفحة الذكاء. الترتيب داخل القائمة المسطّحة ثابت
+    # (الواجهة القديمة كانت تقسّمه بأرقام)؛ المجموعات أدناه هي المصدر الجديد.
+    _AI_SUGGESTIONS = [
             'كام رسالة واتساب اتبعتت النهارده؟',
             'كام رسالة واتساب وصلتنا النهارده؟',
             'كام محادثة جديدة بدأت النهارده؟',
@@ -2021,7 +2015,54 @@ class NurserySSO(http.Controller):
             'لخص حالة الروضة في نقاط قصيرة.',
             'اقترح ترتيب أولويات الفريق اليوم.',
             'جهز تقرير يومي مختصر للإدارة.',
-        ]}
+    ]
+
+    def _ai_suggestion_groups(self):
+        """مجموعات القائمة المنسدلة بالترتيب الذي طلبته الإدارة.
+
+        «الأهم» أولاً (المتأخرون في السداد وخصومات الموظفين)، ثم «الشهور»:
+        أسئلة منطقية لكل شهر في الموسم (سبتمبر → مايو) تُجاب من months_excel
+        أو من كشف الشهر الجاري، ثم باقي المجموعات.
+        """
+        S = self._AI_SUGGESTIONS
+        months = []
+        for i in range(9):  # سبتمبر .. مايو
+            mnum = ((9 + i - 1) % 12) + 1
+            months.append(self._AR_MONTHS[mnum - 1])
+        month_qs = []
+        for name in months:
+            month_qs += [
+                'ملخص %s المالي' % name,
+                'مرتبات %s كام؟' % name,
+                'صافي %s كام؟' % name,
+                'خصومات الموظفين في %s' % name,
+            ]
+        return [
+            {'label': 'الأهم', 'items': [
+                'مين الطلاب المتأخرين في السداد؟',
+                'خصومات الموظفين هذا الشهر',
+                'خصومات الموظفين في سبتمبر',
+                'إجمالي المبالغ المستحقة كام؟',
+                'مين قرب موعد سداده؟',
+            ]},
+            {'label': 'الشهور', 'items': month_qs},
+            {'label': 'الطلاب والسداد', 'items': S[7:18]},
+            {'label': 'المال والتشغيل', 'items': S[32:]},
+            {'label': 'واتساب', 'items': S[0:7]},
+            {'label': 'طلبات السنة الجديدة', 'items': S[18:24]},
+            {'label': 'الحضور والزيارات', 'items': S[24:32]},
+        ]
+
+    @http.route('/api/manager/ai/context', type='json', auth='public',
+                methods=['POST'], csrf=False, cors=WEBSITE)
+    def api_manager_ai_context(self, mt=None, **kw):
+        mgr = _manager_by_token(mt)
+        if not mgr:
+            return {'ok': False, 'error': 'unauthorized'}
+        if _mgr_page_blocked(mgr, 'ai'):
+            return {'ok': False, 'error': PAGE_BLOCKED_MSG}
+        return {'ok': True, 'context': self._ai_context_data(), 'suggestion_groups': self._ai_suggestion_groups(),
+            'suggestions': list(self._AI_SUGGESTIONS)}
 
     @http.route('/api/manager/ai/ask', type='json', auth='public',
                 methods=['POST'], csrf=False, cors=WEBSITE)
