@@ -109,12 +109,15 @@ if [ -d "$WEBROOT/dashboard" ]; then
     if ! curl -fsSL --max-time 60 -o "$f" "$PUBRAW/$rel?t=$(date +%s)"; then log "skip public/$rel: download failed"; continue; fi
     [ "$(wc -c < "$f")" -gt 500 ] || { log "skip public/$rel: too small"; continue; }
     case "$rel" in *.js) grep -q '})();' "$f" || { log "skip public/$rel: not a complete script"; continue; } ;; esac
+    [ -d "$(dirname "$dst")" ] || { log "skip public/$rel: $(dirname "$dst") missing"; continue; }
     if [ -f "$dst" ] && cmp -s "$f" "$dst"; then continue; fi
     if [ -f "$dst" ]; then cp -p "$dst" "$dst.prev"; cat "$f" > "$dst"; else install -m 644 "$f" "$dst"; fi
     log "updated $dst"
   done <<< "dashboard/excel-sync.js
 dashboard/dashboard-inline-1.js
-dashboard/index.html"
+dashboard/index.html
+ai/index.html
+assets/ai.js"
 else
   log "webroot $WEBROOT/dashboard not found — dashboard files not installed"
 fi
