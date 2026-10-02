@@ -13,21 +13,21 @@ function gate(){
 }
 
 function render(){
+  /* 2/10: صفحة بعمود واحد — الشات يأخذ العرض كله، والأسئلة المقترحة قائمة
+     منسدلة أول الصفحة بدل عمود جانبي. */
   app.innerHTML=NS.appbar({sub:'ذكاء الحضانة',nav:NS.adminNav('ai')})+
     '<div class="ai-shell">'+
-      '<aside class="ai-side" aria-label="الأسئلة الجاهزة">'+
-        '<div class="ai-side-head"><h2>أسئلة جاهزة</h2><span class="ai-source" id="provider"><i></i><span>جاري الاتصال</span></span></div>'+
-        '<div class="q-wrap" id="questions">'+skeletonQuestions()+'</div>'+ 
-      '</aside>'+ 
       '<section class="ai-main" aria-label="محادثة ذكاء الحضانة">'+
         '<div class="ai-top">'+
           '<div class="ai-heading">'+
-            '<div class="ai-title"><span class="ai-mark">'+NS.icon('sparkle')+'</span><div><h1>ذكاء الحضانة</h1><p id="stamp">بيانات مباشرة من أنظمة الروضة</p></div></div>'+ 
-            '<div class="ai-actions">'+
-              '<button class="ai-icon-btn" id="new-chat" type="button" title="محادثة جديدة" aria-label="محادثة جديدة">'+NS.icon('refresh')+'</button>'+ 
-              '<button class="ai-icon-btn" id="refresh-data" type="button" title="تحديث البيانات" aria-label="تحديث البيانات">'+NS.icon('refresh')+'</button>'+ 
-            '</div>'+ 
-          '</div>'+ 
+            '<div class="ai-title"><span class="ai-mark">'+NS.icon('sparkle')+'</span><div><h1>ذكاء الحضانة</h1><p id="stamp">بيانات مباشرة من أنظمة الروضة</p></div></div>'+
+            '<div class="ai-tools">'+
+              '<label class="q-pick" for="q-select"><select class="q-select" id="q-select" aria-label="أسئلة مقترحة"><option value="">أسئلة مقترحة…</option></select></label>'+
+              '<span class="ai-source" id="provider"><i></i><span>جاري الاتصال</span></span>'+
+              '<button class="ai-icon-btn" id="new-chat" type="button" title="محادثة جديدة" aria-label="محادثة جديدة">'+NS.icon('refresh')+'</button>'+
+              '<button class="ai-icon-btn" id="refresh-data" type="button" title="تحديث البيانات" aria-label="تحديث البيانات">'+NS.icon('refresh')+'</button>'+
+            '</div>'+
+          '</div>'+
           '<div class="ai-kpis" id="kpis">'+skeletonKpis()+'</div>'+ 
         '</div>'+ 
         '<div class="ai-stream" id="stream"><div class="messages" id="messages"></div></div>'+ 
@@ -44,11 +44,6 @@ function render(){
   addMessage('assistant','ما الذي نتابعه اليوم؟','ذكاء الحضانة');
 }
 
-function skeletonQuestions(){
-  var h='<div class="q-group"><div class="q-list">';
-  for(var i=0;i<7;i++) h+='<div class="ai-skel ai-skel--q"></div>';
-  return h+'</div></div>';
-}
 function skeletonKpis(){
   var h=''; for(var i=0;i<4;i++) h+='<div class="ai-kpi"><div class="ai-skel ai-skel--kpi-label"></div><div class="ai-skel ai-skel--kpi-value"></div></div>';
   return h;
@@ -109,37 +104,32 @@ function paintQuestions(){
     ['الحضور والزيارات',SUGGESTIONS.slice(24,32)],
     ['المال والتشغيل',SUGGESTIONS.slice(32)]
   ];
-  /* 15/9: «سؤال حر» أول القائمة — ما بيبعتش نصاً ثابتاً، بيفرّغ خانة الكتابة
-     ويركّز عليها ويسحب الشاشة ليها (على الموبايل القائمة بعيدة عن الخانة). */
-  var free='<div class="q-group"><div class="q-list">'+
-    '<button class="q-btn" type="button" id="free-question" aria-label="سؤال حر — اكتبي سؤالك بنفسك">'+
-    NS.icon('sparkle')+' سؤال حر</button></div></div>';
-  document.getElementById('questions').innerHTML=free+groups.map(function(group){
-    if(!group[1].length)return '';
-    return '<div class="q-group"><div class="q-title">'+NS.esc(group[0])+'</div><div class="q-list">'+
-      group[1].map(function(q){return '<button class="q-btn" type="button" data-question="'+NS.attr(q)+'">'+NS.esc(q)+'</button>';}).join('')+
-      '</div></div>';
-  }).join('');
-  [].forEach.call(document.querySelectorAll('[data-question]'),function(button){
-    button.addEventListener('click',function(){ask(button.getAttribute('data-question'));});
+  /* 2/10: قائمة منسدلة واحدة مقسّمة بمجموعات؛ الاختيار يرسل السؤال فوراً
+     ويرجّع القائمة لعنوانها. السؤال الحر = خانة الكتابة نفسها. */
+  var sel=document.getElementById('q-select'); if(!sel)return;
+  var h='<option value="">أسئلة مقترحة…</option>';
+  groups.forEach(function(group){
+    if(!group[1].length)return;
+    h+='<optgroup label="'+NS.attr(group[0])+'">'+
+      group[1].map(function(q){return '<option value="'+NS.attr(q)+'">'+NS.esc(q)+'</option>';}).join('')+
+      '</optgroup>';
   });
-  var freeBtn=document.getElementById('free-question');
-  if(freeBtn)freeBtn.addEventListener('click',function(){
-    if(BUSY)return;
-    var input=document.getElementById('prompt'); if(!input)return;
-    input.value=''; input.rows=1;
-    input.placeholder='اكتبي سؤالك الحر هنا ثم اضغطي إرسال…';
-    var compose=document.querySelector('.ai-compose');
-    if(compose&&compose.scrollIntoView)compose.scrollIntoView({behavior:'smooth',block:'center'});
-    setTimeout(function(){input.focus();},150);
-  });
+  sel.innerHTML=h;
+  if(!sel.dataset.wired){
+    sel.dataset.wired='1';
+    sel.addEventListener('change',function(){var q=sel.value; sel.value=''; if(q)ask(q);});
+  }
 }
 
 /* 2/10: ردود المساعد تُعرض كـ Markdown مبسّط — جداول | عريض | قوائم | فقرات.
    النص يُهرَّب أولاً (NS.esc) ثم تُبنى الوسوم من العلامات البنيوية فقط، فلا يمرّ
    أي HTML من الموديل. رسائل المستخدم تبقى نصاً خاماً (textContent). */
 function renderMd(src){
-  var lines=String(src||'').replace(/\r\n?/g,'\n').split('\n'), out=[], i=0;
+  /* الموديلات بتحط علامات اتجاه خفية (RLM/LRM/isolates) ومسافات غير فاصلة
+     أول السطر في النص العربي فتكسر التعرّف على «|» — تُشال قبل التحليل. */
+  var lines=String(src||'').replace(/\r\n?/g,'\n').split('\n').map(function(l){
+    return l.replace(/[‎‏‪-‮⁦-⁩﻿]/g,'').replace(/ /g,' ');
+  }), out=[], i=0;
   var LI=/^\s*([-*•]|\d+[.)])\s+/, H=/^\s*#{1,4}\s+/;
   function inline(s){
     s=NS.esc(s);
@@ -195,7 +185,7 @@ function addTyping(){
 function scrollBottom(){var s=document.getElementById('stream');requestAnimationFrame(function(){s.scrollTop=s.scrollHeight;});}
 function busy(on){
   BUSY=on; document.getElementById('send').disabled=on; document.getElementById('prompt').disabled=on;
-  [].forEach.call(document.querySelectorAll('.q-btn'),function(b){b.disabled=on;});
+  var qs=document.getElementById('q-select'); if(qs)qs.disabled=on;
 }
 function ask(raw){
   var question=String(raw||'').trim(), input=document.getElementById('prompt');
