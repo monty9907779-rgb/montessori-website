@@ -1691,6 +1691,23 @@ class NurserySSO(http.Controller):
         )
         return context
 
+    @staticmethod
+    def _md_table(headers, rows, total=None):
+        """جدول Markdown تعرضه صفحة الذكاء كجدول HTML (renderMd).
+
+        headers: أسماء الأعمدة. rows: قوائم خلايا. total: صف اختياري يبدأ بكلمة
+        «الإجمالي» حتى يميّزه العارض. الأنابيب داخل الخلايا تُستبدل.
+        """
+        def cell(v):
+            return str('' if v is None else v).replace('|', '/').replace('\n', ' ').strip()
+        out = ['| ' + ' | '.join(cell(h) for h in headers) + ' |',
+               '|' + '|'.join('---' for _ in headers) + '|']
+        for row in rows:
+            out.append('| ' + ' | '.join(cell(c) for c in row) + ' |')
+        if total:
+            out.append('| ' + ' | '.join(cell(c) for c in total) + ' |')
+        return '\n'.join(out)
+
     def _ai_direct_answer(self, prompt, data):
         """الأسئلة الرقمية تُجاب من المصدر مباشرة؛ الصياغة والتحليل فقط لـMsty Go."""
         q = (prompt or '').strip().lower()
@@ -1788,17 +1805,24 @@ class NurserySSO(http.Controller):
             rows = pay['overdue_students']
             if not rows:
                 return 'لا يوجد طلاب متأخرون عن موعد السداد الآن.'
-            lines = ['%s: %s يوم' % (row['name'], number(row['days_late']))
-                     for row in rows[:10]]
-            return ('المتأخرون عن موعد السداد (%s):\n- %s' %
-                    (number(pay['overdue']), '\n- '.join(lines)))
+            shown = rows[:15]
+            table = self._md_table(
+                ['الطالب', 'أيام التأخير', 'المستحق'],
+                [[row['name'], number(row['days_late']), money(row.get('receivable'))]
+                 for row in shown],
+                total=['الإجمالي (%s طالب)' % number(len(shown)), '',
+                       money(sum(float(row.get('receivable') or 0) for row in shown))])
+            note = ('\nعُرض أول %s من %s طالباً.' % (number(len(shown)), number(pay['overdue']))
+                    if pay['overdue'] > len(shown) else '')
+            return 'المتأخرون عن موعد السداد (%s):\n%s%s' % (
+                number(pay['overdue']), table, note)
         if any(word in q for word in ('قرب موعد', 'خلال 3', 'خلال ٣', 'مستحق قريب')):
             rows = pay['due_soon_students']
             if not rows:
                 return 'لا توجد مواعيد سداد خلال الأيام الثلاثة القادمة.'
-            return 'مواعيد السداد القريبة:\n- ' + '\n- '.join(
-                '%s: خلال %s يوم' % (row['name'], number(row['days_left']))
-                for row in rows[:10])
+            return 'مواعيد السداد القريبة:\n' + self._md_table(
+                ['الطالب', 'خلال (أيام)'],
+                [[row['name'], number(row['days_left'])] for row in rows[:15]])
         if ('بدون رقم' in q or 'من غير رقم' in q or 'بدون تليفون' in q or
                 'من غير تليفون' in q) and 'طالب' in q:
             return 'هناك %s طالباً بدون رقم ولي أمر مسجل.' % number(st['without_phone'])
@@ -1934,9 +1958,9 @@ class NurserySSO(http.Controller):
             priorities = data['priorities']
             if not priorities:
                 return 'لا توجد عناصر عاجلة ظاهرة في بيانات النظام الآن.'
-            return 'أهم المتابعات الآن:\n- ' + '\n- '.join(
-                '%s: %s' % (row['label'], number(row['count']))
-                for row in priorities[:6])
+            return 'أهم المتابعات الآن:\n' + self._md_table(
+                ['المتابعة', 'العدد'],
+                [[row['label'], number(row['count'])] for row in priorities[:6]])
         if ('موافق' in q or 'مستني' in q) and ('رسال' in q or 'معلم' in q or 'داخلي' in q):
             return ('هناك %s رسالة داخلية من المعلمات بانتظار الموافقة.' %
                     number(data['internal_messages']['pending_approval']))
