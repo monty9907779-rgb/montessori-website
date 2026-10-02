@@ -569,6 +569,14 @@ GA_TAG = '<!-- Google tag (gtag.js) -->\n<script>addEventListener("load",functio
 # targets; never the article itself; at most INLINE_LINK_MAX per article.
 INLINE_LINKS = [
     ('روضة كوكب الطفل الحر', '/'),
+    # pillar pages first, so they collect the most contextual links
+    ('حضانة أطفال في جدة', 'top-rated-nursery-kindergarten-jeddah'),
+    ('روضة أطفال في جدة', 'kindergarten-rawda-jeddah'),
+    ('مركز أطفال مونتيسوري', 'montessori-children-center-jeddah'),
+    ('الفرق بين التمهيدي والروضة', 'pre-kg-vs-kg-difference'),
+    ('معايير أمان الحضانة', 'nursery-safety-checklist-jeddah'),
+    ('التسجيل في الحضانة', 'nursery-registration-jeddah-new-year'),
+    ('أول يوم في الحضانة', 'first-day-nursery-separation-anxiety'),
     ('قلق الانفصال', 'nursery-separation-anxiety-jeddah-plan'),
     ('الحياة العملية', 'montessori-practical-life-skills-nursery'),
     ('الأنشطة الحسية', 'montessori-sensorial-activities-nursery'),
@@ -1022,6 +1030,11 @@ def repair_static_site():
             # FAQ answer (visible text and FAQPage JSON-LD): official stage names.
             text = text.replace('ما قبل التمهيدي (Pre-KG) والتمهيدي والروضة',
                                 'ما قبل الروضة والمستوى الأول والمستوى الثاني')
+        # Mobile LCP is the hero photo, loaded by JS from Google's image CDN:
+        # don't lazy-load it, and open the connection to that host early.
+        text = text.replace('<img loading="lazy" class="hc-arch"', '<img loading="eager" class="hc-arch"', 1)
+        if 'href="https://lh3.googleusercontent.com"' not in text:
+            text = text.replace('</head>', '<link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin/>\n</head>', 1)
         if '"sameAs"' not in text:
             text = text.replace('"priceRange": "$$",',
                 '"priceRange": "$$",\n  "sameAs": ["https://www.tiktok.com/@montessori_nursery23"],'
