@@ -27,8 +27,9 @@ for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
 }
 const dashboard = fs.readFileSync(path.join(root, 'dashboard/index.html'), 'utf8');
 assert.ok(dashboard.includes('/assets/dashboard.css?v=1'));
-assert.ok(dashboard.includes('/dashboard/excel-sync.js?v=1'));
-assert.ok(dashboard.includes('/dashboard/excel-sync.css?v=1'));
+// Cache-busting versions move with the dashboard; only the reference matters.
+assert.ok(/\/dashboard\/excel-sync\.js\?v=\d+/.test(dashboard));
+assert.ok(/\/dashboard\/excel-sync\.css\?v=\d+/.test(dashboard));
 assert.ok(!dashboard.includes('dashboard-specific polish'));
 assert.ok(fs.readFileSync(path.join(root, 'sw.js'), 'utf8').includes("mk-shell-__RELEASE__"));
 assert.ok(fs.readFileSync(path.join(root, 'assets/install.js'), 'utf8').includes("updateViaCache: 'none'"));
