@@ -643,6 +643,31 @@ INLINE_LINKS = [
     ('حي الفيصلية', '/'),
     ('الأسئلة الشائعة', 'nursery-faq-jeddah-parents'),
     ('منهج مونتيسوري', 'what-is-montessori-method'),
+    # SEO plan 2026-10-02: the fees and admissions pages the homepage now
+    # links to, and the districts hub, collect the generic mentions.
+    ('أسعار الحضانات', 'nursery-prices-jeddah'),
+    ('رسوم الحضانات', 'nursery-prices-jeddah'),
+    ('أوراق التسجيل', 'nursery-registration-documents-jeddah'),
+    ('حضانات جدة', 'jeddah-nurseries-districts-guide'),
+    ('أحياء جدة', 'jeddah-nurseries-districts-guide'),
+    # Guides queued on 2026-10-02 (rewrites.json, new:true): ok() links a
+    # target only once it is published, so these stay inert until then.
+    ('الطفل العنيد', 'stubborn-child-4-years-montessori'),
+    ('العناد', 'stubborn-child-4-years-montessori'),
+    ('ذكاء الطفل', 'child-intelligence-signs-2-3-years'),
+    ('التعبير عن مشاعره', 'child-express-feelings-activities'),
+    ('التعبير عن المشاعر', 'child-express-feelings-activities'),
+    ('مشاعر الطفل', 'child-express-feelings-activities'),
+    ('الألعاب الحركية', 'movement-games-kids-home-no-tools'),
+    ('ألعاب حركية', 'movement-games-kids-home-no-tools'),
+    ('مراكز تعليمية', 'educational-centers-kids-jeddah'),
+    ('مركز تعليمي', 'educational-centers-kids-jeddah'),
+    ('شهر رمضان', 'ramadan-activities-kids-2027'),
+    # Montessori head terms the homepage ranks for: lowest priority, so a
+    # block with a more specific topic links that topic instead; the home
+    # link is still at most one per article (target used once).
+    ('حضانة مونتيسوري', '/'),
+    ('روضة مونتيسوري', '/'),
 ]
 INLINE_LINK_MAX = 5
 _BLOCK = re.compile(r'(<(p|li)\b[^>]*>)(.*?)(</\2>)', re.S)
@@ -947,6 +972,9 @@ LLMS_GUIDES = [
     ('nursery-visit-checklist-jeddah', 'قائمة الزيارة التعريفية للحضانة'),
     ('nursery-separation-anxiety-jeddah-plan', 'خطة أسبوعي التكيّف وقلق الانفصال'),
     ('how-to-choose-nursery-jeddah', 'كيف تختارين حضانة في جدة'),
+    ('jeddah-nurseries-districts-guide', 'دليل حضانات جدة بالأحياء — كيف تختارين حضانة قريبة من بيتك'),
+    ('nursery-prices-jeddah', 'أسعار الحضانات في جدة — كيف تُحسب الرسوم وما الذي يشمله الاشتراك'),
+    ('nursery-registration-documents-jeddah', 'أوراق التسجيل في الحضانة بجدة وخطواته'),
 ]
 
 def write_llms_txt():
