@@ -407,8 +407,20 @@ def apply_rewrites(raw_q):
     fields = ('title', 'seoTitle', 'metaDescription', 'bodyHtml', 'faq', 'wordCount')
     by_slug = {a.get('slug'): a for a in raw_q}
     for slug, new in (rw or {}).items():
+        if not isinstance(new, dict):
+            continue
         a = by_slug.get(slug)
-        if not a or not isinstance(new, dict):
+        if a is None and new.get('new') and new.get('cat') and new.get('targetKeyword'):
+            # A brand-new article shipped from the repo: queue it as pending;
+            # the publish loop still runs the facts and duplicate gates.
+            a = {'slug': slug, 'cat': new['cat'], 'targetKeyword': new['targetKeyword'],
+                 'secondaryKeywords': new.get('secondaryKeywords') or [],
+                 'related': new.get('related') or []}
+            # ahead of older pending entries: shipped articles target gaps
+            first = next((i for i, x in enumerate(raw_q) if not x.get('published')), len(raw_q))
+            raw_q.insert(first, a); by_slug[slug] = a
+            log(f"queued new article {slug}")
+        if not a:
             continue
         tag = hashlib.sha1(json.dumps(new, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()[:12]
         if a.get('rewritten') == tag:
