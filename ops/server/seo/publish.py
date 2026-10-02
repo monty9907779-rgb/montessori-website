@@ -407,8 +407,20 @@ def apply_rewrites(raw_q):
     fields = ('title', 'seoTitle', 'metaDescription', 'bodyHtml', 'faq', 'wordCount')
     by_slug = {a.get('slug'): a for a in raw_q}
     for slug, new in (rw or {}).items():
+        if not isinstance(new, dict):
+            continue
         a = by_slug.get(slug)
-        if not a or not isinstance(new, dict):
+        if a is None and new.get('new') and new.get('cat') and new.get('targetKeyword'):
+            # A brand-new article shipped from the repo: queue it as pending;
+            # the publish loop still runs the facts and duplicate gates.
+            a = {'slug': slug, 'cat': new['cat'], 'targetKeyword': new['targetKeyword'],
+                 'secondaryKeywords': new.get('secondaryKeywords') or [],
+                 'related': new.get('related') or []}
+            # ahead of older pending entries: shipped articles target gaps
+            first = next((i for i, x in enumerate(raw_q) if not x.get('published')), len(raw_q))
+            raw_q.insert(first, a); by_slug[slug] = a
+            log(f"queued new article {slug}")
+        if not a:
             continue
         tag = hashlib.sha1(json.dumps(new, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()[:12]
         if a.get('rewritten') == tag:
@@ -552,6 +564,66 @@ def jsonld(a, iso):
 GA_TAG = '<!-- Google tag (gtag.js) -->\n<script>addEventListener("load",function(){setTimeout(function(){var s=document.createElement("script");s.async=1;s.src="https://www.googletagmanager.com/gtag/js?id=G-H0856C2N0T";document.head.appendChild(s);},1500);});</script>\n<script>\nwindow.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}\ngtag(\'js\',new Date());gtag(\'config\',\'G-H0856C2N0T\');\naddEventListener(\'click\',function(e){var a=e.target.closest&&e.target.closest(\'a\');if(!a)return;var h=a.getAttribute(\'href\')||\'\';if(h.indexOf(\'wa.me\')>-1||h.indexOf(\'whatsapp\')>-1){gtag(\'event\',\'whatsapp_click\',{transport_type:\'beacon\'});}else if(h.indexOf(\'#register\')>-1){gtag(\'event\',\'book_visit_click\');}},true);\naddEventListener(\'submit\',function(e){if(e.target&&e.target.id===\'regform\'){gtag(\'event\',\'lead_form_submit\');}},true);\n</script>\n<!-- end Google tag -->'
 
 
+# Contextual internal links: the first mention of a topic in a paragraph or
+# list item links to the article that covers it. Only published, indexable
+# targets; never the article itself; at most INLINE_LINK_MAX per article.
+INLINE_LINKS = [
+    ('روضة كوكب الطفل الحر', '/'),
+    ('قلق الانفصال', 'nursery-separation-anxiety-jeddah-plan'),
+    ('الحياة العملية', 'montessori-practical-life-skills-nursery'),
+    ('الأنشطة الحسية', 'montessori-sensorial-activities-nursery'),
+    ('المهارات الحركية الدقيقة', 'preschool-fine-motor-skills-montessori'),
+    ('اللعب الحركي', 'preschool-gross-motor-play-jeddah'),
+    ('جاهزية الطفل', 'nursery-readiness-signs-child-jeddah'),
+    ('الأم العاملة', 'nursery-routine-for-working-mothers-jeddah'),
+    ('رسوم الحضانة', 'nursery-fees-value-jeddah-guide'),
+    ('الزيارة التعريفية', 'nursery-visit-checklist-jeddah'),
+    ('التواصل مع الأهل', 'nursery-communication-with-parents-jeddah'),
+    ('استقلال الطفل', 'child-independence-nursery-jeddah'),
+    ('المهارات الاجتماعية', 'child-social-skills-nursery-jeddah'),
+    ('تركيز الطفل', 'child-focus-attention-montessori'),
+    ('المجموعات الصغيرة', 'nursery-small-groups-jeddah'),
+    ('روتين اليوم', 'montessori-classroom-routine-jeddah'),
+    ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
+    ('أنشطة الرياضيات', 'montessori-math-activities-preschool-jeddah'),
+    ('أنشطة اللغة', 'montessori-language-activities-arabic-english'),
+    ('حي الفيصلية', 'montessori-nursery-faisaliyah-jeddah-details'),
+    ('الأسئلة الشائعة', 'nursery-faq-jeddah-parents'),
+    ('منهج مونتيسوري', 'what-is-montessori-method'),
+]
+INLINE_LINK_MAX = 5
+_BLOCK = re.compile(r'(<(p|li)\b[^>]*>)(.*?)(</\2>)', re.S)
+
+def add_inline_links(a, titles):
+    html = a.get('bodyHtml') or ''
+    me = a.get('slug')
+    used, n = set(), 0
+    def ok(target):
+        if target == '/':
+            return True
+        return target != me and titles.get(target, {}).get('pub') and \
+            not is_noindex({'slug': target, 'rewritten': titles.get(target, {}).get('rw')})
+    def block(m):
+        nonlocal n
+        inner = m.group(3)
+        if '<a ' in inner or n >= INLINE_LINK_MAX:
+            return m.group(0)
+        for phrase, target in INLINE_LINKS:
+            if target in used or not ok(target):
+                continue
+            i = inner.find(phrase)
+            if i < 0:
+                continue
+            # skip a phrase that sits inside a tag attribute
+            if inner.rfind('<', 0, i) > inner.rfind('>', 0, i):
+                continue
+            href = '/' if target == '/' else f'/blog/{target}/'
+            inner = inner[:i] + f'<a href="{href}">{phrase}</a>' + inner[i+len(phrase):]
+            used.add(target); n += 1
+            break
+        return m.group(1) + inner + m.group(4)
+    return _BLOCK.sub(block, html)
+
 def render_article(a, iso, d, allslugs, titles):
     cat=CATN.get(a['cat'],''); url=f"{SITE}/blog/{a['slug']}/"
     kws=[a.get('targetKeyword','')]+(a.get('secondaryKeywords') or [])
@@ -590,7 +662,7 @@ def render_article(a, iso, d, allslugs, titles):
   </header>
   <div class="article__body">
 <figure class="article-hero"><img src="{esc(a['imageUrl'])}" alt="{esc(a['imageAlt'])}" width="1200" height="800" loading="eager" fetchpriority="high"/></figure>
-{a['bodyHtml']}
+{add_inline_links(a, titles)}
   </div>
   {faq_block(a.get('faq'))}
   {cta(a.get('targetKeyword',''))}
@@ -868,79 +940,63 @@ def repair_static_site():
         text = form_re.sub(form, text, count=1)
         if english:
             repl = [
-                ('<title>Montessori Nursery in Jeddah | Kawkab Al-Tifl Al-Hurr</title>',
-                 '<title>Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K &amp; Kindergarten</title>'),
-                ('<meta name="description" content="Kawkab Al-Tifl Al-Hurr Kindergarten in Al Faisaliyyah, Jeddah — Montessori nursery, pre-K and kindergarten for ages 2–5, small classes, bilingual Arabic-English."/>',
-                 '<meta name="description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with small classes, a safe environment, and daily parent communication."/>'),
-                ('<meta property="og:title" content="Montessori Nursery in Jeddah | Kawkab Al-Tifl Al-Hurr"/>',
-                 '<meta property="og:title" content="Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K &amp; Kindergarten"/>'),
-                ('<meta property="og:description" content="Kawkab Al-Tifl Al-Hurr Kindergarten in Al Faisaliyyah, Jeddah — Montessori nursery for ages 2–5."/>',
-                 '<meta property="og:description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>'),
-                ('<meta name="twitter:title" content="Montessori Nursery in Jeddah | Kawkab Al-Tifl Al-Hurr"/>',
-                 '<meta name="twitter:title" content="Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K &amp; Kindergarten"/>'),
-                ('<meta name="twitter:description" content="Kawkab Al-Tifl Al-Hurr Kindergarten in Al Faisaliyyah, Jeddah — Montessori nursery for ages 2–5."/>',
-                 '<meta name="twitter:description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>'),
-                ('<h1 class="rev">Montessori Nursery in Jeddah<br/><span class="em">Pre-K &amp; kindergarten, ages 2–5</span></h1>',
-                 '<h1 class="rev">Kawkab Al-Tifl Al-Hurr Nursery in Jeddah<br/><span class="em">Pre-K &amp; kindergarten, ages 2–5</span></h1>'),
-                ('<title>Montessori School in Jeddah | Nursery, Pre-K &amp; KG (Ages 2–5)</title>',
-                 '<title>Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K &amp; Kindergarten</title>'),
-                ('<meta name="description" content="Authentic Montessori school &amp; nursery in Al Faisaliyyah, Jeddah — ages 2–5. Pre-K and kindergarten, bilingual Arabic–English, small classes. Book a visit."/>',
-                 '<meta name="description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with small classes, a safe environment, and daily parent communication."/>'),
-                ('<meta property="og:title" content="Montessori School in Jeddah | Nursery, Pre-K &amp; KG (Ages 2–5)"/>',
-                 '<meta property="og:title" content="Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K &amp; Kindergarten"/>'),
-                ('<meta property="og:description" content="Montessori school and nursery in Jeddah — Pre-K and kindergarten for ages 2–5."/>',
-                 '<meta property="og:description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>'),
-                ('<meta name="twitter:title" content="Montessori School in Jeddah | Nursery, Pre-K &amp; KG (Ages 2–5)"/>',
-                 '<meta name="twitter:title" content="Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K &amp; Kindergarten"/>'),
-                ('<meta name="twitter:description" content="Montessori school and nursery in Jeddah — Pre-K and kindergarten for ages 2–5."/>',
-                 '<meta name="twitter:description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>'),
-                ('<h1 class="rev">Where children grow<br/><span class="em">at their own pace</span><br/>and learn hands-on</h1>',
-                 '<h1 class="rev">Kawkab Al-Tifl Al-Hurr Nursery in Jeddah<br/><span class="em">Pre-K &amp; kindergarten, ages 2–5</span></h1>'),
                 ('<div class="t"><b>8–1</b><span>Daily · Sun–Thu</span></div>',
                  '<div class="t"><b>08:00–13:00</b><span>Daily · Sun–Thu</span></div>'),
                 # Full street address (matches facts.py and the Google Business
                 # Profile) so search engines tie the site to the Maps listing.
                 ('"streetAddress": "Al Faisaliyyah District",',
                  '"streetAddress": "Mohammed Abdulkarim St, Al Faisaliyyah District",'),
+                # Montessori back in the homepage title/H1 (head terms were lost
+                # when the brand-only title replaced it).
+                ('<title>Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K & Kindergarten</title>',
+                 '<title>Montessori Nursery &amp; Preschool in Jeddah | Kawkab Al-Tifl</title>'),
+                ('<meta name="description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with small classes, a safe environment, and daily parent communication."/>',
+                 '<meta name="description" content="Kawkab Al-Tifl Al-Hurr is a Montessori nursery, preschool and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with Arabic, English and Quran."/>'),
+                ('<meta property="og:title" content="Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K & Kindergarten"/>',
+                 '<meta property="og:title" content="Montessori Nursery &amp; Preschool in Jeddah | Kawkab Al-Tifl"/>'),
+                ('<meta property="og:description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>',
+                 '<meta property="og:description" content="Montessori nursery, preschool and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>'),
+                ('<meta name="twitter:title" content="Kawkab Al-Tifl Al-Hurr Nursery in Jeddah | Pre-K & Kindergarten"/>',
+                 '<meta name="twitter:title" content="Montessori Nursery &amp; Preschool in Jeddah | Kawkab Al-Tifl"/>'),
+                ('<meta name="twitter:description" content="Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>',
+                 '<meta name="twitter:description" content="Montessori nursery, preschool and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5."/>'),
+                ('<h1 class="rev">Kawkab Al-Tifl Al-Hurr Nursery in Jeddah<br/><span class="em">Pre-K &amp; kindergarten, ages 2–5</span></h1>',
+                 '<h1 class="rev">Montessori Nursery in Jeddah<br/><span class="em">Kawkab Al-Tifl Al-Hurr · preschool &amp; kindergarten, ages 2–5</span></h1>'),
             ]
         else:
             repl = [
-                ('<title>حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر</title>',
-                 '<title>حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية</title>'),
-                ('<meta name="description" content="روضة كوكب الطفل الحر في حي الفيصلية بجدة — حضانة مونتيسوري للأطفال من سنتين إلى ٥ سنوات، بتمهيدي وروضة وفصول صغيرة وتواصل يومي مع الأهالي."/>',
-                 '<meta name="description" content="حضانة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات، بتمهيدي وروضة وفصول صغيرة وبيئة آمنة وتواصل يومي مع الأهالي."/>'),
-                ('<meta property="og:title" content="حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر"/>',
-                 '<meta property="og:title" content="حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية"/>'),
-                ('<meta property="og:description" content="روضة كوكب الطفل الحر في حي الفيصلية بجدة — حضانة مونتيسوري للأطفال من سنتين إلى ٥ سنوات."/>',
-                 '<meta property="og:description" content="حضانة وروضة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات."/>'),
-                ('<meta name="twitter:title" content="حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر"/>',
-                 '<meta name="twitter:title" content="حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية"/>'),
-                ('<meta name="twitter:description" content="روضة كوكب الطفل الحر في حي الفيصلية بجدة — حضانة مونتيسوري للأطفال من سنتين إلى ٥ سنوات."/>',
-                 '<meta name="twitter:description" content="حضانة وروضة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات."/>'),
-                ('<h1 class="rev">حضانة مونتيسوري في جدة<br/><span class="em">تمهيدي وروضة للأطفال ٢–٥ سنوات</span></h1>',
-                 '<h1 class="rev">حضانة كوكب الطفل الحر في جدة<br/><span class="em">تمهيدي وروضة للأطفال ٢–٥ سنوات</span></h1>'),
-                ('<title>حضانة أطفال في جدة | مونتيسوري تمهيدي وروضة ٢–٥ سنوات</title>',
-                 '<title>حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية</title>'),
-                ('<meta name="description" content="روضة كوكب الطفل الحر بحي الفيصلية في جدة لأعمار من سنتين إلى ٥ سنوات: تمهيدي وروضة، فصول صغيرة، معلمات مؤهلات، وتقرير يومي لولي الأمر. احجزي زيارة عبر واتساب."/>',
-                 '<meta name="description" content="حضانة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات، بتمهيدي وروضة وفصول صغيرة وبيئة آمنة وتواصل يومي مع الأهالي."/>'),
-                ('<meta property="og:title" content="حضانة أطفال في جدة | مونتيسوري تمهيدي وروضة ٢–٥ سنوات"/>',
-                 '<meta property="og:title" content="حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية"/>'),
-                ('<meta property="og:description" content="روضة كوكب الطفل الحر في جدة — تمهيدي وروضة لأعمار من سنتين إلى ٥ سنوات بحي الفيصلية."/>',
-                 '<meta property="og:description" content="حضانة وروضة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات."/>'),
-                ('<meta name="twitter:title" content="حضانة أطفال في جدة | مونتيسوري تمهيدي وروضة ٢–٥ سنوات"/>',
-                 '<meta name="twitter:title" content="حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية"/>'),
-                ('<meta name="twitter:description" content="روضة كوكب الطفل الحر في جدة — تمهيدي وروضة لأعمار من سنتين إلى ٥ سنوات بحي الفيصلية."/>',
-                 '<meta name="twitter:description" content="حضانة وروضة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات."/>'),
-                ('<h1 class="rev">حيث ينمو الطفل<br/><span class="em">وفق إيقاعه</span>،<br/>ويكتشف العالم بيديه</h1>',
-                 '<h1 class="rev">حضانة كوكب الطفل الحر في جدة<br/><span class="em">تمهيدي وروضة للأطفال ٢–٥ سنوات</span></h1>'),
                 ('<div class="t"><b>٨–١</b><span>يومياً · الأحد–الخميس</span></div>',
                  '<div class="t"><b>٨:٠٠–١٣:٠٠</b><span>يومياً · الأحد–الخميس</span></div>'),
                 ('"streetAddress": "حي الفيصلية",',
                  '"streetAddress": "شارع محمد عبدالكريم، حي الفيصلية",'),
+                ('<title>حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية</title>',
+                 '<title>حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر – الفيصلية</title>'),
+                ('<meta name="description" content="حضانة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات، بتمهيدي وروضة وفصول صغيرة وبيئة آمنة وتواصل يومي مع الأهالي."/>',
+                 '<meta name="description" content="روضة كوكب الطفل الحر: حضانة مونتيسوري في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات، مع العربية والإنجليزية والقرآن وتواصل يومي مع الأهالي."/>'),
+                ('<meta property="og:title" content="حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية"/>',
+                 '<meta property="og:title" content="حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر – الفيصلية"/>'),
+                ('<meta property="og:description" content="حضانة وروضة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات."/>',
+                 '<meta property="og:description" content="حضانة مونتيسوري في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات — روضة كوكب الطفل الحر."/>'),
+                ('<meta name="twitter:title" content="حضانة كوكب الطفل الحر في جدة | روضة وتمهيدي حي الفيصلية"/>',
+                 '<meta name="twitter:title" content="حضانة مونتيسوري في جدة | روضة كوكب الطفل الحر – الفيصلية"/>'),
+                ('<meta name="twitter:description" content="حضانة وروضة كوكب الطفل الحر في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات."/>',
+                 '<meta name="twitter:description" content="حضانة مونتيسوري في حي الفيصلية بجدة للأطفال من سنتين إلى ٥ سنوات — روضة كوكب الطفل الحر."/>'),
+                # Programme cards: official stage names (facts.py) instead of
+                # «تمهيدي ٣–٤ / روضة ٤–٥», which contradicted the rest of the site.
+                ('<h3>تمهيدي</h3><div class="age">٣ – ٤ سنوات</div><p>أنشطة عملية لبناء الاستقلال والمهارات الحركية واللغة.</p>',
+                 '<h3>المستوى الأول</h3><div class="age">٣ – ٤ سنوات</div><p>أنشطة عملية لبناء الاستقلال والمهارات الحركية واللغة، ويسبقه برنامج ما قبل الروضة لعمر سنتين.</p>'),
+                ('<h3>روضة</h3><div class="age">٤ – ٥ سنوات</div>',
+                 '<h3>المستوى الثاني</h3><div class="age">٤ – ٥ سنوات</div>'),
+                ('<h1 class="rev">حضانة كوكب الطفل الحر في جدة<br/><span class="em">تمهيدي وروضة للأطفال ٢–٥ سنوات</span></h1>',
+                 '<h1 class="rev">حضانة مونتيسوري في جدة<br/><span class="em">روضة كوكب الطفل الحر · من سنتين إلى ٥ سنوات</span></h1>'),
             ]
         for old, new in repl:
             if old in text:
                 text = text.replace(old, new, 1)
+        if not english:
+            # FAQ answer (visible text and FAQPage JSON-LD): official stage names.
+            text = text.replace('ما قبل التمهيدي (Pre-KG) والتمهيدي والروضة',
+                                'ما قبل الروضة والمستوى الأول والمستوى الثاني')
         if '"sameAs"' not in text:
             text = text.replace('"priceRange": "$$",',
                 '"priceRange": "$$",\n  "sameAs": ["https://www.tiktok.com/@montessori_nursery23"],'
@@ -1056,7 +1112,7 @@ def article_date(article, fallback):
         return fallback
 
 def repair_published_articles(q, today):
-    titles={x.get('slug',''):{'title':x.get('title',''),'cat':x.get('cat','dev'),'pub':bool(x.get('published'))} for x in q}
+    titles={x.get('slug',''):{'title':x.get('title',''),'cat':x.get('cat','dev'),'pub':bool(x.get('published')),'rw':x.get('rewritten')} for x in q}
     allslugs=set(titles)
     for a in q:
         if not a.get('published') or not a.get('slug'):
@@ -1188,7 +1244,7 @@ def main():
         return
     d=today
     # slugs+titles map for related cards (all queue + assume prior 31 exist)
-    titles={x['slug']:{'title':x['title'],'cat':x['cat'],'pub':bool(x.get('published'))} for x in q}
+    titles={x['slug']:{'title':x['title'],'cat':x['cat'],'pub':bool(x.get('published')),'rw':x.get('rewritten')} for x in q}
     allslugs=set(titles) | set()  # related may also point to prior slugs; those resolve at browse time
     # render + write article
     art_dir=ROOT/"blog"/a['slug']; art_dir.mkdir(parents=True, exist_ok=True)
