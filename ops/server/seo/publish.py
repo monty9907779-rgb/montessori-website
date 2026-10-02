@@ -386,6 +386,14 @@ NOINDEX_SLUGS = frozenset({
     'prekg-for-4-year-old-jeddah-montessori',
 })
 
+# Blog pages whose search intent the homepage already wins ("حضانة حي
+# الفيصلية جدة" etc. rank 2-4 on /). They stay live for readers and AI
+# assistants but point their canonical at the homepage and leave the sitemap.
+CANONICAL_TO = {
+    'nursery-al-faisaliyah-jeddah': '/',
+    'montessori-nursery-faisaliyah-jeddah-details': '/',
+}
+
 REWRITES = OPT/"rewrites.json"
 _REWRITE_APPLIED = []
 
@@ -461,6 +469,9 @@ def prune_noindex_from_sitemap(q):
     new = sm
     for a in q:
         slug = a.get('slug')
+        if a.get('published') and slug in CANONICAL_TO:
+            new = re.sub(r'\s*<url>\s*<loc>[^<]*/blog/%s/</loc>.*?</url>' % re.escape(slug), '', new, flags=re.S)
+            continue
         if not a.get('published') or slug not in NOINDEX_SLUGS:
             continue
         if is_noindex(a):
@@ -595,7 +606,7 @@ INLINE_LINKS = [
     ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
     ('أنشطة الرياضيات', 'montessori-math-activities-preschool-jeddah'),
     ('أنشطة اللغة', 'montessori-language-activities-arabic-english'),
-    ('حي الفيصلية', 'montessori-nursery-faisaliyah-jeddah-details'),
+    ('حي الفيصلية', '/'),
     ('الأسئلة الشائعة', 'nursery-faq-jeddah-parents'),
     ('منهج مونتيسوري', 'what-is-montessori-method'),
 ]
@@ -646,7 +657,7 @@ def render_article(a, iso, d, allslugs, titles):
 <meta name="author" content="كوكب الطفل الحر"/>
 <meta name="robots" content="{'noindex, follow' if is_noindex(a) else 'index, follow, max-image-preview:large'}"/>
 <meta name="theme-color" content="#184e3e"/>
-<link rel="canonical" href="{url}"/>
+<link rel="canonical" href="{SITE + CANONICAL_TO[a["slug"]] if a["slug"] in CANONICAL_TO else url}"/>
 <link rel="alternate" hreflang="ar" href="{url}"/><link rel="alternate" hreflang="x-default" href="{url}"/>
 <meta name="geo.region" content="SA-02"/><meta name="geo.placename" content="Jeddah"/><meta name="geo.position" content="21.5795281;39.194829"/>
 <meta property="og:type" content="article"/><meta property="og:site_name" content="كوكب الطفل الحر"/>
