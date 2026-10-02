@@ -14,7 +14,8 @@ log() { printf '%s  %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
 FILES="seo/publish.py|/opt/seo/publish.py|py
 seo/rewrites.json|/opt/seo/rewrites.json|json
 seo/self-update.sh|/opt/seo/self-update.sh|sh
-nursery-facts/facts.py|/opt/nursery-facts/facts.py|py"
+nursery-facts/facts.py|/opt/nursery-facts/facts.py|py
+nursery/resync_deductions.sh|/opt/seo/resync-deductions.sh|sh"
 
 changed=0
 while IFS='|' read -r rel dst kind; do

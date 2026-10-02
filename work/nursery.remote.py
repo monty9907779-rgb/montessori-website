@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import secrets
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 import pytz
 from dateutil.relativedelta import relativedelta
@@ -104,6 +104,29 @@ class ResUsersNursery(models.Model):
         if not self.nursery_api_token:
             self.sudo().nursery_api_token = _new_token()
         return self.nursery_api_token
+
+    @api.model
+    def _auth_oauth_signin(self, provider, validation, params):
+        """دخول بجوجل لحساب موجود بنفس الإيميل.
+
+        أودو يطابق بمعرّف جوجل (oauth_uid) فقط؛ حساب أُنشئ يدوياً بلوجن = الجيميل
+        ما كانش بيعرف يدخل بجوجل (بيحاول يسجّل حساباً ثانياً بنفس اللوجن ويفشل).
+        هنا: لو جوجل أكّد الإيميل وفيه حساب نشط بنفس اللوجن لسه ما اتربطش بأي
+        مزوّد، نربطه بمعرّف جوجل مرة واحدة ثم نكمل المسار القياسي.
+        """
+        oauth_uid = validation.get('user_id')
+        email = (validation.get('email') or '').strip().lower()
+        verified = validation.get('email_verified', validation.get('verified_email', True))
+        if oauth_uid and email and verified:
+            has_uid = self.sudo().search_count(
+                [('oauth_uid', '=', oauth_uid), ('oauth_provider_id', '=', provider)])
+            if not has_uid:
+                user = self.sudo().search(
+                    [('login', '=', email), ('active', '=', True),
+                     ('oauth_uid', '=', False)], limit=1)
+                if user:
+                    user.write({'oauth_provider_id': provider, 'oauth_uid': oauth_uid})
+        return super()._auth_oauth_signin(provider, validation, params)
 
 
 class NurseryLinkRequest(models.Model):
@@ -332,7 +355,7 @@ class NurseryStudent(models.Model):
             tuition_collected = sum(rows.mapped('paid'))
             books_collected = sum(
                 p.amount for p in s.payment_ids if p.payment_type == 'books')
-            billed = tuition_billed + BOOKS_FEE_DEFAULT
+            billed = tuition_billed + (s.books_fees or 0.0)
             collected = tuition_collected + books_collected
             s.total_billed = billed
             s.total_collected = collected
@@ -478,7 +501,7 @@ class NurseryStudent(models.Model):
     @api.depends('books_fees', 'payment_ids.amount', 'payment_ids.payment_type')
     def _compute_books_balance(self):
         for rec in self:
-            due = BOOKS_FEE_DEFAULT
+            due = rec.books_fees or 0.0
             paid = sum(
                 p.amount for p in rec.payment_ids if p.payment_type == 'books')
             rec.books_paid = round(paid, 2)
@@ -760,9 +783,28 @@ class NurseryDeduction(models.Model):
     _description = 'خصومات الغياب والتأخير'
     _order = 'date desc, id desc'
 
-    # لائحة الحضانة: غياب بدون إبلاغ = يومين، غياب بإذن الإدارة = يوم (3 مرات/سنة كحد أقصى)
-    TYPE_DAYS = {'absence': 2.0, 'absence_auth': 1.0}
+    # لائحة الحضور — قرار المالك 17/9/2026 (مبالغ ثابتة بالريال، مش أيام راتب):
+    #   الدوام 08:00 → 13:30
+    #   التأخير  08:15–08:30 = 20 ر.س · 08:30–08:45 = 50 ر.س · بعد 08:45 = «تجاوز» (افتراضياً 100 = الغياب)
+    #   الانصراف المبكر 13:15–13:30 = 50 ر.س · قبل 13:15 = «تجاوز» (افتراضياً 100 = الغياب)
+    #   غياب اليوم = 100 ر.س (المالك عدّلها من 80 إلى 100 في نفس اليوم)
+    # كل رقم منها في ir.config_parameter عشان يتعدّل بلا كود. غياب بإذن الإدارة لسه يوم راتب.
+    RULE_DEFAULTS = {
+        'nursery.work_start': '08:00',
+        'nursery.work_end': '13:30',
+        'nursery.rule.late_tiers': '15-30:20,30-45:50',
+        'nursery.rule.late_over': '100',
+        'nursery.rule.early_tiers': '0-15:50',
+        'nursery.rule.early_over': '100',
+        'nursery.rule.absence': '100',
+        # اللائحة سارية من هذا اليوم — الأيام اللي قبله ما تتلمسش (لا تحديث ولا حذف)
+        'nursery.rule.start_date': '2026-09-17',
+    }
+    AUTO_PREFIX = 'تلقائي'
+    TYPE_DAYS = {'absence_auth': 1.0}
     AUTH_ABSENCE_YEARLY_LIMIT = 3
+    DTYPE_LABELS = {'late': 'تأخير', 'early': 'انصراف مبكر', 'absence': 'غياب',
+                    'absence_auth': 'غياب بإذن', 'other': 'أخرى'}
 
     employee_id = fields.Many2one(
         'hr.employee', string='الموظفة', required=True, ondelete='cascade')
@@ -771,6 +813,7 @@ class NurseryDeduction(models.Model):
         ('absence', 'غياب بدون إبلاغ'),
         ('absence_auth', 'غياب بإذن الإدارة'),
         ('late', 'تأخير'),
+        ('early', 'انصراف مبكر'),
         ('other', 'أخرى'),
     ], string='النوع', required=True, default='late')
     minutes_late = fields.Integer('دقائق التأخير')
@@ -790,7 +833,10 @@ class NurseryDeduction(models.Model):
 
     @api.onchange('dtype')
     def _onchange_dtype(self):
-        if self.dtype in self.TYPE_DAYS:
+        if self.dtype == 'absence':
+            self.days = 0.0
+            self.amount = self.rule_params()['absence']
+        elif self.dtype in self.TYPE_DAYS:
             self.days = self.TYPE_DAYS[self.dtype]
             self.amount = self.days * self._day_value(self.employee_id)
 
@@ -820,91 +866,223 @@ class NurseryDeduction(models.Model):
             [('employee_id', '=', employee.id)], order='id desc', limit=1)
         return (sal.expected / 30.0) if sal and sal.expected else 0.0
 
+    # ==================== محرّك اللائحة ====================
+
+    @api.model
+    def rule_params(self):
+        """أرقام اللائحة من ir.config_parameter (مع الافتراضيات فوق لو المفتاح ناقص/تالف)."""
+        icp = self.env['ir.config_parameter'].sudo()
+
+        def get(key):
+            return (icp.get_param(key) or self.RULE_DEFAULTS[key]).strip()
+
+        def hm(s, default):
+            try:
+                h, m = (int(x) for x in s.split(':'))
+                return time(h, m)
+            except (TypeError, ValueError):
+                return default
+
+        def tiers(s):
+            out = []
+            for part in s.split(','):
+                part = part.strip()
+                if not part:
+                    continue
+                try:
+                    rng, amt = part.split(':')
+                    a, b = rng.split('-')
+                    out.append((int(a), int(b), float(amt)))
+                except ValueError:
+                    continue
+            return sorted(out)
+
+        def num(s):
+            try:
+                return float(s)
+            except (TypeError, ValueError):
+                return 0.0
+
+        try:
+            start = date.fromisoformat(get('nursery.rule.start_date'))
+        except ValueError:
+            start = date.fromisoformat(self.RULE_DEFAULTS['nursery.rule.start_date'])
+        return {
+            'work_start': hm(get('nursery.work_start'), time(8, 0)),
+            'work_end': hm(get('nursery.work_end'), time(13, 30)),
+            'late_tiers': tiers(get('nursery.rule.late_tiers')),
+            'late_over': num(get('nursery.rule.late_over')),
+            'early_tiers': tiers(get('nursery.rule.early_tiers')),
+            'early_over': num(get('nursery.rule.early_over')),
+            'absence': num(get('nursery.rule.absence')),
+            'start_date': start,
+        }
+
     @staticmethod
-    def late_days_for(minutes):
-        """درجات خصم التأخير حسب اللائحة (تقبل دقائق بكسور للدقة بالثانية):
-        أقل من 10 دقائق = مسموح، 10 لأقل من 30 = ربع يوم،
-        30 بالظبط = نص يوم، أكثر من 30 = يوم كامل"""
-        if minutes < 10:
+    def _tier_amount(minutes, tiers, over, late=True):
+        """قيمة الخصم لعدد دقائق (تأخير بعد بداية الدوام / انصراف قبل نهايته).
+        شرائح التأخير [من، إلى) — 08:15:00 بالظبط = 20؛ شرائح الانصراف (من، إلى] —
+        13:15:00 بالظبط = 50 و13:30:00 بالظبط = لا شيء. بعد آخر شريحة = مبلغ التجاوز."""
+        if not tiers:
             return 0.0
-        if minutes > 30:
-            return 1.0
-        if minutes >= 30:
-            return 0.5
-        return 0.25
+        for a, b, amt in tiers:
+            if (a <= minutes < b) if late else (a < minutes <= b):
+                return amt
+        last_hi = max(b for _, b, _ in tiers)
+        if (minutes >= last_hi) if late else (minutes > last_hi):
+            return over
+        return 0.0
+
+    @api.model
+    def rule_text(self):
+        """اللائحة بصيغة تُعرض للموظفة وللمديرة (سطور «البند → المبلغ»)."""
+        p = self.rule_params()
+        anchor = date(2000, 1, 1)
+
+        def shift(t, minutes):
+            return (datetime.combine(anchor, t) + timedelta(minutes=minutes)).strftime('%H:%M')
+
+        def money(v):
+            return int(v) if float(v).is_integer() else v
+
+        lines = []
+        for a, b, amt in p['late_tiers']:
+            lines.append({'k': 'التأخير من %s إلى %s' % (shift(p['work_start'], a), shift(p['work_start'], b)),
+                          'v': money(amt)})
+        if p['late_tiers'] and p['late_over']:
+            last_hi = max(b for _, b, _ in p['late_tiers'])
+            lines.append({'k': 'الحضور بعد %s' % shift(p['work_start'], last_hi), 'v': money(p['late_over'])})
+        for a, b, amt in p['early_tiers']:
+            lines.append({'k': 'الانصراف من %s إلى %s' % (shift(p['work_end'], -b), shift(p['work_end'], -a)),
+                          'v': money(amt)})
+        if p['early_tiers'] and p['early_over']:
+            last_hi = max(b for _, b, _ in p['early_tiers'])
+            lines.append({'k': 'الانصراف قبل %s' % shift(p['work_end'], -last_hi), 'v': money(p['early_over'])})
+        lines.append({'k': 'غياب اليوم', 'v': money(p['absence'])})
+        return {
+            'work_start': p['work_start'].strftime('%H:%M'),
+            'work_end': p['work_end'].strftime('%H:%M'),
+            'grace_min': p['late_tiers'][0][0] if p['late_tiers'] else 0,
+            'lines': lines,
+        }
+
+    def _is_auto(self):
+        self.ensure_one()
+        return (self.note or '').startswith(self.AUTO_PREFIX)
+
+    @api.model
+    def _is_holiday(self, day):
+        """هل اليوم داخل إجازة رسمية مسجّلة في nursery.holiday؟
+
+        2/10: المولّد كان يتجاهل جدول الإجازات، فاليوم الوطني (23 سبتمبر) سُجّل
+        «غياب» لكل المعلمات. الإجازة تُعامل كالجمعة والسبت: لا خصومات تلقائية،
+        وsync_day تمسح المسودّات التلقائية التي سُجّلت قبل إدراج الإجازة.
+        """
+        return bool(self.env['nursery.holiday'].sudo().search_count(
+            [('date_from', '<=', day), ('date_to', '>=', day)]))
+
+    @api.model
+    def evaluate_day(self, emp, day, p=None, now_local=None):
+        """ما تستحقه الموظفة من خصومات تلقائية عن يوم واحد حسب اللائحة —
+        قائمة {dtype, amount, minutes_late, note}. الجمعة والسبت والإجازات
+        الرسمية والمعفيون = لا شيء."""
+        p = p or self.rule_params()
+        tz = pytz.timezone(NURSERY_TZ)
+        now_local = now_local or datetime.now(pytz.utc).astimezone(tz)
+        if (day.weekday() in (4, 5) or self._is_holiday(day)
+                or emp.attendance_exempt or not emp.user_id):
+            return []
+        ws = tz.localize(datetime.combine(day, p['work_start']))
+        we = tz.localize(datetime.combine(day, p['work_end']))
+        d0 = tz.localize(datetime.combine(day, time(0, 0)))
+        d1 = d0 + timedelta(days=1)
+
+        def to_utc(x):
+            return x.astimezone(pytz.utc).replace(tzinfo=None)
+
+        atts = self.env['hr.attendance'].sudo().search(
+            [('employee_id', '=', emp.id), ('check_in', '>=', to_utc(d0)),
+             ('check_in', '<', to_utc(d1))], order='check_in asc')
+        out = []
+        if not atts:
+            # الغياب يُحسم بعد نهاية آخر شريحة تأخير (08:45) — قبلها لسه ممكن تحضر
+            last_hi = max([b for _, b, _ in p['late_tiers']] or [0])
+            if now_local >= ws + timedelta(minutes=last_hi):
+                out.append({'dtype': 'absence', 'amount': p['absence'], 'minutes_late': 0,
+                            'note': '%s: لم يُسجَّل حضور — لو الغياب بإذن الإدارة غيّري النوع'
+                                    % self.AUTO_PREFIX})
+            return out
+        ci = pytz.utc.localize(atts[0].check_in).astimezone(tz)
+        late_min = (ci - ws).total_seconds() / 60.0
+        amt = self._tier_amount(late_min, p['late_tiers'], p['late_over'], late=True)
+        if amt > 0:
+            out.append({'dtype': 'late', 'amount': amt, 'minutes_late': int(late_min),
+                        'note': '%s: حضور %s (تأخير %d دقيقة)'
+                                % (self.AUTO_PREFIX, ci.strftime('%H:%M'), int(late_min))})
+        if not atts.filtered(lambda a: not a.check_out):
+            co = max(pytz.utc.localize(a.check_out).astimezone(tz) for a in atts)
+            early_min = (we - co).total_seconds() / 60.0
+            amt = self._tier_amount(early_min, p['early_tiers'], p['early_over'], late=False)
+            if amt > 0:
+                mins = int(-(-early_min // 1))  # سقف الدقائق: 13:29:30 = دقيقة واحدة مش صفر
+                out.append({'dtype': 'early', 'amount': amt, 'minutes_late': mins,
+                            'note': '%s: انصراف %s (قبل نهاية الدوام بـ%d دقيقة)'
+                                    % (self.AUTO_PREFIX, co.strftime('%H:%M'), mins)})
+        return out
+
+    @api.model
+    def sync_day(self, emp, day, p=None, now_local=None):
+        """يطابق الخصومات التلقائية (note يبدأ بـ«تلقائي») ليوم واحد مع سجل الحضور:
+        ينشئ الناقص، يحدّث المسودّات، ويحذف اللي ما عادش مستحقاً (مثلاً غياب ثم حضرت،
+        أو انصراف مبكر ثم رجعت سجّلت). اليدوي والمعتمد والملغى لا يُمسّ أبداً.
+        يرجّع خصومات اليوم غير الملغاة."""
+        p = p or self.rule_params()
+        Ded = self.sudo()
+        if day < p['start_date']:
+            # قبل سريان اللائحة: خصومات الأيام دي بالقاعدة القديمة وتفضل زي ما هي
+            return Ded.search([('employee_id', '=', emp.id), ('date', '=', day),
+                               ('state', '!=', 'cancelled')], order='id')
+        desired = {d['dtype']: d for d in self.evaluate_day(emp, day, p, now_local)}
+        existing = Ded.search([('employee_id', '=', emp.id), ('date', '=', day)])
+        by_type = {r.dtype: r for r in existing}
+        human_absence = any(
+            r.dtype == 'absence_auth' or (r.dtype == 'absence' and not r._is_auto())
+            for r in existing)
+        for dtype, want in desired.items():
+            cur = by_type.get(dtype)
+            if cur:
+                if cur._is_auto() and cur.state == 'draft':
+                    vals = {k: want[k] for k in ('amount', 'minutes_late', 'note') if cur[k] != want[k]}
+                    if vals:
+                        cur.write(vals)
+                continue
+            if human_absence:
+                continue
+            Ded.create({'employee_id': emp.id, 'date': day, 'dtype': dtype, 'days': 0.0,
+                        'amount': want['amount'], 'minutes_late': want['minutes_late'],
+                        'note': want['note']})
+        for r in existing:
+            if (r.dtype in ('absence', 'late', 'early') and r.dtype not in desired
+                    and r._is_auto() and r.state == 'draft'):
+                r.unlink()
+        return Ded.search([('employee_id', '=', emp.id), ('date', '=', day),
+                           ('state', '!=', 'cancelled')], order='id')
 
     @api.model
     def cron_generate_daily(self):
-        """يشتغل يومياً: يسجل خصم غياب لمن لم يسجل حضور اليوم،
-        وخصم تأخير لمن حضر بعد موعد بداية الدوام + فترة السماح.
-        الجمعة والسبت إجازة."""
-        icp = self.env['ir.config_parameter'].sudo()
-
-        def _num(key, default, conv=float):
-            try:
-                return conv(icp.get_param(key, default))
-            except (TypeError, ValueError):
-                return conv(default)
-
-        grace_min = _num('nursery.late_grace_min', '10', int)
-
+        """كل ربع ساعة: مزامنة خصومات اليوم (وأمس احتياطاً) لكل موظفة عندها حساب دخول."""
         tz = pytz.timezone(NURSERY_TZ)
         now_local = datetime.now(pytz.utc).astimezone(tz)
-        today = now_local.date()
-        if now_local.weekday() in (4, 5):  # الجمعة والسبت
-            return
-
-        start_s = icp.get_param('nursery.work_start', '08:00') or '08:00'
-        try:
-            h, m = (int(x) for x in start_s.split(':'))
-            work_time = time(h, m)
-        except ValueError:
-            work_time = time(8, 0)
-        work_start_local = tz.localize(datetime.combine(today, work_time))
-        deadline_local = work_start_local + timedelta(minutes=grace_min)
-        if now_local <= deadline_local:
-            # الكرون اشتغل بدري قبل نهاية فترة السماح — استنى التشغيلة الجاية
-            return
-
-        day_start_utc = tz.localize(
-            datetime.combine(today, time(0, 0))).astimezone(pytz.utc).replace(tzinfo=None)
-
-        employees = self.env['hr.employee'].sudo().search(
-            [('user_id', '!=', False), ('attendance_exempt', '=', False)])
-        Att = self.env['hr.attendance'].sudo()
-        for emp in employees:
-            first = Att.search(
-                [('employee_id', '=', emp.id), ('check_in', '>=', day_start_utc)],
-                limit=1, order='check_in asc')
-            day_value = self._day_value(emp)
-            if not first:
-                # غياب بدون إبلاغ = يومين — لو كان بإذن الإدارة، المدير يغيّر النوع
-                existing = self.search([
-                    ('employee_id', '=', emp.id), ('date', '=', today),
-                    ('dtype', 'in', ('absence', 'absence_auth'))])
-                if not existing:
-                    days = self.TYPE_DAYS['absence']
-                    self.create({
-                        'employee_id': emp.id, 'date': today, 'dtype': 'absence',
-                        'days': days, 'amount': days * day_value,
-                        'note': 'تلقائي: لم يُسجَّل حضور — لو الغياب بإذن الإدارة غيّري النوع',
-                    })
+        p = self.rule_params()
+        # المعفيون داخلين كمان: evaluate_day بيرجّع لهم فاضي فـ sync_day يمسح أي غياب
+        # تلقائي اتسجّل لهم قبل الإعفاء (وإلا يفضل «غياب 100» على المديرة للأبد)
+        emps = self.env['hr.employee'].sudo().search(
+            [('active', '=', True), ('user_id', '!=', False)])
+        for day in (now_local.date(), now_local.date() - timedelta(days=1)):
+            if day.weekday() in (4, 5):
                 continue
-            check_in_local = pytz.utc.localize(first.check_in).astimezone(tz)
-            minutes_f = (check_in_local - work_start_local).total_seconds() / 60.0
-            days = self.late_days_for(minutes_f)
-            if days:
-                # لا تكرر الخصم لو اليوم عليه بالفعل تأخير أو غياب (من تشغيلة سابقة)
-                existing = self.search([
-                    ('employee_id', '=', emp.id), ('date', '=', today),
-                    ('dtype', 'in', ('late', 'absence', 'absence_auth'))])
-                if not existing:
-                    self.create({
-                        'employee_id': emp.id, 'date': today, 'dtype': 'late',
-                        'minutes_late': int(minutes_f), 'days': days,
-                        'amount': days * day_value,
-                        'note': 'تلقائي: حضور %s' % check_in_local.strftime('%H:%M'),
-                    })
+            for emp in emps:
+                self.sync_day(emp, day, p, now_local)
 
 
 class NurseryEvaluation(models.Model):
@@ -1093,6 +1271,7 @@ class NurseryMonthFee(models.Model):
     full_fee = fields.Float('الرسوم الشهرية الكاملة')
     fees = fields.Float('المستحق هذا الشهر')   # متناسب في شهر الالتحاق، كامل بعده
     paid = fields.Float('المدفوع')
+    excel_remaining = fields.Float('الباقي من Excel')
     paid_date = fields.Date('تاريخ الدفع')
     method = fields.Selection(PAYMENT_METHODS, string='طريقة الدفع')
     note = fields.Char('ملاحظة')
