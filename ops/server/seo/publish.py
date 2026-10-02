@@ -1260,7 +1260,18 @@ html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-
         text = text.replace('Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah', 'Montessori Nursery in Jeddah')
         text = text.replace('<title>Blog | Kawkab Al-Tifl Al-Hurr Kindergarten &mdash; Parent Guides</title>',
             '<title>Nursery, Preschool &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>')
+        return en_facts(text)
+    # English pages were written outside the facts gate. Bring them in line:
+    # no review count (facts.py: the number changes), and the official stage
+    # names (Pre-KG 2-3, KG1 3-4, KG2 4-5) instead of "Nursery, Pre-K,
+    # Kindergarten" for our own programmes.
+    def en_facts(text):
+        text = re.sub(r'(4\.7(?:&#9733;</strong>|\u2605</strong>| stars)?)\s+from\s+\d+\s+(?:Google\s+)?reviews',
+                      r'\1 on Google Maps', text)
+        text = re.sub(r'\b[Nn]ursery, [Pp]re-K(?:\s*/\s*[Pp]reschool)?,?\s+(?:and\s+)?[Kk]indergarten',
+                      'Pre-KG (2\u20133), KG1 (3\u20134), KG2 (4\u20135)', text)
         return text
+    _patch_file(ROOT/'en'/'index.html', en_facts)
     en_blog = ROOT/'en'/'blog'
     if en_blog.is_dir():
         for page in en_blog.rglob('index.html'):
