@@ -16,6 +16,13 @@
 import hashlib
 import json, re, html as H, datetime, pathlib, subprocess, urllib.request, sys
 
+# Cloudflare answers 403 to the default "Python-urllib/3.x" agent, so the
+# health check, the live check after publishing and the SEO check all read
+# the site as down ("seo=fail", "live=HTTP Error 403"). Identify ourselves.
+_opener = urllib.request.build_opener()
+_opener.addheaders = [('User-Agent', 'Mozilla/5.0 (compatible; KawkabHealthCheck/1.0; +https://montessori-ksa.com)')]
+urllib.request.install_opener(_opener)
+
 sys.path.insert(0, "/opt/nursery-facts")
 try:
     import facts  # مرجع الحقائق المشترك — يُستخدم قبل نشر أي مقال
@@ -934,7 +941,7 @@ def write_llms_txt():
         'التقييم 4.7 من 5 على خرائط جوجل. الدوام: الأحد إلى الخميس، من الثامنة صباحًا حتى الواحدة ظهرًا.',
         '> Kawkab Al-Tifl Al-Hurr is a Montessori nursery and kindergarten in Al Faisaliyah (Mohammed Abdulkarim St), Jeddah, Saudi Arabia, '
         'for children aged 2 to 5: authentic Montessori with Modern Standard Arabic, English and Quran. '
-        'Rated 4.7/5 on Google Maps. Open Sunday to Thursday, 08:00 to 13:00.',
+        'Rated 4.7/5 on Google Maps, with more than 10 years of experience. Open Sunday to Thursday, 08:00 to 13:00.',
         '',
         '## حقائق أساسية / Key facts',
         '- الاسم: روضة كوكب الطفل الحر (Kawkab Al-Tifl Al-Hurr Kindergarten)',
@@ -943,6 +950,7 @@ def write_llms_txt():
         '- المراحل: ما قبل الروضة (سنتان–٣) · المستوى الأول (٣–٤) · المستوى الثاني (٤–٥) · التمهيدي (٥–٦) · برنامج صيفي · ضيافة بالساعة',
         '- المنهج: مونتيسوري الأصيل + اللغة العربية الفصحى + الإنجليزية + تعليم القرآن',
         '- المزايا: بيئة مُعدّة، معلمات مؤهلات، كاميرات مراقبة، تطبيق تواصل يومي مع الأسرة',
+        '- الخبرة: أكثر من ١٠ سنوات في تعليم الطفولة المبكرة / More than 10 years of experience',
         '- الدوام: الأحد إلى الخميس 08:00–13:00',
         '- الرسوم: تُحدَّد حسب عمر الطفل وعدد الأيام وساعات الدوام، ويُؤكَّد الرقم عبر مكالمة أو زيارة',
         '- التواصل: واتساب +966541558173 · https://montessori-ksa.com',
@@ -952,6 +960,7 @@ def write_llms_txt():
         f'- [الصفحة الرئيسية]({SITE}/): البرامج والمنهج وحجز الزيارات',
         f'- [English version]({SITE}/en/): English site',
         f'- [المدوّنة]({SITE}/blog/): أدلة تربوية بالعربية لأولياء الأمور في جدة',
+        f'- [llms-full.txt]({SITE}/llms-full.txt): الحقائق والأسئلة الشائعة وفهرس كل المقالات في ملف واحد',
         '',
         '## أدلة للإجابة عن أسئلة الأهالي / Key guides',
     ]
@@ -981,6 +990,68 @@ def write_llms_txt():
         log('llms.txt updated')
     except Exception as ex:
         log(f'llms.txt write failed: {ex}')
+
+def _home_faq():
+    """(question, answer) pairs from the homepage FAQPage JSON-LD."""
+    try:
+        h = (ROOT/'index.html').read_text(encoding='utf-8')
+    except Exception:
+        return []
+    out = []
+    for b in re.findall(r'<script type="application/ld\+json">(.*?)</script>', h, re.S):
+        try:
+            d = json.loads(b)
+        except Exception:
+            continue
+        for item in (d.get('@graph') or [d]) if isinstance(d, dict) else d:
+            if isinstance(item, dict) and item.get('@type') == 'FAQPage':
+                for qa in item.get('mainEntity') or []:
+                    q = (qa.get('name') or '').strip()
+                    a = ((qa.get('acceptedAnswer') or {}).get('text') or '').strip()
+                    if q and a:
+                        out.append((q, re.sub(r'<[^>]+>', '', a)))
+    return out
+
+def write_llms_full(q):
+    """/llms-full.txt: the llms.txt facts plus the homepage FAQ and an index of
+    every indexable article (title, summary, URL), so an AI assistant can
+    answer and cite from one fetch. Each FAQ/article line must pass the facts
+    gate on its own; a failing line is left out rather than blocking the file."""
+    try:
+        base = (ROOT/'llms.txt').read_text(encoding='utf-8').rstrip()
+    except Exception:
+        return
+    gate = (lambda t: facts.check_text(t)) if facts is not None else (lambda t: [])
+    anchor = 'روضة كوكب الطفل الحر تستقبل الأطفال من سنتين إلى ٥ سنوات.\n'
+    ok = lambda line: not gate(anchor + line)
+    lines = [base, '', '## الأسئلة الشائعة / FAQ']
+    for qq, aa in _home_faq():
+        line = f'- **{qq}** {aa}'
+        if ok(line):
+            lines.append(line)
+    lines += ['', '## فهرس المقالات / Article index']
+    for a in sorted(q, key=lambda x: str(x.get('published') or ''), reverse=True):
+        slug = a.get('slug', '')
+        if (not a.get('published') or is_noindex(a) or slug in REDIRECTED
+                or slug in CANONICAL_TO or not (ROOT/'blog'/slug/'index.html').exists()):
+            continue
+        title = (a.get('seoTitle') or a.get('title') or slug).strip()
+        line = f'- [{title}]({SITE}/blog/{slug}/): {(a.get("metaDescription") or "").strip()}'
+        if ok(line):
+            lines.append(line)
+    txt = '\n'.join(lines) + '\n'
+    why = gate(txt)
+    if why:
+        log(f"llms-full.txt not written: {'; '.join(why)}")
+        return
+    p = ROOT/'llms-full.txt'
+    try:
+        if p.exists() and p.read_text(encoding='utf-8') == txt:
+            return
+        p.write_text(txt, encoding='utf-8')
+        log(f"llms-full.txt updated ({len(lines)} lines)")
+    except Exception as ex:
+        log(f'llms-full.txt write failed: {ex}')
 
 def repair_static_site():
     """Patch static pages after deployment from the same publisher job."""
@@ -1061,6 +1132,23 @@ def repair_static_site():
             text = text.replace('"priceRange": "$$",',
                 '"priceRange": "$$",\n  "sameAs": ["https://www.tiktok.com/@montessori_nursery23"],'
                 '\n  "hasMap": "https://www.google.com/maps/search/?api=1&query=21.5795281,39.194829",', 1)
+        # Facts AI assistants quote: programs with ages, and amenities.
+        if '"amenityFeature"' not in text and '"hasMap"' in text:
+            if english:
+                progs = [('Pre-KG', 2, 3), ('KG1', 3, 4), ('KG2', 4, 5), ('Summer programme', 2, 5), ('Hourly care', 2, 5)]
+                amen = ['Montessori prepared environment', 'Qualified teachers', 'CCTV cameras', 'Daily parent app', 'Arabic, English and Quran']
+            else:
+                progs = [('ما قبل الروضة', 2, 3), ('المستوى الأول', 3, 4), ('المستوى الثاني', 4, 5), ('برنامج صيفي', 2, 5), ('ضيافة بالساعة', 2, 5)]
+                amen = ['بيئة مونتيسوري مُعدّة', 'معلمات مؤهلات', 'كاميرات مراقبة', 'تطبيق تواصل يومي مع الأسرة', 'العربية والإنجليزية والقرآن']
+            extra = {
+                'amenityFeature': [{'@type': 'LocationFeatureSpecification', 'name': n, 'value': True} for n in amen],
+                'hasOfferCatalog': {'@type': 'OfferCatalog', 'name': 'Programs' if english else 'البرامج',
+                    'itemListElement': [{'@type': 'Offer', 'itemOffered': {'@type': 'Service', 'name': n,
+                        'audience': {'@type': 'PeopleAudience', 'suggestedMinAge': lo, 'suggestedMaxAge': hi}}}
+                        for n, lo, hi in progs]},
+            }
+            frag = ',\n  '.join(f'"{k}": {json.dumps(v, ensure_ascii=False)}' for k, v in extra.items())
+            text = re.sub(r'("hasMap": "[^"]*",)', lambda m: m.group(1) + '\n  ' + frag + ',', text, count=1)
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
@@ -1088,7 +1176,54 @@ def repair_static_site():
             text = text.replace('</body>', _registration_script(english) + '</body>', 1)
         if 'id="montessori-pwa-fix"' not in text:
             text = text.replace('</body>', _pwa_script() + '</body>', 1)
-        return text
+        return add_home_faq(text, english)
+
+    # Questions AI assistants are asked where we were missing (Ubersuggest
+    # AISV): answered on the homepage, in the visible FAQ and in FAQPage.
+    HOME_FAQ_AR = [
+        ('هل توجد روضة في جدة تعلّم بالعربية والإنجليزية والقرآن معاً؟',
+         'نعم، روضة كوكب الطفل الحر في حي الفيصلية بجدة تجمع يومياً بين اللغة العربية الفصحى والإنجليزية وتعليم القرآن الكريم ضمن منهج مونتيسوري الأصيل، للأطفال من سنتين إلى ٥ سنوات.'),
+        ('ما المرحلة المناسبة لطفل عمره ٤ سنوات؟',
+         'طفل الرابعة يكون في المستوى الثاني (٤–٥) حسب التسمية السعودية الرسمية، ويركّز على القراءة الأولى والعدد والاعتماد على النفس في بيئة مونتيسوري مُعدّة. نستقبل الأطفال من سنتين إلى ٥ سنوات.'),
+        ('كم سنة خبرة لدى الروضة؟',
+         'أكثر من ١٠ سنوات في تعليم الطفولة المبكرة، مع معلمات مؤهلات. نستقبل الأطفال من سنتين إلى ٥ سنوات في حي الفيصلية بجدة.'),
+    ]
+    HOME_FAQ_EN = [
+        ('Which kindergarten in Jeddah teaches in both Arabic and English?',
+         'Kawkab Al-Tifl Al-Hurr Kindergarten in Al Faisaliyyah, Jeddah teaches every day in Modern Standard Arabic and English, alongside Quran, within an authentic Montessori programme for children aged 2 to 5.'),
+        ('Can my 2-year-old join a daycare in Jeddah?',
+         'Yes. Our Pre-KG stage is for children aged 2 to 3, with a gentle settling-in period, small groups and a prepared Montessori environment. We welcome children aged 2 to 5, Sunday to Thursday, 8:00 AM to 1:00 PM.'),
+        ('How much experience does the nursery have?',
+         'More than 10 years in early childhood education, with qualified teachers, in the Al Faisaliyyah district of Jeddah.'),
+    ]
+
+    def add_home_faq(text, english):
+        items = HOME_FAQ_EN if english else HOME_FAQ_AR
+        if facts is not None and not english:
+            items = [(q, a) for q, a in items if not facts.check_text(a)]
+        new = [(q, a) for q, a in items if q not in text]
+        if not new:
+            return text
+        m = re.search(r'<script type="application/ld\+json">(\{[^<]*"FAQPage".*?)</script>', text, re.S)
+        last = text.rfind('</details>')
+        if not m or last < 0:
+            return text
+        try:
+            data = json.loads(m.group(1))
+        except Exception:
+            return text
+        # visible FAQ: copy the markup of the existing last item
+        start = text.rfind('<details', 0, last)
+        tpl = text[start:last + len('</details>')]
+        sm = re.match(r'(<details[^>]*>\s*<summary[^>]*>).*?(</summary>\s*<div[^>]*>).*?(</div>)', tpl, re.S)
+        if not sm:
+            return text
+        html_items = ''.join(f'{sm.group(1)}{esc(q)}{sm.group(2)}{esc(a)}{sm.group(3)}</details>' for q, a in new)
+        data.setdefault('mainEntity', []).extend(
+            {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in new)
+        ld = json.dumps(data, ensure_ascii=False)
+        text = text[:last + len('</details>')] + html_items + text[last + len('</details>'):]
+        return text.replace(m.group(1), ld, 1)
     _patch_file(ROOT/'index.html', lambda t: patch_home(t, False))
     _patch_file(ROOT/'en'/'index.html', lambda t: patch_home(t, True))
     for install_page in (ROOT/'app'/'index.html', ROOT/'login'/'index.html'):
@@ -1170,6 +1305,34 @@ html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-
     _patch_file(ROOT/'privacy'/'index.html', lambda t: patch_privacy(t, False))
     _patch_file(ROOT/'en'/'privacy'/'index.html', lambda t: patch_privacy(t, True))
 
+    # English blog: an old brand substitution replaced "Montessori Nursery"
+    # with the brand in the Montessori guide's title, H1, schema and every
+    # card linking to it, so the page lost its head term ("montessori
+    # nursery jeddah", "montessori school").
+    def patch_en_blog(text):
+        text = text.replace('<title>Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah</title>',
+            "<title>Montessori Nursery in Jeddah: A Parent's Guide | Kawkab Al-Tifl</title>")
+        text = text.replace('Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah', 'Montessori Nursery in Jeddah')
+        text = text.replace('<title>Blog | Kawkab Al-Tifl Al-Hurr Kindergarten &mdash; Parent Guides</title>',
+            '<title>Nursery, Preschool &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>')
+        return en_facts(text)
+    # English pages were written outside the facts gate. Bring them in line:
+    # no review count (facts.py: the number changes), and the official stage
+    # names (Pre-KG 2-3, KG1 3-4, KG2 4-5) instead of "Nursery, Pre-K,
+    # Kindergarten" for our own programmes.
+    def en_facts(text):
+        text = re.sub(r'(4\.7(?:&#9733;</strong>|\u2605</strong>| stars)?)\s+from\s+\d+\s+(?:Google\s+)?reviews',
+                      r'\1 on Google Maps', text)
+        text = re.sub(r'\b[Nn]ursery, [Pp]re-K(?:\s*/\s*[Pp]reschool)?,?\s+(?:and\s+)?[Kk]indergarten',
+                      'Pre-KG (2\u20133), KG1 (3\u20134), KG2 (4\u20135)', text)
+        return text
+    _patch_file(ROOT/'en'/'index.html', en_facts)
+    en_blog = ROOT/'en'/'blog'
+    if en_blog.is_dir():
+        for page in en_blog.rglob('index.html'):
+            if _patch_file(page, patch_en_blog) and page.parent != en_blog:
+                indexnow(f"{SITE}/en/blog/{page.parent.name}/")
+
 def article_date(article, fallback):
     raw = article.get('published')
     try:
@@ -1232,6 +1395,7 @@ def main():
     repair_static_site()
     repair_published_articles(q, today)
     write_llms_txt()
+    write_llms_full(q)
     prune_noindex_from_sitemap(q)
     announce_rewrites(q, today)
     pending=[a for a in q if not a.get('published')]
