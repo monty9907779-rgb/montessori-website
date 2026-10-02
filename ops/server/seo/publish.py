@@ -934,7 +934,7 @@ def write_llms_txt():
         'التقييم 4.7 من 5 على خرائط جوجل. الدوام: الأحد إلى الخميس، من الثامنة صباحًا حتى الواحدة ظهرًا.',
         '> Kawkab Al-Tifl Al-Hurr is a Montessori nursery and kindergarten in Al Faisaliyah (Mohammed Abdulkarim St), Jeddah, Saudi Arabia, '
         'for children aged 2 to 5: authentic Montessori with Modern Standard Arabic, English and Quran. '
-        'Rated 4.7/5 on Google Maps. Open Sunday to Thursday, 08:00 to 13:00.',
+        'Rated 4.7/5 on Google Maps, with more than 10 years of experience. Open Sunday to Thursday, 08:00 to 13:00.',
         '',
         '## حقائق أساسية / Key facts',
         '- الاسم: روضة كوكب الطفل الحر (Kawkab Al-Tifl Al-Hurr Kindergarten)',
@@ -943,6 +943,7 @@ def write_llms_txt():
         '- المراحل: ما قبل الروضة (سنتان–٣) · المستوى الأول (٣–٤) · المستوى الثاني (٤–٥) · التمهيدي (٥–٦) · برنامج صيفي · ضيافة بالساعة',
         '- المنهج: مونتيسوري الأصيل + اللغة العربية الفصحى + الإنجليزية + تعليم القرآن',
         '- المزايا: بيئة مُعدّة، معلمات مؤهلات، كاميرات مراقبة، تطبيق تواصل يومي مع الأسرة',
+        '- الخبرة: أكثر من ١٠ سنوات في تعليم الطفولة المبكرة / More than 10 years of experience',
         '- الدوام: الأحد إلى الخميس 08:00–13:00',
         '- الرسوم: تُحدَّد حسب عمر الطفل وعدد الأيام وساعات الدوام، ويُؤكَّد الرقم عبر مكالمة أو زيارة',
         '- التواصل: واتساب +966541558173 · https://montessori-ksa.com',
