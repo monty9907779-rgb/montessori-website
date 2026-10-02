@@ -116,6 +116,8 @@ fi
 # deploy.sh is the full static release. These three files are the token-gated
 # dashboard only (served no-store, never cached by the service worker), and
 # they change together with the Excel importer above, so they ride here too.
+# accounts/index.html (the token-gated accounts page) reads the month totals
+# that roles.py computes, so it ships with the addon as well.
 PUBRAW="https://raw.githubusercontent.com/monty9907779-rgb/montessori-website/main/public"
 WEBROOT=/var/www/montessori-ksa
 if [ -d "$WEBROOT/dashboard" ]; then
@@ -131,6 +133,7 @@ if [ -d "$WEBROOT/dashboard" ]; then
   done <<< "dashboard/excel-sync.js
 dashboard/dashboard-inline-1.js
 dashboard/index.html
+accounts/index.html
 ai/index.html
 assets/ai.js
 assets/ai.css"
