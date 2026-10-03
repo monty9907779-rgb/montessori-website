@@ -2660,11 +2660,12 @@ class NurserySSO(http.Controller):
             ('date', '<=', self._month_last_day(month.ym)),
         ])
         books_collected = sum(month_books.mapped('amount'))
-        books_paid_total = sum(students.mapped('books_paid'))
-        books_due_total = sum((s.books_fees or 0.0) for s in students)
-        books_remaining_total = sum(
-            max(0.0, (s.books_fees or 0.0) - (s.books_paid or 0.0))
-            for s in students)
+        # رسوم الكتب تخص الشهر فقط: لشهر غير مستورد من الشيت تُعرض مدفوعات
+        # الكتب المسجّلة داخل الشهر، لا إجمالي رسوم الكتب على كل الطلاب
+        # (2026-10-03: أكتوبر كان بيعرض 53,500 من رسوم سبتمبر).
+        books_paid_total = books_collected
+        books_due_total = books_collected
+        books_remaining_total = 0.0
         inc_other = sum(e.amount for e in month.entry_ids if e.etype == 'income')
         reservations = sum(e.amount for e in month.entry_ids if e.etype == 'reservation')
         expenses = sum(e.amount for e in month.entry_ids if e.etype == 'expense')
@@ -2726,8 +2727,7 @@ class NurserySSO(http.Controller):
             'books_due_total': books_due_total,
             'books_paid_total': books_paid_total,
             'books_remaining_total': books_remaining_total,
-            'books_unpaid_count': (books_unpaid_count if excel_active else len(students.filtered(
-                lambda s: (s.books_remaining or 0.0) > 0.01))),
+            'books_unpaid_count': (books_unpaid_count if excel_active else 0),
             'reservations': reservations,
             'expenses': expenses, 'expenses_paid_out': expenses_paid_out,
             'opening_from_entries': opening_from_entries,
