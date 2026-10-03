@@ -156,14 +156,26 @@ class ExcelImportTests(unittest.TestCase):
 
     def test_import_unlock_window(self):
         import datetime
+        import json, tempfile
         original = excel_import.UNLOCK_FILE
+        # The shipped import_unlock.json holds no window (September 2026 is
+        # final since 2026-10-03), so the window semantics are tested on a
+        # temporary file; the shipped file must keep every month locked.
         excel_import.UNLOCK_FILE = os.path.join(HERE, 'import_unlock.json')
+        try:
+            self.assertFalse(excel_import._import_unlocked('2026-09', datetime.date(2026, 10, 2)))
+        finally:
+            excel_import.UNLOCK_FILE = original
+        with tempfile.NamedTemporaryFile('w', suffix='.json', delete=False) as handle:
+            json.dump({'2026-09': '2026-10-10'}, handle)
+        excel_import.UNLOCK_FILE = handle.name
         try:
             self.assertTrue(excel_import._import_unlocked('2026-09', datetime.date(2026, 10, 10)))
             self.assertFalse(excel_import._import_unlocked('2026-09', datetime.date(2026, 10, 11)))
             self.assertFalse(excel_import._import_unlocked('2026-10', datetime.date(2026, 10, 2)))
         finally:
             excel_import.UNLOCK_FILE = original
+            os.unlink(handle.name)
         excel_import.UNLOCK_FILE = os.path.join(HERE, 'does-not-exist.json')
         try:
             self.assertFalse(excel_import._import_unlocked('2026-09', datetime.date(2026, 10, 2)))
