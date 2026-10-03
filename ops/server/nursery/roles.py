@@ -2671,10 +2671,12 @@ class NurserySSO(http.Controller):
         salaries = sum(e.amount for e in month.entry_ids if e.etype == 'salary')
         opening_from_entries, expenses_paid_out = self._expense_cash_movement(month)
         # الافتتاحي = ختامي الشهر السابق (محسوب حيّاً)؛ يدوي لأول شهر فقط
-        has_prev = bool(month._previous_month())
+        has_prev = month._opening_is_auto()
         opening_balance = month._sync_opening()
-        # سطر نسرين الموجب: افتتاحي في أول شهر، دخل نقدي جديد في أي شهر لاحق
-        nesrin_inflow = opening_from_entries if has_prev else 0.0
+        # سطر نسرين الموجب: هو الافتتاحي لو الشيت نصّ عليه أو لا سابق للشهر،
+        # وإلا دخل نقدي جديد
+        nesrin_is_opening = month._sheet_opening() > 0 or not month._previous_month()
+        nesrin_inflow = 0.0 if nesrin_is_opening else opening_from_entries
         # صافي التشغيل: بلا الحجوزات المقدّمة (لأنها عربون خدمة لاحقة، ليست دخل الشهر)
         net = inc_students + books_collected + inc_other - expenses - salaries
         cash_closing = (opening_balance + nesrin_inflow + cash_collected + inc_other
@@ -2705,10 +2707,9 @@ class NurserySSO(http.Controller):
             expenses = float(excel.get('expenses', expenses) or 0.0)
             salaries = float(excel.get('salaries', salaries) or 0.0)
             opening_from_entries = float(excel.get('opening_balance', opening_from_entries) or 0.0)
-            if not has_prev:
-                # أول شهر فقط: سطر نسرين في الشيت هو الافتتاحي
-                opening_balance = float(excel.get('opening_balance', opening_balance) or 0.0)
-            nesrin_inflow = opening_from_entries if has_prev else 0.0
+            # opening_balance جاي من _sync_opening: سطر نسرين لو الشيت نصّ عليه،
+            # وإلا ختامي الشهر السابق — فلا يُضاف نسرين مرة ثانية
+            nesrin_inflow = 0.0 if nesrin_is_opening else opening_from_entries
             expenses_paid_out = float(excel.get('expenses_paid_out', expenses_paid_out) or 0.0)
             # الختامي يُعاد حسابه دائماً على الافتتاحي المرحّل، لا على رقم الشيت المجمّد
             cash_closing = opening_balance + nesrin_inflow + cash_collected + expenses_paid_out
@@ -3069,6 +3070,9 @@ class NurserySSO(http.Controller):
         m, err = self._open_month_or_err(ym)
         if err:
             return err
+        if m._sheet_opening() > 0:
+            return {'ok': False, 'error': 'الرصيد الافتتاحي لهذا الشهر مأخوذ من الشيت '
+                    '(سطر نسرين) ولا يُعدَّل يدوياً — عدّلي الشيت وأعيدي الاستيراد.'}
         prev = m._previous_month()
         if prev:
             return {'ok': False, 'error': 'الرصيد الافتتاحي يُحسب تلقائياً من ختامي %s '

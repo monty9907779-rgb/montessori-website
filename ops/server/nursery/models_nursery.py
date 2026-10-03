@@ -1218,13 +1218,28 @@ class NurseryMonth(models.Model):
         المُدخلة يدوياً. بيانات الشهر المقفول ثابتة، فالمحسوب منها ثابت أيضاً.
         """
         self.ensure_one()
+        # الشيت المعتمد لو فيه سطر افتتاحي صريح (نسرين الموجب) فهو المرجع:
+        # يبدأ الشهر بالكاش اللي الشيت قاله ولا يورّث من شهر سابق (قرار المالك
+        # 2026-10-03: أغسطس على الموقع فيه قيود يدوية قديمة ما ينفعش تتورّث).
+        sheet_opening = self._sheet_opening()
+        if sheet_opening > 0:
+            return sheet_opening
         prev = self._previous_month()
         if prev:
             return prev._carry_closing()
-        excel = self._excel_metrics()
-        if excel:
-            return float(excel.get('opening_balance') or 0.0)
         return float(self.opening_balance or 0.0)
+
+    def _sheet_opening(self):
+        """الرصيد الافتتاحي الصريح في شيت الشهر (سطر نسرين الموجب)، أو 0."""
+        self.ensure_one()
+        excel = self._excel_metrics()
+        return float(excel.get('opening_balance') or 0.0) if excel else 0.0
+
+    def _opening_is_auto(self):
+        """هل الافتتاحي مُشتق تلقائياً (من ختامي شهر سابق) وبالتالي غير قابل
+        للتعديل اليدوي؟ الشيت الصريح ليس يدوياً أيضاً."""
+        self.ensure_one()
+        return self._sheet_opening() > 0 or bool(self._previous_month())
 
     def _sync_opening(self):
         """يخزّن الافتتاحي المحسوب في الحقل (للتقارير والقراءة المباشرة)."""
@@ -1243,10 +1258,10 @@ class NurseryMonth(models.Model):
         self.ensure_one()
         excel = self._excel_metrics()
         if excel:
-            # سطر نسرين الموجب هو الافتتاحي في أول شهر فقط؛ في أي شهر لاحق
-            # هو دخل نقدي جديد يُضاف للحركة.
-            nesrin = float(excel.get('opening_balance') or 0.0) if self._previous_month() else 0.0
-            return (self._effective_opening() + nesrin
+            # سطر نسرين الموجب هو الافتتاحي نفسه (يدخل عبر _effective_opening)
+            # فلا يُحسب مرة ثانية: الختامي = افتتاحي + كاش رندا + المصروفات
+            # الخارجة = On hand Randa في الشيت بالحرف.
+            return (self._effective_opening()
                     + float(excel.get('randa_cash') or 0.0)
                     + float(excel.get('expenses_paid_out') or 0.0))
         return self._month_closing()
@@ -1264,8 +1279,8 @@ class NurseryMonth(models.Model):
         inc = sum(e.amount for e in self.entry_ids if e.etype == 'income')
         res = sum(e.amount for e in self.entry_ids if e.etype == 'reservation')
         opening_entry, expense_movement = self._expense_cash_movement()
-        # سطر نسرين الموجب = الافتتاحي في أول شهر فقط؛ بعدها دخل نقدي جديد
-        nesrin = opening_entry if self._previous_month() else 0.0
+        # سطر نسرين الموجب = الافتتاحي (لو الشيت/الشهر لا يورّث)، وإلا دخل نقدي
+        nesrin = 0.0 if self._sheet_opening() > 0 or not self._previous_month() else opening_entry
         return self._effective_opening() + nesrin + collected + inc + res + expense_movement
 
     @api.model
