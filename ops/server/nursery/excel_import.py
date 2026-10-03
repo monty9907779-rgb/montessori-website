@@ -1776,10 +1776,12 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
     # the workbook's positive Nesrin line; that entry stays in the ledger for
     # audit either way. Empty months opened ahead of the season do not count
     # as "previous" (nursery.month._previous_month).
+    # A workbook that states its own opening cash (positive Nesrin line) is
+    # authoritative and does not inherit from an earlier month.
     prev_fn = getattr(month, '_previous_month', None)
     previous = prev_fn() if prev_fn else env['nursery.month'].sudo().search(
         [('ym', '<', target_ym)], order='ym desc', limit=1)
-    if previous:
+    if previous and not float(metrics.get('opening_balance') or 0.0):
         closing_fn = (getattr(previous, '_carry_closing', None)
                       or getattr(previous, '_month_closing', None))
         month.write({'opening_balance': float(
