@@ -1162,9 +1162,23 @@ def seo_healthcheck():
         add('فحص الحقائق', 'fail',
             'تعذّر تحميل موديول الحقائق: %s — النشر متوقف' % FACTS_IMPORT_ERROR)
     else:
+        # 10 Oct: a review count, a wrong closing hour and a wrong intake age
+        # were live on five pages while sitting in the «deferred» group, and a
+        # search engine's summary of the site noted the contradictions; they
+        # now fail the daily check like the stage ages do.
         IN_SCOPE_MARKERS = ('عمر مرحلة خاطئ', '«الروضة» مقترنة بعمر مرحلة',
-                             'مرحلة غير موجودة', 'عدد البرامج')
+                             'مرحلة غير موجودة', 'عدد البرامج',
+                             'عدد مراجعات', 'دوام غلط', 'ادعاء عمر غلط')
         viol = facts.audit_dir(str(ROOT/'blog'))
+        # the static pages the blog audit never reads
+        for rel in ('index.html', 'en/index.html', 'partners/index.html', 'wa/index.html'):
+            try:
+                why = facts.check_html((ROOT/rel).read_text(encoding='utf-8'))
+            except Exception:
+                continue
+            why = [w for w in why if 'نطاق أعمارنا' not in w]
+            if why:
+                viol.append((str(ROOT/rel), why))
         in_scope = [(p, w) for p, w in viol
                     if any(any(mk in r for mk in IN_SCOPE_MARKERS) for r in w)]
         deferred = [(p, w) for p, w in viol if (p, w) not in in_scope]
