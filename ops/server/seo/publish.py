@@ -477,6 +477,133 @@ def apply_rewrites(raw_q):
 
 _DATED_AUTO = re.compile(r'-20\d{6}$')
 
+# One-off wording fixes for published articles written before the official
+# stage ladder (2026-09-13): our programmes named «التمهيدي والروضة», or an
+# official name next to the wrong ages in a form the gate could not read.
+# Applied to bodyHtml and FAQ after the rewrites; a slug whose result fails
+# the facts gate is left untouched. Idempotent: an absent old string is a no-op.
+TEXT_FIXES = {
+ "bilingual-education-benefits-children": [
+  [
+   "وتقدّم برامج ما قبل التمهيدي (Pre-KG) والتمهيدي والروضة والبرنامج الصيفي",
+   "وتقدّم مراحل ما قبل الروضة (سنتان–٣) والمستوى الأول (٣–٤) والمستوى الثاني (٤–٥) والتمهيدي (٥–٦) والبرنامج الصيفي"
+  ],
+  [
+   "ولهذا تُعدّ سنوات الحضانة (من عام إلى عامين)، ثم التمهيدي (من عامين إلى أربعة)، والروضة (من أربعة إلى ستة) أنسب الأوقات على الإطلاق للبدء. وهذه بالضبط هي المراحل الثلاث التي نغطّيها",
+   "ولهذا تُعدّ السنوات من سنتين إلى ٥ سنوات أنسب الأوقات على الإطلاق للبدء. وهذه بالضبط هي المراحل التي نغطّيها"
+  ],
+  [
+   "ولهذا تُعدّ سنوات الحضانة والتمهيدي والروضة أنسب وقت للبدء.",
+   "ولهذا تُعدّ سنوات ما قبل الروضة والمستوى الأول والمستوى الثاني أنسب وقت للبدء."
+  ]
+ ],
+ "nursery-al-safa-jeddah": [
+  [
+   "<li><strong>ما قبل التمهيدي (سنتان):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>التمهيدي (من ثلاث إلى أربع سنوات):</strong> مرحلة تفتّح اللغة والفضول، بأنشطة الحياة العملية والتمهيد للقراءة والحساب.</li>\n<li><strong>الروضة (من أربع إلى خمس سنوات):</strong> إعداد حقيقي للمدرسة: قراءة وكتابة ورياضيات محسوسة ومهارات اجتماعية.</li>",
+   "<li><strong>ما قبل الروضة (سنتان–٣):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>المستوى الأول (٣–٤):</strong> مرحلة تفتّح اللغة والفضول، بأنشطة الحياة العملية والتمهيد للقراءة والحساب.</li>\n<li><strong>المستوى الثاني (٤–٥):</strong> إعداد حقيقي للمدرسة: قراءة وكتابة ورياضيات محسوسة ومهارات اجتماعية.</li>"
+  ]
+ ],
+ "picky-eater-child": [
+  [
+   "نقدّم برامج الحضانة والتمهيدي والروضة بمنهج منتسوري",
+   "نقدّم مراحل ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي بمنهج مونتيسوري للأطفال من سنتين إلى ٥ سنوات"
+  ]
+ ],
+ "nursery-ash-shati-jeddah": [
+  [
+   "برنامج الروضة لدينا يهيّئ الطفل للمدرسة الابتدائية بثقة",
+   "مرحلة التمهيدي (٥–٦) لدينا تهيّئ الطفل للمدرسة الابتدائية بثقة"
+  ]
+ ],
+ "is-nursery-good-for-child": [
+  [
+   "في برنامج الروضة لدينا",
+   "في المستوى الثاني (٤–٥) والتمهيدي (٥–٦) لدينا"
+  ]
+ ],
+ "jeddah-nurseries-infant-care-guide": [
+  [
+   "بالإضافة إلى برامج التمهيدي والروضة الأساسية",
+   "بالإضافة إلى مراحلنا الأساسية (ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي)"
+  ]
+ ],
+ "jeddah-preschool-4-5-years-guide": [
+  [
+   "في مرحلتي التمهيدي والروضة.",
+   "في مرحلة المستوى الثاني (٤–٥) وما يليها."
+  ]
+ ],
+ "trusted-nursery-recommendation-jeddah": [
+  [
+   "<strong>برنامج التمهيدي:</strong> مخصص للأطفال من عمر ٣ إلى ٤ سنوات",
+   "<strong>برنامج المستوى الأول (٣–٤):</strong> مخصص للأطفال من عمر ٣ إلى ٤ سنوات"
+  ],
+  [
+   "<strong>برنامج الروضة:</strong> مخصص للأطفال من عمر ٤ إلى ٥ سنوات",
+   "<strong>برنامج المستوى الثاني (٤–٥):</strong> مخصص للأطفال من عمر ٤ إلى ٥ سنوات"
+  ]
+ ],
+ "best-quality-price-nursery-jeddah": [
+  [
+   "يجمع بين برامج الروضة والتمهيدي المتميزة",
+   "يجمع بين مراحله المتميزة (ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي)"
+  ]
+ ],
+ "safe-educational-nursery-options-jeddah": [
+  [
+   "برامج مخصصة تشمل التمهيدي والروضة والضيافة بالساعة",
+   "مراحل ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي، إضافة إلى الضيافة بالساعة"
+  ]
+ ],
+ "child-care-hourly-jeddah": [
+  [
+   "فئاتنا العمرية الثلاث نفسها",
+   "مراحلنا نفسها"
+  ],
+  [
+   "<ul>\n<li><strong>الحضانة:</strong> من سنة إلى سنتين، برعاية فائقة تناسب الأعمار الصغيرة.</li>\n<li><strong>التمهيدي:</strong> من سنتين إلى أربع سنوات، مع أنشطة تمهيدية ولغوية.</li>\n<li><strong>الروضة:</strong> من أربع إلى ست سنوات، بمهارات ما قبل المدرسة.</li>\n</ul>",
+   "<ul>\n<li><strong>ما قبل الروضة (سنتان–٣):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>المستوى الأول (٣–٤):</strong> أنشطة الحياة العملية واللغة والتمهيد للقراءة والحساب.</li>\n<li><strong>المستوى الثاني (٤–٥):</strong> مهارات ما قبل المدرسة: قراءة وكتابة ورياضيات محسوسة.</li>\n</ul>"
+  ],
+  [
+   "نحن حضانة معتمدة نالت تقييم",
+   "نحن حضانة نالت تقييم"
+  ]
+ ],
+ "nursery-entry-age-guide": [
+  [
+   "<h2>المستوى الأول والمستوى الثاني من 3 إلى 5 سنوات</h2>",
+   "<h2>المستوى الأول (٣–٤) والمستوى الثاني (٤–٥)</h2>"
+  ]
+ ]
+}
+
+def apply_text_fixes(raw_q):
+    if facts is None or not isinstance(raw_q, list):
+        return raw_q
+    for a in raw_q:
+        pairs = TEXT_FIXES.get(a.get('slug'))
+        if not pairs or not a.get('published'):
+            continue
+        cand = json.loads(json.dumps(a, ensure_ascii=False))
+        hit = 0
+        for old, new in pairs:
+            if old in (cand.get('bodyHtml') or ''):
+                cand['bodyHtml'] = cand['bodyHtml'].replace(old, new); hit += 1
+            for item in cand.get('faq') or []:
+                for k in ('q', 'a'):
+                    if isinstance(item, dict) and old in (item.get(k) or ''):
+                        item[k] = item[k].replace(old, new); hit += 1
+        if not hit:
+            continue
+        why = facts.check_article(cand)
+        if why:
+            log(f"text fix rejected {a['slug']}: {'; '.join(why)}")
+            continue
+        a.update(cand)
+        _REWRITE_APPLIED.append(a['slug'])
+        log(f"text fix applied {a['slug']} ({hit} replacement(s))")
+    return raw_q
+
 def prune_templated_pending(raw_q):
     """Drop unpublished entries made by the old dated auto-refill
     (slug ends in -YYYYMMDD). They are one template with the district name
@@ -1718,6 +1845,7 @@ def main():
     raw_q=ensure_auto_queue(raw_q, today)
     raw_q=prune_templated_pending(raw_q)
     raw_q=apply_rewrites(raw_q)
+    raw_q=apply_text_fixes(raw_q)
     q=[normalized_article(a) for a in raw_q]
     if q != raw_q or _REWRITE_APPLIED:
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')

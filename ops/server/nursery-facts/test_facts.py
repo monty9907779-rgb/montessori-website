@@ -114,6 +114,15 @@ class TestRangeBeforeStageName(unittest.TestCase):
         self.assertEqual([], facts.check_text('نستقبل من سنتين إلى 5 سنوات (الحضانة).' + INTAKE))
 
 
+class TestRangeWithMin(unittest.TestCase):
+    def test_min_before_range_is_read(self):
+        reasons = ' '.join(facts.check_text('ثم التمهيدي (من عامين إلى أربعة) ثم الصف الأول.' + INTAKE))
+        self.assertIn('عمر مرحلة خاطئ', reasons)
+
+    def test_min_before_correct_range_passes(self):
+        self.assertEqual([], facts.check_text('التمهيدي (من 5 إلى 6 سنوات) سنة التهيئة.' + INTAKE))
+
+
 class TestIntakeRangeRequired(unittest.TestCase):
     def test_missing_intake_range_is_rejected(self):
         reasons = ' '.join(facts.check_text('مرحبا بكم في روضتنا بجدة.'))
