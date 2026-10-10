@@ -567,6 +567,18 @@ TEXT_FIXES = {
   [
    "نحن حضانة معتمدة نالت تقييم",
    "نحن حضانة نالت تقييم"
+  ],
+  [
+   "ضيافة أطفال في جدة | حضانة بالساعة آمنة بحي الفيصلية",
+   "حضانة بالساعة في جدة | ضيافة أطفال مرنة للموظفات بحي الفيصلية"
+  ],
+  [
+   "تبحثين عن ضيافة اطفال جدة؟ روضة كوكب الطفل الحر بالساعة في حي الفيصلية",
+   "تبحثين عن حضانة بالساعة في جدة؟ روضة كوكب الطفل الحر تقدّم ضيافة أطفال بالساعة في حي الفيصلية"
+  ],
+  [
+   "<strong>ضيافة اطفال جدة</strong> هي الحل الآمن",
+   "<strong>حضانة بالساعة في جدة</strong> هي الحل الآمن"
   ]
  ],
  "nursery-entry-age-guide": [
@@ -587,8 +599,9 @@ def apply_text_fixes(raw_q):
         cand = json.loads(json.dumps(a, ensure_ascii=False))
         hit = 0
         for old, new in pairs:
-            if old in (cand.get('bodyHtml') or ''):
-                cand['bodyHtml'] = cand['bodyHtml'].replace(old, new); hit += 1
+            for k in ('bodyHtml', 'title', 'seoTitle', 'metaDescription'):
+                if old in (cand.get(k) or ''):
+                    cand[k] = cand[k].replace(old, new); hit += 1
             for item in cand.get('faq') or []:
                 for k in ('q', 'a'):
                     if isinstance(item, dict) and old in (item.get(k) or ''):
