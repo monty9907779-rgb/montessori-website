@@ -337,6 +337,67 @@ def check_article(a):
     return check_text(' . '.join(parts))
 
 
+# ------------------------------------------------------------------
+# حاجز الحقائق للصفحات الإنجليزية (/en/blog/*). نفس الحقائق، بصيغة إنجليزية:
+# لا أسعار ولا عدد مراجعات ولا أعمار خارج ٢–٥ ولا دوام غير 8:00–1:00،
+# ولا اعتمادات مخترعة. الأعمار العامة للسوق ("kindergarten covers 4 to 6")
+# مسموحة، لكن نسبتها إلينا (we/our/Kawkab) هي المخالفة.
+# ------------------------------------------------------------------
+_EN_US = r'(?:\bwe\b|\bour\b|\bus\b|Kawkab|\bwelcome\b)'
+EN_BANS = [
+    ('price', re.compile(r'(?:\d[\d,\.]*\s*(?:SAR|SR|riyals?|ريال)|(?:SAR|SR)\s*\d)', re.I)),
+    ('our fees', re.compile(r'\b(?:our|the nursery.s|kawkab.s)\s+(?:monthly\s+|annual\s+|tuition\s+)?(?:fees?|prices?|tuition|rates?)\b[^.]{0,50}\d', re.I)),
+    ('fees starting from', re.compile(r'\b(?:fees?|prices?|tuition)\s+(?:start|begin)s?\s+(?:from|at)\b[^.]{0,20}\d', re.I)),
+    ('review count', re.compile(r'\b\d[\d,]*\s+(?:google\s+)?(?:reviews?|ratings?)\b|\bfrom\s+\d+\s+(?:parents|families)\b', re.I)),
+    ('infants', re.compile(_EN_US + r'[^.?!]{0,60}\b(?:infants?|babies|baby|newborns?|toddlers? under|under (?:2|two)|from (?:1|one) year|1[-–]year)', re.I)),
+    ('wrong hours', re.compile(r'\b(?:until|till|to|-|–)\s*(?:2|14)(?::00)?\s*(?:pm|p\.m\.)|\b14:00\b|\b2:00\s*pm\b', re.I)),
+    # generic advice ("check that a nursery is licensed") is fine; claiming it for us is not
+    ('invented credential', re.compile(r'(?:\bwe(?:\'re| are| have been)|\bour\b[^.]{0,40}\b(?:is|are)|Kawkab[^.]{0,40}\b(?:is|are))[^.]{0,30}\b(?:licen[sc]ed|accredited|certified by|ministry[- ]approved|award[- ]winning)\b|\bISO\s?\d{4,}|\baward[- ]winning\b', re.I)),
+    ('competitor', re.compile(r'\b(?:Little Gate|Kids Academy|Bright Horizons|Kindercare)\b', re.I)),
+    ('markup', re.compile(r'<(html|head|body|script|style)\b', re.I)),
+]
+# Pre-KG 2-3, KG1 3-4, KG2 4-5 (also "Pre-KG (ages 2 to 3)"). Any other range
+# written right after one of our stage names is wrong.
+_EN_STAGES = [('pre-?kg', ('2', '3')), ('kg\\s?1', ('3', '4')), ('kg\\s?2', ('4', '5'))]
+_EN_NUM = {'two': '2', 'three': '3', 'four': '4', 'five': '5', 'six': '6', 'one': '1'}
+EN_MUST = re.compile(r'\b(?:ages?\s+)?(?:2|two)\s*(?:to|-|–|—|and)\s*(?:5|five)\b', re.I)
+_EN_TAG = re.compile(r'<[^>]+>')
+
+
+def _en_norm(text):
+    t = _EN_TAG.sub(' ', _SCRIPT.sub(' ', str(text or '')))
+    t = re.sub(r'&(?:#x27|#39|rsquo|apos);', "'", t)
+    t = re.sub(r'&(?:ndash|#8211|mdash|#8212);', '-', t)
+    t = re.sub(r'&nbsp;|&#160;', ' ', t)
+    return re.sub(r'\s+', ' ', t)
+
+
+def check_en_text(text):
+    """Reasons to reject English page text; empty list means clean."""
+    t = _en_norm(text)
+    bad = []
+    for name, rx in EN_BANS:
+        m = rx.search(t)
+        if m:
+            bad.append('%s: "%s"' % (name, m.group(0)[:45]))
+    for pat, (lo, hi) in _EN_STAGES:
+        for m in re.finditer(r'\b' + pat + r'\b\s*[(:,\-–]?\s*(?:ages?\s+)?(\d|one|two|three|four|five|six)\s*(?:to|-|–|—)\s*(\d|one|two|three|four|five|six)\b', t, re.I):
+            a = _EN_NUM.get(m.group(1).lower(), m.group(1)); b = _EN_NUM.get(m.group(2).lower(), m.group(2))
+            if (a, b) != (lo, hi):
+                bad.append('stage age: "%s"' % m.group(0)[:45])
+    if not EN_MUST.search(t):
+        bad.append('missing our age range (2 to 5)')
+    return bad
+
+
+def check_en_article(a):
+    parts = [a.get('title') or '', a.get('metaDescription') or '', a.get('seoTitle') or '',
+             a.get('bodyHtml') or '']
+    for x in (a.get('faq') or []):
+        parts.append('%s %s' % (x.get('q', ''), x.get('a', '')))
+    return check_en_text(' . '.join(parts))
+
+
 def check_html(html):
     """يفحص صفحة منشورة."""
     body = _SCRIPT.sub(' ', str(html or ''))

@@ -449,7 +449,7 @@ def apply_rewrites(raw_q):
     fields = ('title', 'seoTitle', 'metaDescription', 'bodyHtml', 'faq', 'wordCount')
     by_slug = {a.get('slug'): a for a in raw_q}
     for slug, new in (rw or {}).items():
-        if not isinstance(new, dict):
+        if not isinstance(new, dict) or new.get('lang') == 'en':
             continue
         a = by_slug.get(slug)
         if a is None and new.get('new') and new.get('cat') and new.get('targetKeyword'):
@@ -1379,6 +1379,8 @@ def write_llms_txt(q=None):
             lines.append(f'- [{label}]({SITE}/blog/{slug}/)')
     en = [f'- [{label}]({SITE}/en/blog/{slug}/)' for slug, label in LLMS_EN_GUIDES
           if (ROOT/'en'/'blog'/slug/'index.html').exists()]
+    en += [f'- [{e.get("llmsLabel") or e["title"]}]({SITE}/en/blog/{slug}/)' for slug, e in english_entries().items()
+           if (ROOT/'en'/'blog'/slug/'index.html').exists()]
     if en:
         lines += ['', '## English guides'] + en
     # The five newest indexable guides: a freshness cue, and the pages an
@@ -2303,6 +2305,203 @@ def shadowing_redirect(slug):
     return None
 
 
+# ---------------------------------------------------------------------------
+# English guides. rewrites.json entries with "lang": "en" are rendered into
+# /en/blog/<slug>/ using a live English guide as the page template (head,
+# header, footer and scripts stay identical to the existing English pages).
+# Each page passes facts.check_en_article first; at most EN_PER_RUN new pages
+# go live per run, the rest wait for the next day.
+# ---------------------------------------------------------------------------
+EN_TEMPLATE_SLUGS = ('kindergarten-in-jeddah', 'daycare-in-jeddah', 'nursery-in-jeddah')
+EN_PER_RUN = 2
+EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+             'September', 'October', 'November', 'December']
+
+def english_entries():
+    try:
+        rw = json.loads(REWRITES.read_text(encoding='utf-8'))
+    except Exception:
+        return {}
+    return {k: v for k, v in (rw or {}).items() if isinstance(v, dict) and v.get('lang') == 'en'}
+
+def _en_date(d):
+    return f'{d.day} {EN_MONTHS[d.month-1]} {d.year}'
+
+def _en_template():
+    for slug in EN_TEMPLATE_SLUGS:
+        p = ROOT/'en'/'blog'/slug/'index.html'
+        try:
+            t = p.read_text(encoding='utf-8')
+        except Exception:
+            continue
+        if all(x in t for x in ('<title>', '<main class="container article-wrap">', '</main>', 'application/ld+json')):
+            return t
+    return None
+
+def _en_title_of(slug, entries):
+    if slug in entries:
+        return entries[slug].get('title') or slug
+    try:
+        t = (ROOT/'en'/'blog'/slug/'index.html').read_text(encoding='utf-8')
+        m = re.search(r'<h1>(.*?)</h1>', t, re.S)
+        if m:
+            return H.unescape(re.sub(r'<[^>]+>', '', m.group(1))).strip()
+    except Exception:
+        pass
+    return None
+
+def render_en_page(slug, e, template, published, modified, entries):
+    SITEURL = f'{SITE}/en/blog/{slug}/'
+    title = e['title']; seo = e.get('seoTitle') or title
+    desc = e['metaDescription']; kw = e.get('keywords') or e.get('targetKeyword') or ''
+    faq = e.get('faq') or []
+    words = len(re.sub(r'<[^>]+>', ' ', e['bodyHtml'] + ' ' + ' '.join(x['a'] for x in faq)).split())
+    minutes = max(3, round(words / 200))
+    t = template
+    q = lambda v: H.escape(v, quote=True)
+    t = re.sub(r'<title>.*?</title>', lambda m: '<title>' + H.escape(seo) + '</title>', t, count=1, flags=re.S)
+    def meta(attr, name, val):
+        nonlocal t
+        pat = r'(<meta %s="%s" content=")[^"]*(")' % (attr, re.escape(name))
+        if re.search(pat, t):
+            t = re.sub(pat, lambda m: m.group(1) + q(val) + m.group(2), t, count=1)
+    meta('name', 'description', desc); meta('name', 'keywords', kw)
+    meta('property', 'og:title', title); meta('property', 'og:description', desc)
+    meta('property', 'og:url', SITEURL)
+    meta('property', 'article:published_time', published)
+    meta('name', 'twitter:title', title); meta('name', 'twitter:description', desc)
+    t = re.sub(r'(<link rel="canonical" href=")[^"]*(")', lambda m: m.group(1) + SITEURL + m.group(2), t, count=1)
+    t = re.sub(r'<link rel="alternate" hreflang="[^"]*" href="[^"]*"\s*/?>', '', t)
+    t = re.sub(r'(<link rel="canonical" href="[^"]*"\s*/?>)', lambda m: m.group(1) +
+               f'<link rel="alternate" hreflang="en" href="{SITEURL}"/><link rel="alternate" hreflang="x-default" href="{SITEURL}"/>', t, count=1)
+    biz = {'@type': 'Organization', '@id': SITE + '/#business', 'name': 'Kawkab Al-Tifl Al-Hurr Kindergarten'}
+    posting = {'@context': 'https://schema.org', '@type': 'BlogPosting', '@id': SITEURL + '#article',
+               'headline': title, 'description': desc, 'inLanguage': 'en', 'url': SITEURL,
+               'mainEntityOfPage': {'@type': 'WebPage', '@id': SITEURL},
+               'datePublished': published, 'dateModified': modified,
+               'author': biz, 'publisher': {**biz, 'logo': {'@type': 'ImageObject', 'url': SITE + '/logo.png'}},
+               'image': SITE + '/logo.png', 'keywords': kw, 'articleSection': 'Guide', 'wordCount': words,
+               'about': [{'@type': 'Thing', 'name': 'Montessori education'}, {'@type': 'City', 'name': 'Jeddah'}]}
+    faqld = {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+             {'@type': 'Question', 'name': x['q'], 'acceptedAnswer': {'@type': 'Answer', 'text': re.sub(r'<[^>]+>', '', x['a'])}} for x in faq]}
+    crumbs = {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+              {'@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': SITE + '/en/'},
+              {'@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': SITE + '/en/blog/'},
+              {'@type': 'ListItem', 'position': 3, 'name': title, 'item': SITEURL}]}
+    blocks = ''.join('<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) + '</script>\n'
+                     for d in (posting, faqld) + ((crumbs,)))
+    ld = list(re.finditer(r'<script type="application/ld\+json">.*?</script>\n?', t, re.S))
+    if not ld:
+        return None
+    t = t[:ld[0].start()] + blocks + t[ld[-1].end():]
+    faq_html = ''
+    if faq:
+        faq_html = ('<section class="faq" aria-label="Frequently asked questions"><h2>Frequently Asked Questions</h2>' +
+                    ''.join(f'<details class="faq__item"><summary>{H.escape(x["q"])}</summary><div class="faq__a"><p>{x["a"]}</p></div></details>' for x in faq) +
+                    '</section>')
+    rel = ''
+    for rs in (e.get('related') or [])[:3]:
+        rt = _en_title_of(rs, entries)
+        if rt and ((ROOT/'en'/'blog'/rs/'index.html').exists() or rs in entries):
+            rel += (f'<a class="rel-card" href="/en/blog/{rs}/"><span class="rel-card__cat">Guide</span>'
+                    f'<span class="rel-card__title">{H.escape(rt)}</span><span class="rel-card__go">Read article &rarr;</span></a>')
+    rel_html = f'<nav class="related" aria-label="Related articles"><h2>You may also like</h2><div class="related__grid">{rel}</div></nav>' if rel else ''
+    cta_h = e.get('ctaHeading') or 'Visit a Montessori classroom in Jeddah'
+    main = (f'<main class="container article-wrap">\n'
+            f'  <nav class="crumbs" aria-label="Breadcrumb"><a href="/en/">Home</a><span>&rsaquo;</span><a href="/en/blog/">Blog</a><span>&rsaquo;</span><span class="crumbs__cur">Guide</span></nav>\n'
+            f'  <article class="article"><header class="article__head">\n'
+            f'    <a class="article__cat" href="/en/blog/">Guide</a>\n    <h1>{H.escape(title)}</h1>\n'
+            f'    <div class="article__meta"><span class="am-author"><img loading="lazy" src="/logo.png" alt=""/> Kawkab Al-Tifl Al-Hurr Kindergarten team</span>\n'
+            f'      <span class="am-dot">&middot;</span><time datetime="{published}">{_en_date(datetime.date.fromisoformat(published))}</time><span class="am-dot">&middot;</span><span>{minutes} min read</span></div>\n'
+            f'  </header>\n  <div class="article__body">\n{e["bodyHtml"]}\n  </div>\n  {faq_html}\n'
+            f'  <aside class="cta-card"><div class="cta-card__glow"></div><h2>{H.escape(cta_h)}</h2><p>Kawkab Al-Tifl Al-Hurr Kindergarten in Al Faisaliyyah, Jeddah &mdash; the authentic Montessori method with Arabic and English, rated <strong>4.7&#9733;</strong> on Google Maps. Book a tour and see our prepared environment for yourself.</p><div class="cta-card__btns"><a class="btn btn--primary btn--lg" href="/en/#register">Book a Visit</a><a class="btn btn--soft btn--lg" href="https://wa.me/966541558173" target="_blank" rel="noopener">Chat on WhatsApp</a></div></aside>\n'
+            f'  {rel_html}\n  </article>\n</main>')
+    m1 = t.find('<main class="container article-wrap">'); m2 = t.find('</main>')
+    if m1 < 0 or m2 < m1:
+        return None
+    return t[:m1] + main + t[m2 + len('</main>'):]
+
+def publish_english_pages(today):
+    """Render new/changed English guides, then wire them into the sitemap,
+    the /en/blog/ index and the related blocks of existing English guides."""
+    entries = english_entries()
+    if not entries or facts is None or not hasattr(facts, 'check_en_article'):
+        return
+    template = _en_template()
+    if template is None:
+        log('english pages: no usable template page'); return
+    iso = today.isoformat()
+    new_today = 0
+    done = []
+    for slug, e in entries.items():
+        if not re.fullmatch(r'[a-z0-9-]+', slug) or not e.get('bodyHtml') or not e.get('title') or not e.get('metaDescription'):
+            log(f'english page {slug}: incomplete entry'); continue
+        path = ROOT/'en'/'blog'/slug/'index.html'
+        tag = hashlib.sha1(json.dumps(e, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()[:12]
+        old = path.read_text(encoding='utf-8') if path.exists() else None
+        if old is not None and f'<!--en-src:{tag}-->' in old:
+            done.append(slug); continue
+        if old is None and new_today >= EN_PER_RUN:
+            continue
+        why = facts.check_en_article(e)
+        if why:
+            log(f'english page {slug} rejected: {"; ".join(why)}'); continue
+        pub = iso; mod = iso
+        if old is not None:
+            m = re.search(r'article:published_time" content="(\d{4}-\d{2}-\d{2})', old)
+            if m: pub = m.group(1)
+        html = render_en_page(slug, e, template, pub, mod, entries)
+        if not html:
+            log(f'english page {slug}: render failed'); continue
+        html = html.replace('<head>', f'<head><!--en-src:{tag}-->', 1)
+        if len(re.sub(r'<[^>]+>', ' ', e['bodyHtml'] + ' ' + ' '.join(x['a'] for x in (e.get('faq') or []))).split()) < 700:
+            log(f'english page {slug}: under 700 words, not published'); continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(html, encoding='utf-8')
+        if old is None:
+            new_today += 1
+        log(f'english page {"published" if old is None else "updated"}: {slug}')
+        done.append(slug)
+        indexnow(f'{SITE}/en/blog/{slug}/')
+        # sitemap
+        smp = ROOT/'sitemap.xml'
+        try:
+            sm = smp.read_text(encoding='utf-8')
+            loc = f'{SITE}/en/blog/{slug}/'
+            if f'<loc>{loc}</loc>' not in sm:
+                sm = sm.replace('</urlset>', f'  <url>\n    <loc>{loc}</loc>\n    <lastmod>{iso}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n</urlset>')
+            else:
+                sm = re.sub(r'(<loc>%s</loc>\s*<lastmod>)[^<]*(</lastmod>)' % re.escape(loc), r'\g<1>%s\g<2>' % iso, sm)
+            smp.write_text(sm, encoding='utf-8')
+        except Exception as ex:
+            log(f'english sitemap update failed: {ex}')
+    live = [s for s in entries if (ROOT/'en'/'blog'/s/'index.html').exists()]
+    if not live:
+        return
+    def card(s):
+        return (f'<a class="rel-card" href="/en/blog/{s}/"><span class="rel-card__cat">Guide</span>'
+                f'<span class="rel-card__title">{H.escape(entries[s]["title"])}</span><span class="rel-card__go">Read article &rarr;</span></a>')
+    def bullet(s):
+        return f'<li><a href="/en/blog/{s}/">{H.escape(entries[s].get("listTitle") or entries[s]["title"])}</a>: {H.escape(entries[s].get("blurb") or entries[s]["metaDescription"])}</li>\n'
+    def patch_index(text):
+        for s in live:
+            if f'href="/en/blog/{s}/"' not in text:
+                text = text.replace('<nav class="related" aria-label="All articles"><div class="related__grid">',
+                                    '<nav class="related" aria-label="All articles"><div class="related__grid">' + card(s), 1)
+                text = text.replace('</ul>\n<h2>How to use them</h2>', bullet(s) + '</ul>\n<h2>How to use them</h2>', 1)
+        return text
+    _patch_file(ROOT/'en'/'blog'/'index.html', patch_index)
+    # internal links into the new guides from the existing English guides
+    for target, ss in {t: [s for s in live if t in (entries[s].get('linkFrom') or [])] for t in
+                       {t for s in live for t in (entries[s].get('linkFrom') or [])}}.items():
+        def add(text, ss=ss):
+            for s in ss:
+                if f'href="/en/blog/{s}/"' not in text and '<div class="related__grid">' in text:
+                    text = text.replace('<div class="related__grid">', '<div class="related__grid">' + card(s), 1)
+            return text
+        _patch_file(ROOT/'en'/'blog'/target/'index.html', add)
+
+
 def main():
     today=datetime.date.today(); iso=today.isoformat()
     raw_q=json.loads(QUEUE.read_text())
@@ -2318,6 +2517,7 @@ def main():
     repair_static_site()
     _bump_home_lastmod(_home_before, today)
     refresh_index_cards(q)
+    publish_english_pages(today)
     repair_published_articles(q, today)
     write_feed(q)
     write_llms_txt(q)

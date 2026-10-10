@@ -98,6 +98,38 @@ def main(days=3):
         for f in ('blog/feed.xml', 'llms.txt', 'llms-full.txt'):
             if not (web / f).exists() or not (web / f).read_text(encoding='utf-8').strip():
                 problems.append(f'{f} missing or empty')
+        # English guides (rewrites.json entries with lang=en)
+        en = [k for k, v in json.load(open(opt / 'rewrites.json', encoding='utf-8')).items()
+              if isinstance(v, dict) and v.get('lang') == 'en']
+        smx = (web / 'sitemap.xml').read_text(encoding='utf-8')
+        eidx = (web / 'en' / 'blog' / 'index.html').read_text(encoding='utf-8')
+        llm = (web / 'llms.txt').read_text(encoding='utf-8')
+        en_live = [k for k in en if (web / 'en' / 'blog' / k / 'index.html').exists()]
+        print('english pages live:', en_live)
+        if len(en_live) < min(len(en), 2 * days):
+            problems.append(f'only {len(en_live)} of {min(len(en), 2 * days)} expected English pages rendered')
+        for k in en_live:
+            pg = (web / 'en' / 'blog' / k / 'index.html').read_text(encoding='utf-8')
+            blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', pg, re.S)
+            try:
+                types = [json.loads(b).get('@type') for b in blocks]
+            except ValueError:
+                types = ['INVALID']
+            if types != ['BlogPosting', 'FAQPage', 'BreadcrumbList']:
+                problems.append(f'{k}: schema blocks {types}')
+            if pg.count('<h1>') != 1 or f'rel="canonical" href="{SITE}/en/blog/{k}/"' not in pg or 'hreflang="x-default"' not in pg:
+                problems.append(f'{k}: h1/canonical/hreflang wrong')
+            if f'<loc>{SITE}/en/blog/{k}/</loc>' not in smx:
+                problems.append(f'{k}: not in sitemap')
+            if f'href="/en/blog/{k}/"' not in eidx:
+                problems.append(f'{k}: no card in /en/blog/')
+            if f'/en/blog/{k}/' not in llm:
+                problems.append(f'{k}: not in llms.txt')
+            if re.search(r'https?://(?!montessori-ksa\.com|www\.googletagmanager\.com|wa\.me|www\.instagram\.com|www\.facebook\.com|schema\.org|fonts\.)', pg.replace('http://www.w3.org', '')):
+                problems.append(f'{k}: unexpected external URL')
+        keep = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
+        if keep:
+            shutil.rmtree(keep, ignore_errors=True); shutil.copytree(web, keep)
         if len(published) < days:
             problems.append(f'only {len(published)} of {days} days published')
         print('PROBLEMS:' if problems else 'CLEAN: no problems found')

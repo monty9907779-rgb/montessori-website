@@ -232,5 +232,40 @@ class TestLiveLeaks10Oct(unittest.TestCase):
         self.assertFalse(facts.check_text('يوم طفلك عندنا من الثامنة حتى الثانية عشرة أو الواحدة. ' + INTAKE))
 
 
+class EnglishGate(unittest.TestCase):
+    OK = 'We welcome children aged 2 to 5. '
+
+    def test_clean(self):
+        self.assertEqual(facts.check_en_text(self.OK + 'Pre-KG (ages 2 to 3), KG1 (3-4), KG2 (4-5). Open 8:00 AM to 1:00 PM.'), [])
+
+    def test_missing_range(self):
+        self.assertTrue(facts.check_en_text('A nursery in Jeddah.'))
+
+    def test_price(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'Fees start from 1,200 SAR.'))
+
+    def test_review_count(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'Rated 4.7 from 71 Google reviews.'))
+
+    def test_wrong_stage_age(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'KG2 (ages 4 to 6) prepares children.'))
+
+    def test_market_age_ok(self):
+        self.assertEqual(facts.check_en_text(self.OK + 'Kindergarten elsewhere often covers 4 to 6 years.'), [])
+
+    def test_under_two_ours(self):
+        self.assertTrue(facts.check_en_text('We welcome toddlers under 2. ' + self.OK))
+
+    def test_wrong_hours(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'Open until 2 PM.'))
+
+    def test_credential_ours_vs_advice(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'We are a licensed nursery.'))
+        self.assertEqual(facts.check_en_text(self.OK + 'Check that any nursery is licensed.'), [])
+
+    def test_html_is_stripped(self):
+        self.assertEqual(facts.check_en_text('<h2>Ages</h2><p>' + self.OK + '</p>'), [])
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
