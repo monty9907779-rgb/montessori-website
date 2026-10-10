@@ -978,6 +978,7 @@ LLMS_GUIDES = [
     ('quran-nursery-jeddah-montessori', 'تعليم القرآن للأطفال في الحضانة مع العربية والإنجليزية — ما يناسب كل عمر'),
     ('bilingual-nursery-jeddah', 'حضانة ثنائية اللغة عربي وإنجليزي في جدة'),
     ('nursery-with-cctv-cameras-jeddah', 'كاميرات المراقبة في الحضانة — ما الذي يطمئنك فعلاً'),
+    ('montessori-kindergarten-jeddah', 'روضة منتسوري في جدة — المنهج الحقيقي وعلاماته'),
 ]
 
 # English pages are static (not queue articles); listed when present on disk.
