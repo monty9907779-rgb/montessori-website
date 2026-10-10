@@ -1670,6 +1670,18 @@ def repair_static_site():
         # /login/ answers 403 to anyone without a session and is linked from
         # every page: mark the links nofollow so crawlers stop requesting it.
         text = re.sub(r'<a((?![^>]*\brel=)[^>]*\bhref="/login/"[^>]*)>', r'<a\1 rel="nofollow">', text)
+        # WebSite node: the name Google shows above the result, tied to the
+        # business node, in the page's own language.
+        if '"@type": "WebSite"' not in text and '"@type":"WebSite"' not in text and '</head>' in text:
+            ws = {'@context': 'https://schema.org', '@type': 'WebSite',
+                  '@id': (SITE + '/en/#website') if english else (SITE + '/#website'),
+                  'url': (SITE + '/en/') if english else (SITE + '/'),
+                  'name': 'Kawkab Al-Tifl Al-Hurr Kindergarten' if english else 'روضة كوكب الطفل الحر',
+                  'alternateName': (['Kawkab Al-Tifl', 'Kawkab Al-Tifl Al-Hurr'] if english
+                                    else ['كوكب الطفل الحر', 'Kawkab Al-Tifl Al-Hurr']),
+                  'inLanguage': 'en' if english else 'ar',
+                  'publisher': {'@id': SITE + '/#business'}}
+            text = text.replace('</head>', '<script type="application/ld+json">' + json.dumps(ws, ensure_ascii=False, separators=(',', ':')) + '</script>\n</head>', 1)
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
@@ -2035,6 +2047,11 @@ a.seo-card:hover b{color:var(--clay-600)}
 </section>
 '''
     def patch_en_blog_index(text):
+        if 'BreadcrumbList' not in text and '</head>' in text:
+            bc = {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+                  {'@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': SITE + '/en/'},
+                  {'@type': 'ListItem', 'position': 2, 'name': 'Guides', 'item': SITE + '/en/blog/'}]}
+            text = text.replace('</head>', '<script type="application/ld+json">' + json.dumps(bc, ensure_ascii=False, separators=(',', ':')) + '</script>\n</head>', 1)
         if 'id="en-blog-guide"' in text:
             return text
         anchor = '<nav class="related" aria-label="All articles">'
