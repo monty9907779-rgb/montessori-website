@@ -840,9 +840,12 @@ def related_block(a, allslugs, titles):
         f'<span class="rel-card__go">اقرأ المقال ←</span></a>' for s in rel)
     more = ''
     if _UNDER:
-        i = int(hashlib.sha1(a['slug'].encode('utf-8')).hexdigest(), 16) % len(_UNDER)
+        # Rendezvous (highest random weight) ordering: an article keeps the
+        # same picks as long as its top candidates stay in the pool. A
+        # modulo over the pool length reshuffled nearly every article each
+        # time one new article was published (seen in a multi-day dry run).
         picks = []
-        order = [_UNDER[(i + k) % len(_UNDER)] for k in range(len(_UNDER))]
+        order = sorted(_UNDER, key=lambda c: hashlib.sha1((a['slug'] + '|' + c).encode('utf-8')).hexdigest())
         # one from the article's own category when there is one, then any
         for pool in ([c for c in order if titles.get(c, {}).get('cat') == a.get('cat')], order):
             for c in pool:
