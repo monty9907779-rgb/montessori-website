@@ -1967,7 +1967,26 @@ a.seo-card:hover b{color:var(--clay-600)}
             if m:
                 tags = f'<link rel="alternate" hreflang="en" href="{m.group(1)}"/><link rel="alternate" hreflang="x-default" href="{m.group(1)}"/>'
                 text = text[:m.end()] + tags + text[m.end():]
-        return en_facts(text)
+        return en_facts(en_entities(text))
+    # English articles: tie the BlogPosting to the business entity and to
+    # the Montessori and Jeddah entities, as the Arabic articles are.
+    def en_entities(text):
+        if '"about"' in text:
+            return text
+        def fix(m):
+            try:
+                d = json.loads(m.group(1))
+            except ValueError:
+                return m.group(0)
+            if not isinstance(d, dict) or d.get('@type') not in ('BlogPosting', 'Article'):
+                return m.group(0)
+            for k in ('author', 'publisher'):
+                if isinstance(d.get(k), dict) and '@id' not in d[k]:
+                    d[k] = {'@type': d[k].get('@type', 'Organization'), '@id': SITE + '/#business', **{kk: vv for kk, vv in d[k].items() if kk != '@type'}}
+            d['about'] = [{'@type': 'Thing', 'name': 'Montessori education', 'sameAs': 'https://en.wikipedia.org/wiki/Montessori_education'},
+                          {'@type': 'City', 'name': 'Jeddah', 'sameAs': 'https://en.wikipedia.org/wiki/Jeddah'}]
+            return '<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) + '</script>'
+        return re.sub(r'<script type="application/ld\+json">(.*?)</script>', fix, text, count=0, flags=re.S)
     # English pages were written outside the facts gate. Bring them in line:
     # no review count (facts.py: the number changes), and the official stage
     # names (Pre-KG 2-3, KG1 3-4, KG2 4-5) instead of "Nursery, Pre-K,
