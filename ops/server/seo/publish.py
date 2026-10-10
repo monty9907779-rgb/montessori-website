@@ -1929,6 +1929,10 @@ a.seo-card:hover b{color:var(--clay-600)}
     # names (Pre-KG 2-3, KG1 3-4, KG2 4-5) instead of "Nursery, Pre-K,
     # Kindergarten" for our own programmes.
     def en_facts(text):
+        # Site audit: the English homepage title is 69 characters and gets cut
+        # in the SERP; keep the head terms and the brand within 60.
+        text = text.replace('<title>Montessori Nursery, Daycare &amp; Kindergarten in Jeddah | Kawkab Al-Tifl</title>',
+                            '<title>Montessori Nursery &amp; Kindergarten in Jeddah | Kawkab Al-Tifl</title>', 1)
         text = re.sub(r'(4\.7(?:&#9733;</strong>|\u2605</strong>| stars)?)\s+from\s+\d+\s+(?:Google\s+)?reviews',
                       r'\1 on Google Maps', text)
         text = re.sub(r'\b[Nn]ursery, [Pp]re-K(?:\s*/\s*[Pp]reschool)?,?\s+(?:and\s+)?[Kk]indergarten',
