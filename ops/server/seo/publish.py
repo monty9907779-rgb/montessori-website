@@ -503,6 +503,10 @@ TEXT_FIXES = {
   [
    "<li><strong>ما قبل التمهيدي (سنتان):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>التمهيدي (من ثلاث إلى أربع سنوات):</strong> مرحلة تفتّح اللغة والفضول، بأنشطة الحياة العملية والتمهيد للقراءة والحساب.</li>\n<li><strong>الروضة (من أربع إلى خمس سنوات):</strong> إعداد حقيقي للمدرسة: قراءة وكتابة ورياضيات محسوسة ومهارات اجتماعية.</li>",
    "<li><strong>ما قبل الروضة (سنتان–٣):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>المستوى الأول (٣–٤):</strong> مرحلة تفتّح اللغة والفضول، بأنشطة الحياة العملية والتمهيد للقراءة والحساب.</li>\n<li><strong>المستوى الثاني (٤–٥):</strong> إعداد حقيقي للمدرسة: قراءة وكتابة ورياضيات محسوسة ومهارات اجتماعية.</li>"
+  ],
+  [
+   "<h2>يوم طفلك عندنا — من الثامنة حتى الثانية</h2>",
+   "<h2>يوم طفلك عندنا — من الثامنة حتى الواحدة</h2>"
   ]
  ],
  "picky-eater-child": [
@@ -649,6 +653,18 @@ TEXT_FIXES = {
   [
    "يبحث كثير من الأهالي في جدة عن <strong>حضانة ثنائية اللغة</strong> تمنح أطفالهم أساساً لغوياً متيناً منذ سنواتهم الأولى، من دون أن يفقدوا صلتهم بلغتهم الأم وهويتهم. في حضانتنا بحي الفيصلية نؤمن بأن الطفل قادر على استيعاب العربية والإنجليزية معاً في بيئة واحدة دافئة، حين يُقدَّم له كل ذلك باللعب والحب والاكتشاف، لا بالحفظ والتلقين.",
    "نعم، توجد في جدة <strong>حضانة ثنائية اللغة</strong> تجمع العربية الفصحى والإنجليزية وتعليم القرآن في يوم واحد دون أن يفقد الطفل صلته بلغته الأم وهويته: روضة كوكب الطفل الحر في حي الفيصلية تقدّم ذلك للأطفال من سنتين إلى ٥ سنوات بمنهج مونتيسوري، حيث تُقدَّم اللغتان والقرآن باللعب والقصة والنشاط اليومي لا بالحفظ والتلقين. في هذا الدليل نشرح كيف يكتسب الطفل لغتين معاً في هذا العمر، وما الذي تلاحظينه في الحضانة لتعرفي أن الثنائية حقيقية لا مجرد كلمة في الإعلان."
+  ]
+ ],
+ "nursery-ar-rayyan-jeddah": [
+  [
+   "تقييم <strong>4.7★</strong> من 71 أسرة على خرائط جوجل.",
+   "تقييم <strong>4.7★</strong> على خرائط جوجل."
+  ]
+ ],
+ "montessori-glossary-arabic-english": [
+  [
+   "مع أطفالنا من عمر سنة إلى ٦ سنوات",
+   "مع أطفالنا من سنتين إلى ٥ سنوات"
   ]
  ]
 }
@@ -1935,6 +1951,8 @@ a.seo-card:hover b{color:var(--clay-600)}
             text = re.sub(r'<a class="bcard" href="/blog/%s/">.*?</a>' % re.escape(old), '', text, flags=re.S)
         return text
     _patch_file(ROOT/'blog'/'index.html', fix_redirect_links)
+    # /partners/ quoted a review count (facts.py: the number changes).
+    _patch_file(ROOT/'partners'/'index.html', lambda t: t.replace('وتقييم ٤٫٧ من ٧١ مراجعة', 'وتقييم ٤٫٧ على خرائط جوجل'))
 
     # /en/blog/ was the one thin page in the site audit (182 words). A short
     # guide to the English articles, class-based only (the CSP hashes inline
@@ -2029,6 +2047,33 @@ def article_date(article, fallback):
     except (TypeError, ValueError):
         return fallback
 
+def refresh_index_cards(q):
+    """Cards on /blog/ are written once at publish time; a rewrite or text
+    fix changed the article's title and meta but not its card, so half the
+    index showed titles the articles no longer carry. Rewrite each card's
+    title and description from the queue."""
+    idxp = ROOT/'blog'/'index.html'
+    try:
+        idx = idxp.read_text(encoding='utf-8')
+    except Exception:
+        return
+    new, n = idx, 0
+    for a in q:
+        slug = a.get('slug')
+        if not a.get('published') or not slug or not a.get('title'):
+            continue
+        pat = re.compile(r'(<a class="bcard" href="/blog/%s/">.*?<h3 class="bcard__title">)(.*?)(</h3><p class="bcard__desc">)(.*?)(</p>)' % re.escape(slug), re.S)
+        m = pat.search(new)
+        if not m:
+            continue
+        t, d = esc(a['title']), esc(a.get('metaDescription') or '')
+        if m.group(2) != t or m.group(4) != d:
+            new = new[:m.start()] + m.group(1) + t + m.group(3) + d + m.group(5) + new[m.end():]
+            n += 1
+    if n:
+        idxp.write_text(new, encoding='utf-8')
+        log(f'blog index: {n} card(s) refreshed')
+
 def repair_published_articles(q, today):
     titles={x.get('slug',''):{'title':x.get('title',''),'cat':x.get('cat','dev'),'pub':bool(x.get('published')),'rw':x.get('rewritten')} for x in q}
     allslugs=set(titles)
@@ -2083,6 +2128,7 @@ def main():
     if q != raw_q or _REWRITE_APPLIED:
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     repair_static_site()
+    refresh_index_cards(q)
     repair_published_articles(q, today)
     write_llms_txt(q)
     write_llms_full(q)

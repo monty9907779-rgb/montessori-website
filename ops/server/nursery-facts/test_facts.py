@@ -213,5 +213,24 @@ class TestHtmlAndArticleWrappers(unittest.TestCase):
         self.assertTrue(facts.check_article(article))
 
 
+class TestLiveLeaks10Oct(unittest.TestCase):
+    """ثلاث جمل كانت حيّة في 10/10 وأفلتت من الفحص."""
+
+    def test_review_count_as_families(self):
+        self.assertTrue(facts.check_text('تقييم 4.7 من 71 أسرة على خرائط جوجل. ' + INTAKE))
+
+    def test_our_children_one_to_six(self):
+        self.assertTrue(facts.check_text('نطبّق هذه المبادئ مع أطفالنا من عمر سنة إلى ٦ سنوات. ' + INTAKE))
+
+    def test_closing_at_two_is_ours(self):
+        self.assertTrue(facts.check_text('يوم طفلك عندنا من الثامنة حتى الثانية. ' + INTAKE))
+
+    def test_closing_at_two_market_ok(self):
+        self.assertFalse(facts.check_text('بعض الحضانات تعمل غالباً من الثامنة حتى الثانية. ' + INTAKE))
+
+    def test_twelve_is_not_two(self):
+        self.assertFalse(facts.check_text('يوم طفلك عندنا من الثامنة حتى الثانية عشرة أو الواحدة. ' + INTAKE))
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
