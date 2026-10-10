@@ -133,6 +133,11 @@ def normalized_article(article):
     a['metaDescription'] = seo_description(a)
     a['seoTitle'] = seo_title(a)
     a['imageUrl'], a['imageAlt'] = _article_image(a.get('slug', ''), a.get('imageUrl'), a.get('imageAlt'))
+    # The hero comes from a small pool, so a hundred articles shared a dozen
+    # generic alt texts. Append the article's own topic (idempotent).
+    kw = str(a.get('targetKeyword') or '').strip()
+    if kw and kw not in a['imageAlt']:
+        a['imageAlt'] = (a['imageAlt'].rstrip(' .') + ' — ' + kw).strip(' —')
     if a.get('faq'):
         a['faq'] = [
             {
