@@ -769,7 +769,7 @@ def faq_block(faq):
 def related_block(a, allslugs, titles):
     # Link only to articles that are actually published. Queue entries that
     # are unpublished (or were dropped from the queue) have no page and 404.
-    allslugs={s for s in allslugs if titles.get(s,{}).get('pub') and s not in REDIRECTED}
+    allslugs={s for s in allslugs if titles.get(s,{}).get('pub') and s not in REDIRECTED and s not in CANONICAL_TO}
     rel=[s for s in (a.get('related') or []) if s in allslugs and s!=a['slug']][:3]
     if len(rel)<3:
         # allslugs is a set, so iterating it directly picked different fillers
@@ -1916,8 +1916,11 @@ a.seo-card:hover b{color:var(--clay-600)}
         tags = f'<link rel="alternate" hreflang="ar" href="{ar}"/><link rel="alternate" hreflang="en" href="{en}"/><link rel="alternate" hreflang="x-default" href="{ar}"/>'
         return text[:canonical.end()] + tags + text[canonical.end():]
     def fix_redirect_links(text):
-        # drop the redirected article's card; its target already has one
-        for old in REDIRECTED:
+        # drop the redirected article's card; its target already has one.
+        # Same for a canonicalised duplicate: its canonical target has the
+        # card, and a link to the duplicate sends readers and crawl to a
+        # page Google folds into another.
+        for old in list(REDIRECTED) + list(CANONICAL_TO):
             text = re.sub(r'<a class="bcard" href="/blog/%s/">.*?</a>' % re.escape(old), '', text, flags=re.S)
         return text
     _patch_file(ROOT/'blog'/'index.html', fix_redirect_links)
