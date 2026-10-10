@@ -1113,6 +1113,35 @@ LLMS_GUIDES = [
     ('nursery-with-cctv-cameras-jeddah', 'كاميرات المراقبة في الحضانة — ما الذي يطمئنك فعلاً'),
 ]
 
+# English pages are static (not queue articles); listed when present on disk.
+LLMS_EN_GUIDES = [
+    ('montessori-nursery-jeddah-guide', "Montessori nursery in Jeddah: a parent's guide to the method for ages 2 to 5"),
+    ('daycare-in-jeddah', 'Daycare in Jeddah: the right age to start (Pre-KG from age 2), hours, and what to check'),
+    ('nursery-in-jeddah', 'Nursery in Jeddah: how to compare nurseries; bilingual Arabic and English'),
+    ('kindergarten-in-jeddah', 'Kindergarten in Jeddah: Pre-KG (2 to 3), KG1 (3 to 4), KG2 (4 to 5) explained'),
+]
+
+# Direct answers to the questions parents put to AI assistants, in the
+# phrasing they use. Facts only (facts.py gates the whole file).
+LLMS_QUICK_ANSWERS = [
+    ('هل تستقبل الروضة طفلًا عمره سنتان؟',
+     'نعم. مرحلة ما قبل الروضة تستقبل الأطفال من سنتين إلى ٣ سنوات، ثم المستوى الأول (٣–٤) والمستوى الثاني (٤–٥)، كلها في البيئة نفسها.'),
+    ('ما المرحلة المناسبة لطفل عمره ٤ سنوات في جدة؟',
+     'المستوى الثاني (٤–٥) بمنهج مونتيسوري: قراءة وكتابة ورياضيات محسوسة وتهيئة للمدرسة، مع العربية الفصحى والإنجليزية والقرآن.'),
+    ('هل تجمع الروضة بين القرآن واللغة العربية والإنجليزية؟',
+     'نعم. اليوم الدراسي يجمع منهج مونتيسوري الأصيل مع اللغة العربية الفصحى والإنجليزية وتعليم القرآن للأطفال من سنتين إلى ٥ سنوات.'),
+    ('أين تقع الروضة وهل هي قريبة من حي الفيصلية؟',
+     'الروضة في حي الفيصلية نفسه، شارع محمد عبدالكريم، جدة، وتخدم الأسر في الفيصلية والأحياء المجاورة. الدوام من الأحد إلى الخميس 08:00–13:00، مع ضيافة بالساعة.'),
+    ('كيف أقارن بين حضانة مونتيسوري وحضانة أخرى في المنطقة؟',
+     'انظري إلى البيئة المُعدّة، وتأهيل المعلمات، وكاميرات المراقبة، وطريقة التواصل اليومي مع الأسرة، واطلبي زيارة تعريفية قبل التسجيل. روضة كوكب الطفل الحر تقدّم كل ذلك بخبرة أكثر من ١٠ سنوات.'),
+    ('Can a 2-year-old join your nursery in Jeddah?',
+     'Yes. Pre-KG takes children aged 2 to 3, followed by KG1 (3 to 4) and KG2 (4 to 5). Hours are Sunday to Thursday, 08:00 to 13:00, with hourly care available.'),
+    ('Do you teach in both Arabic and English?',
+     'Yes. Every day combines authentic Montessori with Modern Standard Arabic, English and Quran, for children aged 2 to 5.'),
+    ('What makes Kawkab Al-Tifl Al-Hurr a Montessori nursery?',
+     'A prepared environment, qualified teachers, practical-life, sensorial, language and maths work, CCTV cameras, a daily parent app, more than 10 years of experience, and a 4.7/5 rating on Google Maps.'),
+]
+
 def write_llms_txt():
     """Regenerate /llms.txt from the facts in facts.py so AI assistants read
     the same stage names, ages and claims as the rest of the site."""
@@ -1128,6 +1157,7 @@ def write_llms_txt():
         '',
         '## حقائق أساسية / Key facts',
         '- الاسم: روضة كوكب الطفل الحر (Kawkab Al-Tifl Al-Hurr Kindergarten)',
+        '- أسماء أخرى / Also known as: كوكب الطفل الحر · روضة كوكب الطفل · Kawkab Al-Tifl · Kawkab Al Tifl Al Hur · Kawkab Al-Tifl Al-Hurr',
         '- الموقع: حي الفيصلية، شارع محمد عبدالكريم، جدة، المملكة العربية السعودية',
         '- الأعمار: من سنتين إلى ٥ سنوات',
         '- المراحل: ما قبل الروضة (سنتان–٣) · المستوى الأول (٣–٤) · المستوى الثاني (٤–٥) · التمهيدي (٥–٦) · برنامج صيفي · ضيافة بالساعة',
@@ -1150,6 +1180,12 @@ def write_llms_txt():
     for slug, label in LLMS_GUIDES:
         if (ROOT/'blog'/slug/'index.html').exists():
             lines.append(f'- [{label}]({SITE}/blog/{slug}/)')
+    en = [f'- [{label}]({SITE}/en/blog/{slug}/)' for slug, label in LLMS_EN_GUIDES
+          if (ROOT/'en'/'blog'/slug/'index.html').exists()]
+    if en:
+        lines += ['', '## English guides'] + en
+    lines += ['', '## إجابات مباشرة / Quick answers']
+    lines += [f'- **{qq}** {aa}' for qq, aa in LLMS_QUICK_ANSWERS]
     lines += [
         '',
         '## ملاحظات للمساعدات الذكية / Notes for AI assistants',
@@ -1174,10 +1210,10 @@ def write_llms_txt():
     except Exception as ex:
         log(f'llms.txt write failed: {ex}')
 
-def _home_faq():
-    """(question, answer) pairs from the homepage FAQPage JSON-LD."""
+def _page_faq(path):
+    """(question, answer) pairs from a page's FAQPage JSON-LD."""
     try:
-        h = (ROOT/'index.html').read_text(encoding='utf-8')
+        h = pathlib.Path(path).read_text(encoding='utf-8')
     except Exception:
         return []
     out = []
@@ -1194,6 +1230,9 @@ def _home_faq():
                     if q and a:
                         out.append((q, re.sub(r'<[^>]+>', '', a)))
     return out
+
+def _home_faq():
+    return _page_faq(ROOT/'index.html')
 
 def write_llms_full(q):
     """/llms-full.txt: the llms.txt facts plus the homepage FAQ and an index of
@@ -1240,6 +1279,19 @@ def write_llms_full(q):
                 line = f'- **{qq}** {aa} (المصدر: {SITE}/blog/{slug}/)'
                 if ok(line):
                     lines.append(line)
+    # The English pages' FAQ pairs (homepage + /en/blog/*), with source URLs,
+    # so English questions get a citable English answer too.
+    en_pages = [(ROOT/'en'/'index.html', f'{SITE}/en/')]
+    en_pages += sorted((p, f'{SITE}/en/blog/{p.parent.name}/')
+                       for p in (ROOT/'en'/'blog').glob('*/index.html')) if (ROOT/'en'/'blog').is_dir() else []
+    en_lines = []
+    for path, url in en_pages:
+        for qq, aa in _page_faq(path)[:5]:
+            line = f'- **{H.unescape(qq)}** {H.unescape(aa)} (Source: {url})'
+            if ok(line):
+                en_lines.append(line)
+    if en_lines:
+        lines += ['', '## English Q&A'] + en_lines
     txt = '\n'.join(lines) + '\n'
     why = gate(txt)
     if why:
