@@ -471,6 +471,8 @@ def apply_rewrites(raw_q):
             continue
         a.update({k: new[k] for k in fields if k in new})
         a['rewritten'] = tag
+        if a.get('published'):
+            a['modified'] = datetime.date.today().isoformat()
         _REWRITE_APPLIED.append(slug)
         log(f"rewrite applied {slug}")
     return raw_q
@@ -613,6 +615,7 @@ def apply_text_fixes(raw_q):
             log(f"text fix rejected {a['slug']}: {'; '.join(why)}")
             continue
         a.update(cand)
+        a['modified'] = datetime.date.today().isoformat()
         _REWRITE_APPLIED.append(a['slug'])
         log(f"text fix applied {a['slug']} ({hit} replacement(s))")
     return raw_q
@@ -722,14 +725,20 @@ def related_block(a, allslugs, titles):
         f'<span class="rel-card__go">اقرأ المقال ←</span></a>' for s in rel)
     return f'<nav class="related" aria-label="مقالات ذات صلة"><h2>مقالات قد تهمّك</h2><div class="related__grid">{cards}</div></nav>'
 
+def modified_iso(a, iso):
+    """Last content change (rewrite or text fix), never before the publish date."""
+    m = str(a.get('modified') or '')[:10]
+    return m if m > iso else iso
+
 def jsonld(a, iso):
     url=f"{SITE}/blog/{a['slug']}/"; cat=CATN.get(a['cat'],'')
     kws=[a.get('targetKeyword','')]+(a.get('secondaryKeywords') or [])
     j=lambda o: json.dumps(o,ensure_ascii=False,separators=(',',':'))
     bp={"@context":"https://schema.org","@type":"BlogPosting","@id":url+"#article","headline":a['seoTitle'],
         "description":a['metaDescription'],"inLanguage":"ar","url":url,"mainEntityOfPage":{"@type":"WebPage","@id":url},
-        "datePublished":iso,"dateModified":iso,"author":{"@type":"Organization","name":"كوكب الطفل الحر","url":SITE+"/"},
-        "publisher":{"@type":"Organization","name":"كوكب الطفل الحر","logo":{"@type":"ImageObject","url":SITE+"/logo.png"}},
+        "datePublished":iso,"dateModified":modified_iso(a, iso),
+        "author":{"@type":"Organization","@id":SITE+"/#business","name":"كوكب الطفل الحر","url":SITE+"/"},
+        "publisher":{"@type":"Organization","@id":SITE+"/#business","name":"كوكب الطفل الحر","logo":{"@type":"ImageObject","url":SITE+"/logo.png"}},
         "image":a['imageUrl'],"keywords":", ".join(k for k in kws if k),"articleSection":cat,"wordCount":a.get('wordCount')}
     fq={"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":f['q'],"acceptedAnswer":{"@type":"Answer","text":f['a']}} for f in (a.get('faq') or [])]}
@@ -848,6 +857,16 @@ def add_inline_links(a, titles):
         return m.group(1) + inner + m.group(4)
     return _BLOCK.sub(block, html)
 
+def updated_html(a, iso):
+    m = modified_iso(a, iso)
+    if m == iso:
+        return ''
+    try:
+        md = datetime.date.fromisoformat(m)
+    except ValueError:
+        return ''
+    return f'<span class="am-dot">·</span><span>آخر تحديث <time datetime="{m}">{esc(ar_date(md))}</time></span>'
+
 def render_article(a, iso, d, allslugs, titles):
     cat=CATN.get(a['cat'],''); url=f"{SITE}/blog/{a['slug']}/"
     kws=[a.get('targetKeyword','')]+(a.get('secondaryKeywords') or [])
@@ -882,7 +901,7 @@ def render_article(a, iso, d, allslugs, titles):
     <a class="article__cat" href="/blog/#{a['cat']}">{esc(cat)}</a>
     <h1>{esc(a['title'])}</h1>
     <div class="article__meta"><span class="am-author"><img src="/logo.png" alt="كوكب الطفل الحر"/> فريق كوكب الطفل الحر</span>
-      <span class="am-dot">·</span><time datetime="{iso}">{esc(ar_date(d))}</time><span class="am-dot">·</span><span>{rt} دقائق قراءة</span></div>
+      <span class="am-dot">·</span><time datetime="{iso}">{esc(ar_date(d))}</time>{updated_html(a, iso)}<span class="am-dot">·</span><span>{rt} دقائق قراءة</span></div>
   </header>
   <div class="article__body">
 <figure class="article-hero"><img src="{esc(a['imageUrl'])}" alt="{esc(a['imageAlt'])}" width="1200" height="800" loading="eager" fetchpriority="high"/></figure>
