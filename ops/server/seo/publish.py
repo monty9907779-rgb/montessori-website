@@ -887,6 +887,16 @@ INLINE_LINKS = [
     # link is still at most one per article (target used once).
     ('حضانة مونتيسوري', '/'),
     ('روضة مونتيسوري', '/'),
+    # the «منتسوري» spelling cluster, the hospitality head term, hourly care,
+    # the entry-age and home-support guides (new pages, October 2026)
+    ('منهج منتسوري', 'what-is-montessori-method'),
+    ('منتسوري', 'montessori-kindergarten-jeddah'),
+    ('مركز ضيافة أطفال', 'children-hospitality-diyafa-jeddah'),
+    ('ضيافة أطفال', 'children-hospitality-diyafa-jeddah'),
+    ('الحضانة بالساعة', 'child-care-hourly-jeddah'),
+    ('حضانة بالساعة', 'child-care-hourly-jeddah'),
+    ('سن دخول الحضانة', 'nursery-entry-age-guide'),
+    ('مونتيسوري في البيت', 'montessori-parent-home-support'),
 ]
 INLINE_LINK_MAX = 5
 _BLOCK = re.compile(r'(<(p|li)\b[^>]*>)(.*?)(</\2>)', re.S)
