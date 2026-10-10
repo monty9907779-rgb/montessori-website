@@ -57,7 +57,6 @@ ARTICLE_IMAGES = [
 
 SEO_TITLE_OVERRIDES = {
     'best-montessori-nursery-jeddah': 'أفضل حضانة مونتيسوري في جدة 2026 | كوكب الطفل الحر',
-    'children-hospitality-diyafa-jeddah': 'ضيافة أطفال في جدة | كيف تختارين مركزاً آمناً؟',
     'kids-club-nadi-atfal-jeddah': 'نادي أطفال في جدة | دليل الأنشطة الآمنة 2026',
     'montessori-glossary-arabic-english': 'قاموس مصطلحات مونتيسوري بالعربية والإنجليزية',
     'nursery-half-full-day-jeddah': 'حضانة نصف يوم أم دوام كامل في جدة؟ | دليل',
@@ -76,7 +75,7 @@ SEO_DESCRIPTION_OVERRIDES = {
     'kindergarten-rawda-jeddah': 'دليل عملي لاختيار روضة أطفال في جدة: الفرق بين الروضة والتمهيدي والحضانة، ومعايير الاختيار والأسئلة التي يجب طرحها.',
     'kids-club-nadi-atfal-jeddah': 'ما الفرق بين نادي الأطفال والحضانة؟ دليل اختيار الأنشطة الآمنة التي تنمّي مهارات طفلك في جدة.',
     'nursery-near-me-jeddah': 'تبحثين عن حضانة قريبة في جدة؟ دليلك لموازنة القرب مع جودة المنهج والأمان والأسئلة المهمة قبل التسجيل.',
-    'infant-nursery-jeddah': 'دليل حضانات الرضع في جدة: متى يكون طفلك جاهزاً؟ وما الذي تسألين عنه قبل التسجيل؟',
+    'infant-nursery-jeddah': 'دليل حضانات الرضع في جدة: متى يكون طفلك جاهزاً؟ وما تسألين عنه قبل التسجيل؟ ومتى يحين الانتقال إلى حضانة الأطفال من سنتين؟',
 }
 
 LEGACY_LINKS = {
@@ -607,8 +606,8 @@ TEXT_FIXES = {
    "حضانة بالساعة في جدة | ضيافة أطفال مرنة للموظفات بحي الفيصلية"
   ],
   [
-   "تبحثين عن ضيافة اطفال جدة؟ روضة كوكب الطفل الحر بالساعة في حي الفيصلية",
-   "تبحثين عن حضانة بالساعة في جدة؟ روضة كوكب الطفل الحر تقدّم ضيافة أطفال بالساعة في حي الفيصلية"
+   "تبحثين عن ضيافة اطفال جدة؟ روضة كوكب الطفل الحر بالساعة",
+   "تبحثين عن حضانة بالساعة في جدة؟ روضة كوكب الطفل الحر بالساعة"
   ],
   [
    "<strong>ضيافة اطفال جدة</strong> هي الحل الآمن",
@@ -675,6 +674,12 @@ TEXT_FIXES = {
   [
    "<p>وبتقييم 4.7★ من 71 أسرة في جده، نفخر",
    "<p>وبتقييم 4.7★ على خرائط جوجل، نفخر"
+  ]
+ ],
+ "nursery-jobs-jeddah": [
+  [
+   "وظائف حضانة جدة في روضة كوكب الطفل الحر بحي الفيصلية: انضمي لفريق معلمات مؤهل، بيئة داعمة",
+   "وظائف حضانة جدة في روضة كوكب الطفل الحر بحي الفيصلية: انضمي لفريق معلمات مؤهل يعمل مع أطفال من سنتين إلى ٥ سنوات."
   ]
  ]
 }
@@ -792,6 +797,23 @@ def faq_block(faq):
                   f'<div class="faq__a"><p>{esc(f["a"])}</p></div></details>' for f in (faq or []))
     return f'<section class="faq" aria-label="الأسئلة الشائعة"><h2>الأسئلة الشائعة</h2>{items}</section>'
 
+_UNDER = []
+
+def compute_underlinked(q):
+    """Indexable published articles that the curated `related` lists hardly
+    reach (0 or 1 inbound). A crawl found 27 articles with no link in any
+    article body; related_block adds a line pointing each article at two of
+    these, spread by a hash so every under-linked page collects links."""
+    live = {x['slug']: x for x in q if x.get('published') and x.get('slug')
+            and x['slug'] not in REDIRECTED and x['slug'] not in CANONICAL_TO and not is_noindex(x)}
+    cnt = {s: 0 for s in live}
+    for x in live.values():
+        for r in [r for r in (x.get('related') or []) if r in live and r != x['slug']][:3]:
+            cnt[r] += 1
+    global _UNDER
+    _UNDER = sorted((s for s, c in cnt.items() if c <= 1), key=lambda s: (cnt[s], s))
+    return _UNDER
+
 def related_block(a, allslugs, titles):
     # Link only to articles that are actually published. Queue entries that
     # are unpublished (or were dropped from the queue) have no page and 404.
@@ -811,7 +833,22 @@ def related_block(a, allslugs, titles):
     cards=''.join(f'<a class="rel-card" href="/blog/{s}/"><span class="rel-card__cat">{esc(CATN.get(titles.get(s,{}).get("cat","dev")))}</span>'
         f'<span class="rel-card__title">{esc(titles.get(s,{}).get("title",s))}</span>'
         f'<span class="rel-card__go">اقرأ المقال ←</span></a>' for s in rel)
-    return f'<nav class="related" aria-label="مقالات ذات صلة"><h2>مقالات قد تهمّك</h2><div class="related__grid">{cards}</div></nav>'
+    more = ''
+    if _UNDER:
+        i = int(hashlib.sha1(a['slug'].encode('utf-8')).hexdigest(), 16) % len(_UNDER)
+        picks = []
+        order = [_UNDER[(i + k) % len(_UNDER)] for k in range(len(_UNDER))]
+        # one from the article's own category when there is one, then any
+        for pool in ([c for c in order if titles.get(c, {}).get('cat') == a.get('cat')], order):
+            for c in pool:
+                if c != a['slug'] and c not in rel and titles.get(c, {}).get('pub') and c not in picks:
+                    picks.append(c)
+                    break
+        picks = picks[:2]
+        if picks:
+            more = '<p class="related__more">اقرئي أيضاً: ' + ' · '.join(
+                f'<a href="/blog/{c}/">{esc(titles.get(c, {}).get("title", c))}</a>' for c in picks) + '</p>'
+    return f'<nav class="related" aria-label="مقالات ذات صلة"><h2>مقالات قد تهمّك</h2><div class="related__grid">{cards}</div>{more}</nav>'
 
 def modified_iso(a, iso):
     """Last content change (rewrite or text fix), never before the publish date."""
@@ -1961,6 +1998,9 @@ a.seo-card:hover b{color:var(--clay-600)}
             text = re.sub(r'<a class="bcard" href="/blog/%s/">.*?</a>' % re.escape(old), '', text, flags=re.S)
         return text
     _patch_file(ROOT/'blog'/'index.html', fix_redirect_links)
+    _feed_link = '<link rel="alternate" type="application/rss+xml" title="مدوّنة روضة كوكب الطفل الحر" href="/blog/feed.xml"/>'
+    for _p in (ROOT/'blog'/'index.html', ROOT/'index.html'):
+        _patch_file(_p, lambda t: t if 'application/rss+xml' in t else t.replace('</head>', _feed_link + '\n</head>', 1))
     # /partners/ quoted a review count (facts.py: the number changes).
     _patch_file(ROOT/'partners'/'index.html', lambda t: t.replace('وتقييم ٤٫٧ من ٧١ مراجعة', 'وتقييم ٤٫٧ على خرائط جوجل'))
 
@@ -2034,6 +2074,10 @@ a.seo-card:hover b{color:var(--clay-600)}
     # names (Pre-KG 2-3, KG1 3-4, KG2 4-5) instead of "Nursery, Pre-K,
     # Kindergarten" for our own programmes.
     def en_facts(text):
+        text = text.replace('Kawkab Al-Tifl Al-Hurr: Montessori nursery, daycare and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with Arabic, English and Quran. Open Sun–Thu 08:00–13:00.',
+                            'Kawkab Al-Tifl Al-Hurr: Montessori nursery and kindergarten in Al Faisaliyyah, Jeddah, ages 2–5, with Arabic, English and Quran. Open Sun–Thu 08:00–13:00.')
+        text = text.replace('Practical guides for parents in Jeddah: choosing a daycare, nursery, or kindergarten, and understanding the Montessori method. From our Al Faisaliyyah Montessori nursery.',
+                            'Practical guides for Jeddah parents: choosing a daycare, nursery or kindergarten, and understanding the Montessori method, from our Al Faisaliyyah nursery.')
         # Site audit: the English homepage title is 69 characters and gets cut
         # in the SERP; keep the head terms and the brand within 60.
         text = text.replace('<title>Montessori Nursery, Daycare &amp; Kindergarten in Jeddah | Kawkab Al-Tifl</title>',
@@ -2056,6 +2100,60 @@ def article_date(article, fallback):
         return datetime.date.fromisoformat(str(raw)[:10]) if raw else fallback
     except (TypeError, ValueError):
         return fallback
+
+def write_feed(q):
+    """/blog/feed.xml: the 30 newest indexable guides as RSS 2.0, for feed
+    readers, Bing and assistants that discover content through feeds."""
+    items = []
+    for a in sorted(q, key=lambda x: str(x.get('published') or ''), reverse=True):
+        slug = a.get('slug', '')
+        if (not a.get('published') or is_noindex(a) or slug in REDIRECTED or slug in CANONICAL_TO
+                or not (ROOT/'blog'/slug/'index.html').exists()):
+            continue
+        try:
+            d = datetime.date.fromisoformat(str(a['published'])[:10])
+            pub = d.strftime('%a, %d %b %Y 08:00:00 +0300')
+        except ValueError:
+            continue
+        link = f'{SITE}/blog/{slug}/'
+        items.append(f"<item><title>{esc(a.get('seoTitle') or a.get('title') or slug)}</title><link>{link}</link>"
+                     f"<guid isPermaLink=\"true\">{link}</guid><pubDate>{pub}</pubDate>"
+                     f"<description>{esc(a.get('metaDescription') or '')}</description></item>")
+        if len(items) >= 30:
+            break
+    if not items:
+        return
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>'
+           '<title>مدوّنة روضة كوكب الطفل الحر بجدة</title>'
+           f'<link>{SITE}/blog/</link><description>أدلة تربوية لأولياء الأمور في جدة: الحضانة والروضة ومنهج مونتيسوري للأطفال من سنتين إلى ٥ سنوات.</description>'
+           '<language>ar</language>' + ''.join(items) + '</channel></rss>\n')
+    p = ROOT/'blog'/'feed.xml'
+    try:
+        if p.exists() and p.read_text(encoding='utf-8') == xml:
+            return
+        p.write_text(xml, encoding='utf-8')
+        log(f'blog feed updated ({len(items)} items)')
+    except Exception as ex:
+        log(f'blog feed write failed: {ex}')
+
+def _bump_home_lastmod(before, today):
+    """When repair_static_site changed a homepage, say so in the sitemap and
+    to IndexNow: the homepages' <lastmod> was stuck at the day they were
+    first generated."""
+    smp = ROOT/'sitemap.xml'
+    try:
+        sm = smp.read_text(encoding='utf-8')
+    except Exception:
+        return
+    new = sm
+    for f, old_txt, loc in (('index.html', before[0], f'{SITE}/'), ('en/index.html', before[1], f'{SITE}/en/')):
+        pth = ROOT/f
+        if pth.exists() and old_txt and pth.read_text(encoding='utf-8') != old_txt:
+            new = re.sub(r'(<loc>%s</loc>\s*<lastmod>)[^<]*(</lastmod>)' % re.escape(loc), r'\g<1>%s\g<2>' % today.isoformat(), new)
+            indexnow(loc)
+    if new != sm:
+        smp.write_text(new, encoding='utf-8')
+        log('homepage sitemap lastmod bumped')
 
 def refresh_index_cards(q):
     """Cards on /blog/ are written once at publish time; a rewrite or text
@@ -2135,11 +2233,15 @@ def main():
     raw_q=apply_rewrites(raw_q)
     raw_q=apply_text_fixes(raw_q)
     q=[normalized_article(a) for a in raw_q]
+    compute_underlinked(q)
     if q != raw_q or _REWRITE_APPLIED:
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
+    _home_before = [(ROOT/f).read_text(encoding='utf-8') if (ROOT/f).exists() else '' for f in ('index.html', 'en/index.html')]
     repair_static_site()
+    _bump_home_lastmod(_home_before, today)
     refresh_index_cards(q)
     repair_published_articles(q, today)
+    write_feed(q)
     write_llms_txt(q)
     write_llms_full(q)
     prune_noindex_from_sitemap(q)
