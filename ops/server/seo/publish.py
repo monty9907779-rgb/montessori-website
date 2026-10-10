@@ -57,7 +57,6 @@ ARTICLE_IMAGES = [
 
 SEO_TITLE_OVERRIDES = {
     'best-montessori-nursery-jeddah': 'أفضل حضانة مونتيسوري في جدة 2026 | كوكب الطفل الحر',
-    'children-hospitality-diyafa-jeddah': 'ضيافة أطفال في جدة | كيف تختارين مركزاً آمناً؟',
     'kids-club-nadi-atfal-jeddah': 'نادي أطفال في جدة | دليل الأنشطة الآمنة 2026',
     'montessori-glossary-arabic-english': 'قاموس مصطلحات مونتيسوري بالعربية والإنجليزية',
     'nursery-half-full-day-jeddah': 'حضانة نصف يوم أم دوام كامل في جدة؟ | دليل',
@@ -76,7 +75,7 @@ SEO_DESCRIPTION_OVERRIDES = {
     'kindergarten-rawda-jeddah': 'دليل عملي لاختيار روضة أطفال في جدة: الفرق بين الروضة والتمهيدي والحضانة، ومعايير الاختيار والأسئلة التي يجب طرحها.',
     'kids-club-nadi-atfal-jeddah': 'ما الفرق بين نادي الأطفال والحضانة؟ دليل اختيار الأنشطة الآمنة التي تنمّي مهارات طفلك في جدة.',
     'nursery-near-me-jeddah': 'تبحثين عن حضانة قريبة في جدة؟ دليلك لموازنة القرب مع جودة المنهج والأمان والأسئلة المهمة قبل التسجيل.',
-    'infant-nursery-jeddah': 'دليل حضانات الرضع في جدة: متى يكون طفلك جاهزاً؟ وما الذي تسألين عنه قبل التسجيل؟',
+    'infant-nursery-jeddah': 'دليل حضانات الرضع في جدة: متى يكون طفلك جاهزاً؟ وما تسألين عنه قبل التسجيل؟ ومتى يحين الانتقال إلى حضانة الأطفال من سنتين؟',
 }
 
 LEGACY_LINKS = {
@@ -134,6 +133,11 @@ def normalized_article(article):
     a['metaDescription'] = seo_description(a)
     a['seoTitle'] = seo_title(a)
     a['imageUrl'], a['imageAlt'] = _article_image(a.get('slug', ''), a.get('imageUrl'), a.get('imageAlt'))
+    # The hero comes from a small pool, so a hundred articles shared a dozen
+    # generic alt texts. Append the article's own topic (idempotent).
+    kw = str(a.get('targetKeyword') or '').strip()
+    if kw and kw not in a['imageAlt']:
+        a['imageAlt'] = (a['imageAlt'].rstrip(' .') + ' — ' + kw).strip(' —')
     if a.get('faq'):
         a['faq'] = [
             {
@@ -471,11 +475,248 @@ def apply_rewrites(raw_q):
             continue
         a.update({k: new[k] for k in fields if k in new})
         a['rewritten'] = tag
+        if a.get('published'):
+            a['modified'] = datetime.date.today().isoformat()
         _REWRITE_APPLIED.append(slug)
         log(f"rewrite applied {slug}")
     return raw_q
 
 _DATED_AUTO = re.compile(r'-20\d{6}$')
+
+# One-off wording fixes for published articles written before the official
+# stage ladder (2026-09-13): our programmes named «التمهيدي والروضة», or an
+# official name next to the wrong ages in a form the gate could not read.
+# Applied to bodyHtml and FAQ after the rewrites; a slug whose result fails
+# the facts gate is left untouched. Idempotent: an absent old string is a no-op.
+TEXT_FIXES = {
+ "bilingual-education-benefits-children": [
+  [
+   "وتقدّم برامج ما قبل التمهيدي (Pre-KG) والتمهيدي والروضة والبرنامج الصيفي",
+   "وتقدّم مراحل ما قبل الروضة (سنتان–٣) والمستوى الأول (٣–٤) والمستوى الثاني (٤–٥) والتمهيدي (٥–٦) والبرنامج الصيفي"
+  ],
+  [
+   "ولهذا تُعدّ سنوات الحضانة (من عام إلى عامين)، ثم التمهيدي (من عامين إلى أربعة)، والروضة (من أربعة إلى ستة) أنسب الأوقات على الإطلاق للبدء. وهذه بالضبط هي المراحل الثلاث التي نغطّيها",
+   "ولهذا تُعدّ السنوات من سنتين إلى ٥ سنوات أنسب الأوقات على الإطلاق للبدء. وهذه بالضبط هي المراحل التي نغطّيها"
+  ],
+  [
+   "ولهذا تُعدّ سنوات الحضانة والتمهيدي والروضة أنسب وقت للبدء.",
+   "ولهذا تُعدّ سنوات ما قبل الروضة والمستوى الأول والمستوى الثاني أنسب وقت للبدء."
+  ]
+ ],
+ "nursery-al-safa-jeddah": [
+  [
+   "<li><strong>ما قبل التمهيدي (سنتان):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>التمهيدي (من ثلاث إلى أربع سنوات):</strong> مرحلة تفتّح اللغة والفضول، بأنشطة الحياة العملية والتمهيد للقراءة والحساب.</li>\n<li><strong>الروضة (من أربع إلى خمس سنوات):</strong> إعداد حقيقي للمدرسة: قراءة وكتابة ورياضيات محسوسة ومهارات اجتماعية.</li>",
+   "<li><strong>ما قبل الروضة (سنتان–٣):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>المستوى الأول (٣–٤):</strong> مرحلة تفتّح اللغة والفضول، بأنشطة الحياة العملية والتمهيد للقراءة والحساب.</li>\n<li><strong>المستوى الثاني (٤–٥):</strong> إعداد حقيقي للمدرسة: قراءة وكتابة ورياضيات محسوسة ومهارات اجتماعية.</li>"
+  ],
+  [
+   "<h2>يوم طفلك عندنا — من الثامنة حتى الثانية</h2>",
+   "<h2>يوم طفلك عندنا — من الثامنة حتى الواحدة</h2>"
+  ]
+ ],
+ "picky-eater-child": [
+  [
+   "نقدّم برامج الحضانة والتمهيدي والروضة بمنهج منتسوري",
+   "نقدّم مراحل ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي بمنهج مونتيسوري للأطفال من سنتين إلى ٥ سنوات"
+  ]
+ ],
+ "nursery-ash-shati-jeddah": [
+  [
+   "برنامج الروضة لدينا يهيّئ الطفل للمدرسة الابتدائية بثقة",
+   "مرحلة التمهيدي (٥–٦) لدينا تهيّئ الطفل للمدرسة الابتدائية بثقة"
+  ]
+ ],
+ "is-nursery-good-for-child": [
+  [
+   "في برنامج الروضة لدينا",
+   "في المستوى الثاني (٤–٥) والتمهيدي (٥–٦) لدينا"
+  ]
+ ],
+ "jeddah-nurseries-infant-care-guide": [
+  [
+   "بالإضافة إلى برامج التمهيدي والروضة الأساسية",
+   "بالإضافة إلى مراحلنا الأساسية (ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي)"
+  ]
+ ],
+ "jeddah-preschool-4-5-years-guide": [
+  [
+   "في مرحلتي التمهيدي والروضة.",
+   "في مرحلة المستوى الثاني (٤–٥) وما يليها."
+  ],
+  [
+   "عند البحث عن روضة في جدة لأطفال تتراوح أعمارهم بين 4 و 6 سنوات، من المهم اختيار البيئة التعليمية المناسبة التي تلبي احتياجات نموهم. روضة كوكب الطفل الحر تستقبل الأطفال من عمر سنتين إلى 5 سنوات، مما يجعلها خياراً ممتازاً للفئة العمرية 4-5 سنوات.",
+   "أفضل روضة لطفل عمره ٤ سنوات في جدة هي التي تضعه في المرحلة الصحيحة لعمره، وهي في التسمية السعودية الرسمية المستوى الثاني (٤–٥)، ثم تملأ هذه السنة بما يحتاجه فعلاً قبل المدرسة: قراءة وكتابة أولى، وعدّ محسوس، واستقلال في العناية بنفسه، وثقة في الكلام بالعربية الفصحى والإنجليزية. روضة كوكب الطفل الحر في حي الفيصلية تستقبل الأطفال من سنتين إلى ٥ سنوات بمنهج مونتيسوري، ويقضي طفل الرابعة فيها عامه في المستوى الثاني ببيئة مُعدّة ومعلمات مؤهلات. هذا الدليل يشرح لكِ ما تبحثين عنه في روضة هذه المرحلة وما تسألين عنه في الزيارة."
+  ]
+ ],
+ "trusted-nursery-recommendation-jeddah": [
+  [
+   "<strong>برنامج التمهيدي:</strong> مخصص للأطفال من عمر ٣ إلى ٤ سنوات",
+   "<strong>برنامج المستوى الأول (٣–٤):</strong> مخصص للأطفال من عمر ٣ إلى ٤ سنوات"
+  ],
+  [
+   "<strong>برنامج الروضة:</strong> مخصص للأطفال من عمر ٤ إلى ٥ سنوات",
+   "<strong>برنامج المستوى الثاني (٤–٥):</strong> مخصص للأطفال من عمر ٤ إلى ٥ سنوات"
+  ],
+  [
+   "تبحثين عن حضانة اطفال جدة موثوقة؟ إليك التوصية المثالية في حي الفيصلية بجدة مع بيئة مونتيسوري مُعدّة وتعليم شامل من عمر سنتين إلى ٥ سنوات.",
+   "كيف تقيّمين ترشيحات الأهالي لحضانة في جدة قبل أن تثقي بها؟ ما تسألين عنه وما تلاحظينه في الزيارة، ولماذا تُرشَّح روضة كوكب الطفل الحر من سنتين إلى ٥ سنوات."
+  ],
+  [
+   "<h2>معايير اختيار حضانة اطفال جدة موثوقة</h2>",
+   "<h2>معايير الحضانة الموثوقة التي تستحق الترشيح</h2>"
+  ]
+ ],
+ "best-quality-price-nursery-jeddah": [
+  [
+   "يجمع بين برامج الروضة والتمهيدي المتميزة",
+   "يجمع بين مراحله المتميزة (ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي)"
+  ],
+  [
+   "تعرفي على معايير اختيار أفضل حضانة اطفال جدة تجمع بين الجودة والسعر المناسب. اكتشفي برامج الروضة والتمهيدي في حي الفيصلية بروضة كوكب الطفل الحر.",
+   "كيف تقارنين الجودة بالتكلفة في حضانات جدة بذكاء؟ ما يستحق الدفع فعلاً، وما تُحدَّد به الرسوم، وقيمة روضة كوكب الطفل الحر للأطفال من سنتين إلى ٥ سنوات."
+  ],
+  [
+   "<h2>معايير اختيار أفضل روضة اطفال جدة من حيث الجودة والسعر</h2>",
+   "<h2>معايير المقارنة بين الجودة والسعر في حضانات جدة</h2>"
+  ]
+ ],
+ "safe-educational-nursery-options-jeddah": [
+  [
+   "برامج مخصصة تشمل التمهيدي والروضة والضيافة بالساعة",
+   "مراحل ما قبل الروضة والمستوى الأول والمستوى الثاني والتمهيدي، إضافة إلى الضيافة بالساعة"
+  ],
+  [
+   "تبحثين عن حضانة اطفال جدة توفر الأمان والتعليم المتميز؟ اكتشفي خيارات الروضة والحضانة في حي الفيصلية وكيف تختارين البيئة الأنسب لطفلك.",
+   "ماذا تلاحظين في البيئة التعليمية للحضانة في جدة؟ الفصل والأدوات وتعامل المعلمات وأمان المكان، وبيئة مونتيسوري في روضة كوكب الطفل الحر من سنتين إلى ٥ سنوات."
+  ],
+  [
+   "<h2>كيف تختارين أفضل حضانة اطفال جدة لطفلك؟</h2>",
+   "<h2>كيف تختارين حضانة ببيئة تعليمية آمنة في جدة؟</h2>"
+  ]
+ ],
+ "child-care-hourly-jeddah": [
+  [
+   "فئاتنا العمرية الثلاث نفسها",
+   "مراحلنا نفسها"
+  ],
+  [
+   "<ul>\n<li><strong>الحضانة:</strong> من سنة إلى سنتين، برعاية فائقة تناسب الأعمار الصغيرة.</li>\n<li><strong>التمهيدي:</strong> من سنتين إلى أربع سنوات، مع أنشطة تمهيدية ولغوية.</li>\n<li><strong>الروضة:</strong> من أربع إلى ست سنوات، بمهارات ما قبل المدرسة.</li>\n</ul>",
+   "<ul>\n<li><strong>ما قبل الروضة (سنتان–٣):</strong> رعاية دافئة وأنشطة حسّية وحركية تناسب أولى خطوات الاستقلال.</li>\n<li><strong>المستوى الأول (٣–٤):</strong> أنشطة الحياة العملية واللغة والتمهيد للقراءة والحساب.</li>\n<li><strong>المستوى الثاني (٤–٥):</strong> مهارات ما قبل المدرسة: قراءة وكتابة ورياضيات محسوسة.</li>\n</ul>"
+  ],
+  [
+   "نحن حضانة معتمدة نالت تقييم",
+   "نحن حضانة نالت تقييم"
+  ],
+  [
+   "ضيافة أطفال في جدة | حضانة بالساعة آمنة بحي الفيصلية",
+   "حضانة بالساعة في جدة | ضيافة أطفال مرنة للموظفات بحي الفيصلية"
+  ],
+  [
+   "تبحثين عن ضيافة اطفال جدة؟ روضة كوكب الطفل الحر بالساعة",
+   "تبحثين عن حضانة بالساعة في جدة؟ روضة كوكب الطفل الحر بالساعة"
+  ],
+  [
+   "<strong>ضيافة اطفال جدة</strong> هي الحل الآمن",
+   "<strong>حضانة بالساعة في جدة</strong> هي الحل الآمن"
+  ]
+ ],
+ "nursery-entry-age-guide": [
+  [
+   "<h2>المستوى الأول والمستوى الثاني من 3 إلى 5 سنوات</h2>",
+   "<h2>المستوى الأول (٣–٤) والمستوى الثاني (٤–٥)</h2>"
+  ]
+ ],
+ "best-nursery-guide-jeddah": [
+  [
+   "دليلكِ لاختيار أفضل حضانة اطفال جدة وروضة تمهيدي، مع معايير الأمان والبيئة التعليمية المناسبة لطفلك من سنتين إلى ٥ سنوات.",
+   "قائمة تحقق عملية لاختيار حضانة الأطفال في جدة: الأمان والبيئة التعليمية والمعلمات والدوام والرسوم وأسئلة الزيارة، لطفلك من سنتين إلى ٥ سنوات."
+  ],
+  [
+   "<h2>معايير اختيار أفضل حضانات جدة لطفلك</h2>",
+   "<h2>قائمة التحقق: معايير اختيار حضانة الأطفال في جدة</h2>"
+  ]
+ ],
+ "best-montessori-nursery-jeddah": [
+  [
+   "إنّ اختيار <strong>روضة كوكب الطفل الحر جدة</strong> المناسبة لطفلك قرارٌ يستحق العناية والبحث، لأنّ السنوات الأولى هي التي تُبنى عليها شخصية الطفل وثقته بنفسه وحبّه للتعلّم. في حضانتنا بحي الفيصلية، نمزج بين منهج مونتيسوري العالمي وأصالة اللغة العربية الأصيلة، مع بيئة إنجليزية داعمة، لنمنح كل طفل بدايةً متوازنة تجمع بين العلم والقيم.",
+   "أفضل روضة مونتيسوري في جدة هي التي تجمع ثلاثة أشياء يمكنك التحقق منها في زيارة واحدة: بيئة مُعدّة بأدوات مونتيسوري الحقيقية، ومعلمات مدرّبات على المنهج يقدّمن الدرس فردياً، ووقت عمل حر يختار فيه الطفل عمله ويكرّره. <strong>روضة كوكب الطفل الحر</strong> في حي الفيصلية تبني يومها على هذه الثلاثة للأطفال من سنتين إلى ٥ سنوات، وتضيف إليها اللغة العربية الفصحى والإنجليزية وتعليم القرآن، بخبرة تزيد على ١٠ سنوات. هذا الدليل يشرح لكِ ما تلاحظينه وما تسألين عنه قبل أن تقرّري."
+  ]
+ ],
+ "what-is-montessori-method": [
+  [
+   "كثيراً ما تسمع الأمهات مصطلح «مونتيسوري» عند البحث عن حضانة لأطفالهن، ويتساءلن: <strong>ما هو منهج مونتيسوري</strong> حقاً، وهل يختلف فعلاً عن التعليم التقليدي؟ في هذا المقال نقدّم لكِ شرحاً مبسّطاً وواضحاً لهذا المنهج التربوي العريق، ومبادئه الأساسية، وطريقته في تعليم الأطفال، حتى تتمكني من اتخاذ قرار واعٍ لطفلك.",
+   "<strong>منهج مونتيسوري</strong> هو طريقة تربوية وضعتها الطبيبة الإيطالية ماريا مونتيسوري في بداية القرن العشرين، تقوم على أن الطفل يتعلّم بنفسه حين تُهيَّأ له بيئة مرتّبة بأدوات محسوسة، ويُترك ليختار عمله ويكرّره بحرية منظّمة، بينما تلاحظ المعلمة وتقدّم الدرس فردياً بدل أن تشرح للجميع. يختلف عن التعليم التقليدي في ثلاثة أشياء: من يقود التعلّم (الطفل لا المعلمة)، وكيف يُقاس التقدّم (الإتقان لا الدرجات)، وشكل الفصل (أعمار مختلطة وأرفف مفتوحة لا مقاعد متراصة). في هذا المقال نشرح مبادئه الأساسية وطريقته في تعليم الأطفال، حتى تتمكني من اتخاذ قرار واعٍ لطفلك."
+  ]
+ ],
+ "nursery-prices-jeddah": [
+  [
+   "يُعدّ السؤال عن <strong>اسعار الحضانات في جدة</strong> من أوّل ما يشغل بال كل أم تبحث عن مكان آمن ومحفِّز لطفلها. فالميزانية الشهرية للأسرة تتأثر مباشرةً برسوم الحضانة، وفي الوقت نفسه لا ترغب أيّ أم في أن تكون التكلفة على حساب جودة الرعاية أو المنهج التعليمي. لذلك أعددنا هذا الدليل العملي والمحدَّث لعام 2026 ليمنحكِ صورة واضحة عن متوسط الرسوم، وخيارات الاشتراك الشهري والاشتراك بالساعة، وما الذي يجعل حضانةً أغلى من أخرى.",
+   "<strong>اسعار الحضانات في جدة</strong> لا تُحدَّد برقم واحد؛ تختلف الرسوم من حضانة إلى أخرى بحسب عمر الطفل، وعدد أيام الدوام في الأسبوع، وعدد ساعات اليوم، وهل الاشتراك شهري أم بالساعة، وما يشمله من وجبات ومواصلات وأنشطة. لذلك فإن السؤال الأدق ليس «كم السعر؟» بل «ماذا يشمل السعر، ولأي عمر وكم ساعة؟». أعددنا هذا الدليل العملي والمحدَّث لعام 2026 ليمنحكِ صورة واضحة عن كيفية حساب الرسوم، وخيارات الاشتراك الشهري والاشتراك بالساعة، وما الذي يجعل حضانةً أغلى من أخرى."
+  ]
+ ],
+ "bilingual-nursery-jeddah": [
+  [
+   "يبحث كثير من الأهالي في جدة عن <strong>حضانة ثنائية اللغة</strong> تمنح أطفالهم أساساً لغوياً متيناً منذ سنواتهم الأولى، من دون أن يفقدوا صلتهم بلغتهم الأم وهويتهم. في حضانتنا بحي الفيصلية نؤمن بأن الطفل قادر على استيعاب العربية والإنجليزية معاً في بيئة واحدة دافئة، حين يُقدَّم له كل ذلك باللعب والحب والاكتشاف، لا بالحفظ والتلقين.",
+   "نعم، توجد في جدة <strong>حضانة ثنائية اللغة</strong> تجمع العربية الفصحى والإنجليزية وتعليم القرآن في يوم واحد دون أن يفقد الطفل صلته بلغته الأم وهويته: روضة كوكب الطفل الحر في حي الفيصلية تقدّم ذلك للأطفال من سنتين إلى ٥ سنوات بمنهج مونتيسوري، حيث تُقدَّم اللغتان والقرآن باللعب والقصة والنشاط اليومي لا بالحفظ والتلقين. في هذا الدليل نشرح كيف يكتسب الطفل لغتين معاً في هذا العمر، وما الذي تلاحظينه في الحضانة لتعرفي أن الثنائية حقيقية لا مجرد كلمة في الإعلان."
+  ]
+ ],
+ "nursery-ar-rayyan-jeddah": [
+  [
+   "تقييم <strong>4.7★</strong> من 71 أسرة على خرائط جوجل.",
+   "تقييم <strong>4.7★</strong> على خرائط جوجل."
+  ]
+ ],
+ "montessori-glossary-arabic-english": [
+  [
+   "مع أطفالنا من عمر سنة إلى ٦ سنوات",
+   "مع أطفالنا من سنتين إلى ٥ سنوات"
+  ]
+ ],
+ "montessori-vs-traditional-education": [
+  [
+   "وبتقييم 4.7★ من 71 أسرة، نشارككِ",
+   "وبتقييم 4.7★ على خرائط جوجل، نشارككِ"
+  ],
+  [
+   "<p>وبتقييم 4.7★ من 71 أسرة في جده، نفخر",
+   "<p>وبتقييم 4.7★ على خرائط جوجل، نفخر"
+  ]
+ ],
+ "nursery-jobs-jeddah": [
+  [
+   "وظائف حضانة جدة في روضة كوكب الطفل الحر بحي الفيصلية: انضمي لفريق معلمات مؤهل، بيئة داعمة",
+   "وظائف حضانة جدة في روضة كوكب الطفل الحر بحي الفيصلية: انضمي لفريق معلمات مؤهل يعمل مع أطفال من سنتين إلى ٥ سنوات."
+  ]
+ ]
+}
+
+def apply_text_fixes(raw_q):
+    if facts is None or not isinstance(raw_q, list):
+        return raw_q
+    for a in raw_q:
+        pairs = TEXT_FIXES.get(a.get('slug'))
+        if not pairs or not a.get('published'):
+            continue
+        cand = json.loads(json.dumps(a, ensure_ascii=False))
+        hit = 0
+        for old, new in pairs:
+            for k in ('bodyHtml', 'title', 'seoTitle', 'metaDescription'):
+                if old in (cand.get(k) or ''):
+                    cand[k] = cand[k].replace(old, new); hit += 1
+            for item in cand.get('faq') or []:
+                for k in ('q', 'a'):
+                    if isinstance(item, dict) and old in (item.get(k) or ''):
+                        item[k] = item[k].replace(old, new); hit += 1
+        if not hit:
+            continue
+        why = facts.check_article(cand)
+        if why:
+            log(f"text fix rejected {a['slug']}: {'; '.join(why)}")
+            continue
+        a.update(cand)
+        a['modified'] = datetime.date.today().isoformat()
+        _REWRITE_APPLIED.append(a['slug'])
+        log(f"text fix applied {a['slug']} ({hit} replacement(s))")
+    return raw_q
 
 def prune_templated_pending(raw_q):
     """Drop unpublished entries made by the old dated auto-refill
@@ -533,7 +774,7 @@ def header():
     <div class="mnav__cta">
       <a class="lang-toggle" href="/app/" aria-label="تطبيقات الجوال" title="تطبيقات الجوال" style="gap:5px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg>تطبيق</a>
       <a class="lang-toggle" href="/en/" lang="en" dir="ltr" aria-label="Switch to English" title="English"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg>EN</a>
-      <a class="btn btn--ghost btn--sm" href="/login/">دخول</a>
+      <a class="btn btn--ghost btn--sm" href="/login/" rel="nofollow">دخول</a>
       <a class="btn btn--primary btn--sm" href="/#register">احجز زيارة</a>
     </div></div></header>'''
 
@@ -541,7 +782,7 @@ def footer():
     return '''<footer class="foot"><div class="foot__in">
     <div class="soc"><a href="https://wa.me/966541558173" target="_blank" rel="noopener" aria-label="واتساب" id="f-wa"></a></div>
     <nav class="fnav"><a href="/">الرئيسية</a><a href="/blog/">المدوّنة</a><a href="/#programs">برامجنا</a>
-      <a href="/#register">احجز زيارة</a><a href="/partners/">شركاؤنا</a><a href="/privacy/">الخصوصية</a><a href="/login/">دخول</a></nav>
+      <a href="/#register">احجز زيارة</a><a href="/partners/">شركاؤنا</a><a href="/privacy/">الخصوصية</a><a href="/login/" rel="nofollow">دخول</a></nav>
     <div class="cr">كوكب الطفل الحر © ٢٠٢٦ — جدة، المملكة العربية السعودية · جميع الحقوق محفوظة</div>
   </div></footer>
 <button id="totop" aria-label="للأعلى"></button>
@@ -561,10 +802,27 @@ def faq_block(faq):
                   f'<div class="faq__a"><p>{esc(f["a"])}</p></div></details>' for f in (faq or []))
     return f'<section class="faq" aria-label="الأسئلة الشائعة"><h2>الأسئلة الشائعة</h2>{items}</section>'
 
+_UNDER = []
+
+def compute_underlinked(q):
+    """Indexable published articles that the curated `related` lists hardly
+    reach (0 or 1 inbound). A crawl found 27 articles with no link in any
+    article body; related_block adds a line pointing each article at two of
+    these, spread by a hash so every under-linked page collects links."""
+    live = {x['slug']: x for x in q if x.get('published') and x.get('slug')
+            and x['slug'] not in REDIRECTED and x['slug'] not in CANONICAL_TO and not is_noindex(x)}
+    cnt = {s: 0 for s in live}
+    for x in live.values():
+        for r in [r for r in (x.get('related') or []) if r in live and r != x['slug']][:3]:
+            cnt[r] += 1
+    global _UNDER
+    _UNDER = sorted((s for s, c in cnt.items() if c <= 1), key=lambda s: (cnt[s], s))
+    return _UNDER
+
 def related_block(a, allslugs, titles):
     # Link only to articles that are actually published. Queue entries that
     # are unpublished (or were dropped from the queue) have no page and 404.
-    allslugs={s for s in allslugs if titles.get(s,{}).get('pub') and s not in REDIRECTED}
+    allslugs={s for s in allslugs if titles.get(s,{}).get('pub') and s not in REDIRECTED and s not in CANONICAL_TO}
     rel=[s for s in (a.get('related') or []) if s in allslugs and s!=a['slug']][:3]
     if len(rel)<3:
         # allslugs is a set, so iterating it directly picked different fillers
@@ -580,7 +838,30 @@ def related_block(a, allslugs, titles):
     cards=''.join(f'<a class="rel-card" href="/blog/{s}/"><span class="rel-card__cat">{esc(CATN.get(titles.get(s,{}).get("cat","dev")))}</span>'
         f'<span class="rel-card__title">{esc(titles.get(s,{}).get("title",s))}</span>'
         f'<span class="rel-card__go">اقرأ المقال ←</span></a>' for s in rel)
-    return f'<nav class="related" aria-label="مقالات ذات صلة"><h2>مقالات قد تهمّك</h2><div class="related__grid">{cards}</div></nav>'
+    more = ''
+    if _UNDER:
+        # Rendezvous (highest random weight) ordering: an article keeps the
+        # same picks as long as its top candidates stay in the pool. A
+        # modulo over the pool length reshuffled nearly every article each
+        # time one new article was published (seen in a multi-day dry run).
+        picks = []
+        order = sorted(_UNDER, key=lambda c: hashlib.sha1((a['slug'] + '|' + c).encode('utf-8')).hexdigest())
+        # one from the article's own category when there is one, then any
+        for pool in ([c for c in order if titles.get(c, {}).get('cat') == a.get('cat')], order):
+            for c in pool:
+                if c != a['slug'] and c not in rel and titles.get(c, {}).get('pub') and c not in picks:
+                    picks.append(c)
+                    break
+        picks = picks[:2]
+        if picks:
+            more = '<p class="related__more">اقرئي أيضاً: ' + ' · '.join(
+                f'<a href="/blog/{c}/">{esc(titles.get(c, {}).get("title", c))}</a>' for c in picks) + '</p>'
+    return f'<nav class="related" aria-label="مقالات ذات صلة"><h2>مقالات قد تهمّك</h2><div class="related__grid">{cards}</div>{more}</nav>'
+
+def modified_iso(a, iso):
+    """Last content change (rewrite or text fix), never before the publish date."""
+    m = str(a.get('modified') or '')[:10]
+    return m if m > iso else iso
 
 def jsonld(a, iso):
     url=f"{SITE}/blog/{a['slug']}/"; cat=CATN.get(a['cat'],'')
@@ -588,9 +869,12 @@ def jsonld(a, iso):
     j=lambda o: json.dumps(o,ensure_ascii=False,separators=(',',':'))
     bp={"@context":"https://schema.org","@type":"BlogPosting","@id":url+"#article","headline":a['seoTitle'],
         "description":a['metaDescription'],"inLanguage":"ar","url":url,"mainEntityOfPage":{"@type":"WebPage","@id":url},
-        "datePublished":iso,"dateModified":iso,"author":{"@type":"Organization","name":"كوكب الطفل الحر","url":SITE+"/"},
-        "publisher":{"@type":"Organization","name":"كوكب الطفل الحر","logo":{"@type":"ImageObject","url":SITE+"/logo.png"}},
-        "image":a['imageUrl'],"keywords":", ".join(k for k in kws if k),"articleSection":cat,"wordCount":a.get('wordCount')}
+        "datePublished":iso,"dateModified":modified_iso(a, iso),
+        "author":{"@type":"Organization","@id":SITE+"/#business","name":"كوكب الطفل الحر","url":SITE+"/"},
+        "publisher":{"@type":"Organization","@id":SITE+"/#business","name":"كوكب الطفل الحر","logo":{"@type":"ImageObject","url":SITE+"/logo.png"}},
+        "image":a['imageUrl'],"keywords":", ".join(k for k in kws if k),"articleSection":cat,"wordCount":a.get('wordCount'),
+        "about":[{"@type":"Thing","name":"Montessori education","sameAs":"https://en.wikipedia.org/wiki/Montessori_education"},
+                 {"@type":"City","name":"جدة","sameAs":"https://ar.wikipedia.org/wiki/جدة"}]}
     fq={"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":f['q'],"acceptedAnswer":{"@type":"Answer","text":f['a']}} for f in (a.get('faq') or [])]}
     bc={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
@@ -640,6 +924,12 @@ INLINE_LINKS = [
     ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
     ('أنشطة الرياضيات', 'montessori-math-activities-preschool-jeddah'),
     ('أنشطة اللغة', 'montessori-language-activities-arabic-english'),
+    ('مواد مونتيسوري', 'montessori-activities-at-home'),
+    ('معلمة مونتيسوري', 'qualified-teachers-nursery-jeddah'),
+    ('أخطاء شائعة عند البحث', 'how-to-choose-nursery-jeddah'),
+    ('تعليم القرآن', 'quran-nursery-jeddah-montessori'),
+    ('كاميرات المراقبة', 'nursery-with-cctv-cameras-jeddah'),
+    ('كاميرات مراقبة', 'nursery-with-cctv-cameras-jeddah'),
     ('حي الفيصلية', '/'),
     ('الأسئلة الشائعة', 'nursery-faq-jeddah-parents'),
     ('منهج مونتيسوري', 'what-is-montessori-method'),
@@ -668,6 +958,16 @@ INLINE_LINKS = [
     # link is still at most one per article (target used once).
     ('حضانة مونتيسوري', '/'),
     ('روضة مونتيسوري', '/'),
+    # the «منتسوري» spelling cluster, the hospitality head term, hourly care,
+    # the entry-age and home-support guides (new pages, October 2026)
+    ('منهج منتسوري', 'what-is-montessori-method'),
+    ('منتسوري', 'montessori-kindergarten-jeddah'),
+    ('مركز ضيافة أطفال', 'children-hospitality-diyafa-jeddah'),
+    ('ضيافة أطفال', 'children-hospitality-diyafa-jeddah'),
+    ('الحضانة بالساعة', 'child-care-hourly-jeddah'),
+    ('حضانة بالساعة', 'child-care-hourly-jeddah'),
+    ('سن دخول الحضانة', 'nursery-entry-age-guide'),
+    ('مونتيسوري في البيت', 'montessori-parent-home-support'),
 ]
 INLINE_LINK_MAX = 5
 _BLOCK = re.compile(r'(<(p|li)\b[^>]*>)(.*?)(</\2>)', re.S)
@@ -701,6 +1001,16 @@ def add_inline_links(a, titles):
             break
         return m.group(1) + inner + m.group(4)
     return _BLOCK.sub(block, html)
+
+def updated_html(a, iso):
+    m = modified_iso(a, iso)
+    if m == iso:
+        return ''
+    try:
+        md = datetime.date.fromisoformat(m)
+    except ValueError:
+        return ''
+    return f'<span class="am-dot">·</span><span>آخر تحديث <time datetime="{m}">{esc(ar_date(md))}</time></span>'
 
 def render_article(a, iso, d, allslugs, titles):
     cat=CATN.get(a['cat'],''); url=f"{SITE}/blog/{a['slug']}/"
@@ -736,7 +1046,7 @@ def render_article(a, iso, d, allslugs, titles):
     <a class="article__cat" href="/blog/#{a['cat']}">{esc(cat)}</a>
     <h1>{esc(a['title'])}</h1>
     <div class="article__meta"><span class="am-author"><img src="/logo.png" alt="كوكب الطفل الحر"/> فريق كوكب الطفل الحر</span>
-      <span class="am-dot">·</span><time datetime="{iso}">{esc(ar_date(d))}</time><span class="am-dot">·</span><span>{rt} دقائق قراءة</span></div>
+      <span class="am-dot">·</span><time datetime="{iso}">{esc(ar_date(d))}</time>{updated_html(a, iso)}<span class="am-dot">·</span><span>{rt} دقائق قراءة</span></div>
   </header>
   <div class="article__body">
 <figure class="article-hero"><img src="{esc(a['imageUrl'])}" alt="{esc(a['imageAlt'])}" width="1200" height="800" loading="eager" fetchpriority="high"/></figure>
@@ -838,8 +1148,12 @@ def seo_healthcheck():
         add("خريطة الموقع","fail",f"HTTP {st}")
     # 3) robots
     st,b=_get("/robots.txt")
-    add("robots.txt","ok" if (st==200 and "Sitemap:" in b and "/blog/" in b) else "warn",
-        "يسمح بالمدوّنة ويشير للخريطة" if st==200 else f"HTTP {st}")
+    # robots.txt is now «User-agent: * / Allow: /» + Sitemap (the AI-crawler
+    # unblock): it no longer names /blog/, so ok means: served, points at the
+    # sitemap, and has no site-wide Disallow.
+    robots_ok = st==200 and "Sitemap:" in b and not re.search(r'(?im)^disallow:\s*/\s*$', b)
+    add("robots.txt","ok" if robots_ok else "warn",
+        "يسمح بالمدوّنة ويشير للخريطة" if robots_ok else (f"HTTP {st}" if st!=200 else "تحقّق: Disallow عام أو بلا Sitemap"))
     # 4) فهرس المدوّنة + آخر مقالين منشورين
     st,_=_get("/blog/")
     add("فهرس المدوّنة","ok" if st==200 else "fail",f"HTTP {st}")
@@ -860,9 +1174,23 @@ def seo_healthcheck():
         add('فحص الحقائق', 'fail',
             'تعذّر تحميل موديول الحقائق: %s — النشر متوقف' % FACTS_IMPORT_ERROR)
     else:
+        # 10 Oct: a review count, a wrong closing hour and a wrong intake age
+        # were live on five pages while sitting in the «deferred» group, and a
+        # search engine's summary of the site noted the contradictions; they
+        # now fail the daily check like the stage ages do.
         IN_SCOPE_MARKERS = ('عمر مرحلة خاطئ', '«الروضة» مقترنة بعمر مرحلة',
-                             'مرحلة غير موجودة', 'عدد البرامج')
+                             'مرحلة غير موجودة', 'عدد البرامج',
+                             'عدد مراجعات', 'دوام غلط', 'ادعاء عمر غلط')
         viol = facts.audit_dir(str(ROOT/'blog'))
+        # the static pages the blog audit never reads
+        for rel in ('index.html', 'en/index.html', 'partners/index.html', 'wa/index.html'):
+            try:
+                why = facts.check_html((ROOT/rel).read_text(encoding='utf-8'))
+            except Exception:
+                continue
+            why = [w for w in why if 'نطاق أعمارنا' not in w]
+            if why:
+                viol.append((str(ROOT/rel), why))
         in_scope = [(p, w) for p, w in viol
                     if any(any(mk in r for mk in IN_SCOPE_MARKERS) for r in w)]
         deferred = [(p, w) for p, w in viol if (p, w) not in in_scope]
@@ -1320,6 +1648,52 @@ def repair_static_site():
             }
             frag = ',\n  '.join(f'"{k}": {json.dumps(v, ensure_ascii=False)}' for k, v in extra.items())
             text = re.sub(r'("hasMap": "[^"]*",)', lambda m: m.group(1) + '\n  ' + frag + ',', text, count=1)
+        # Entity signals AI assistants key on: the names parents and
+        # assistants actually use for us (an English answer that says
+        # "Kawkab Al-Tifl Al-Hurr" should resolve to this business), and
+        # what the business is known for.
+        if '"knowsAbout"' not in text and '"hasMap"' in text:
+            if english:
+                names = ['Kawkab Al-Tifl Al-Hurr', 'Kawkab Al-Tifl', 'Kawkab Al Tifl Al Hur', 'روضة كوكب الطفل الحر', 'كوكب الطفل الحر']
+                knows = ['Montessori education', 'Early childhood education (ages 2 to 5)', 'Bilingual Arabic and English nursery',
+                         'Quran for young children', 'Nursery and kindergarten in Al Faisaliyah, Jeddah']
+            else:
+                names = ['كوكب الطفل الحر', 'روضة كوكب الطفل', 'Kawkab Al-Tifl Al-Hurr', 'Kawkab Al-Tifl']
+                knows = ['منهج مونتيسوري', 'تعليم الطفولة المبكرة من سنتين إلى ٥ سنوات', 'حضانة ثنائية اللغة عربي وإنجليزي',
+                         'تعليم القرآن للأطفال', 'حضانة وروضة في حي الفيصلية بجدة']
+            frag = f'"knowsAbout": {json.dumps(knows, ensure_ascii=False)}'
+            text = re.sub(r'("hasMap": "[^"]*",)', lambda m: m.group(1) + '\n  ' + frag + ',', text, count=1)
+            m = re.search(r'"alternateName": (\[[^\]]*\])', text)
+            if m:
+                try:
+                    cur = json.loads(m.group(1))
+                    cur += [n for n in names if n not in cur]
+                    text = text[:m.start(1)] + json.dumps(cur, ensure_ascii=False) + text[m.end(1):]
+                except ValueError:
+                    pass
+        # Business description an assistant can quote, and the same social
+        # profiles on both homepages (the English one listed TikTok only).
+        text = text.replace('"description": "حضانة وروضة كوكب الطفل الحر في جدة — حي الفيصلية. رعاية وتعليم للأطفال من عمر سنتين إلى ٥ سنوات."',
+            '"description": "روضة كوكب الطفل الحر: حضانة وروضة بمنهج مونتيسوري في حي الفيصلية، شارع محمد عبدالكريم، جدة، للأطفال من سنتين إلى ٥ سنوات (ما قبل الروضة، المستوى الأول، المستوى الثاني)، باللغة العربية الفصحى والإنجليزية وتعليم القرآن، بخبرة أكثر من ١٠ سنوات. الدوام من الأحد إلى الخميس 08:00–13:00."', 1)
+        text = text.replace('"description": "Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Jeddah — Al Faisaliyyah. Care and education for children aged 2 to 5."',
+            '"description": "Kawkab Al-Tifl Al-Hurr: a Montessori nursery and kindergarten in Al Faisaliyah (Mohammed Abdulkarim St), Jeddah, for children aged 2 to 5 (Pre-KG, KG1, KG2), teaching in Modern Standard Arabic and English with Quran, with more than 10 years of experience. Open Sunday to Thursday, 08:00 to 13:00."', 1)
+        text = text.replace('"sameAs": ["https://www.tiktok.com/@montessori_nursery23"]',
+            '"sameAs": ["https://www.tiktok.com/@montessori_nursery23", "https://www.instagram.com/montessori_nursery/", "https://www.facebook.com/p/Montessori-nursery-100063063920027/"]', 1)
+        # /login/ answers 403 to anyone without a session and is linked from
+        # every page: mark the links nofollow so crawlers stop requesting it.
+        text = re.sub(r'<a((?![^>]*\brel=)[^>]*\bhref="/login/"[^>]*)>', r'<a\1 rel="nofollow">', text)
+        # WebSite node: the name Google shows above the result, tied to the
+        # business node, in the page's own language.
+        if '"@type": "WebSite"' not in text and '"@type":"WebSite"' not in text and '</head>' in text:
+            ws = {'@context': 'https://schema.org', '@type': 'WebSite',
+                  '@id': (SITE + '/en/#website') if english else (SITE + '/#website'),
+                  'url': (SITE + '/en/') if english else (SITE + '/'),
+                  'name': 'Kawkab Al-Tifl Al-Hurr Kindergarten' if english else 'روضة كوكب الطفل الحر',
+                  'alternateName': (['Kawkab Al-Tifl', 'Kawkab Al-Tifl Al-Hurr'] if english
+                                    else ['كوكب الطفل الحر', 'Kawkab Al-Tifl Al-Hurr']),
+                  'inLanguage': 'en' if english else 'ar',
+                  'publisher': {'@id': SITE + '/#business'}}
+            text = text.replace('</head>', '<script type="application/ld+json">' + json.dumps(ws, ensure_ascii=False, separators=(',', ':')) + '</script>\n</head>', 1)
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
@@ -1644,6 +2018,10 @@ a.seo-card:hover b{color:var(--clay-600)}
     _patch_file(css, patch_css)
 
     def patch_privacy(text, english=False):
+        # The privacy pages listed a different WhatsApp number (+966 54 306
+        # 8147) from the one on every other page, in the schema and in
+        # llms.txt (+966 54 155 8173): one business, one number.
+        text = text.replace('+966 54 306 8147', '+966 54 155 8173')
         if 'hreflang="ar"' in text:
             return text
         canonical = re.search(r'<link rel="canonical" href="([^"]+)"\s*/?>', text, re.I)
@@ -1654,11 +2032,43 @@ a.seo-card:hover b{color:var(--clay-600)}
         tags = f'<link rel="alternate" hreflang="ar" href="{ar}"/><link rel="alternate" hreflang="en" href="{en}"/><link rel="alternate" hreflang="x-default" href="{ar}"/>'
         return text[:canonical.end()] + tags + text[canonical.end():]
     def fix_redirect_links(text):
-        # drop the redirected article's card; its target already has one
-        for old in REDIRECTED:
+        # drop the redirected article's card; its target already has one.
+        # Same for a canonicalised duplicate: its canonical target has the
+        # card, and a link to the duplicate sends readers and crawl to a
+        # page Google folds into another.
+        for old in list(REDIRECTED) + list(CANONICAL_TO):
             text = re.sub(r'<a class="bcard" href="/blog/%s/">.*?</a>' % re.escape(old), '', text, flags=re.S)
         return text
     _patch_file(ROOT/'blog'/'index.html', fix_redirect_links)
+    # /wa/ declared its own LocalBusiness (url /wa/, no @id): a second,
+    # thinner entity for the same nursery. Fold it into the business node.
+    def unify_wa_business(text):
+        def fix(m):
+            try:
+                d = json.loads(m.group(1))
+            except ValueError:
+                return m.group(0)
+            if not isinstance(d, dict) or not isinstance(d.get('@graph'), list):
+                return m.group(0)
+            changed = False
+            for i, it in enumerate(d['@graph']):
+                if isinstance(it, dict) and it.get('@type') == 'LocalBusiness' and '@id' not in it:
+                    node = {'@type': ['ChildCare', 'Preschool'], '@id': SITE + '/#business',
+                            **{k: v for k, v in it.items() if k != '@type'}}
+                    node['url'] = SITE + '/'
+                    node['mainEntityOfPage'] = SITE + '/wa/'
+                    d['@graph'][i] = node
+                    changed = True
+            if not changed:
+                return m.group(0)
+            return '<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) + '</script>'
+        return re.sub(r'<script type="application/ld\+json">(.*?)</script>', fix, text, flags=re.S)
+    _patch_file(ROOT/'wa'/'index.html', unify_wa_business)
+    _feed_link = '<link rel="alternate" type="application/rss+xml" title="مدوّنة روضة كوكب الطفل الحر" href="/blog/feed.xml"/>'
+    for _p in (ROOT/'blog'/'index.html', ROOT/'index.html'):
+        _patch_file(_p, lambda t: t if 'application/rss+xml' in t else t.replace('</head>', _feed_link + '\n</head>', 1))
+    # /partners/ quoted a review count (facts.py: the number changes).
+    _patch_file(ROOT/'partners'/'index.html', lambda t: t.replace('وتقييم ٤٫٧ من ٧١ مراجعة', 'وتقييم ٤٫٧ على خرائط جوجل'))
 
     # /en/blog/ was the one thin page in the site audit (182 words). A short
     # guide to the English articles, class-based only (the CSP hashes inline
@@ -1677,6 +2087,11 @@ a.seo-card:hover b{color:var(--clay-600)}
 </section>
 '''
     def patch_en_blog_index(text):
+        if 'BreadcrumbList' not in text and '</head>' in text:
+            bc = {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+                  {'@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': SITE + '/en/'},
+                  {'@type': 'ListItem', 'position': 2, 'name': 'Guides', 'item': SITE + '/en/blog/'}]}
+            text = text.replace('</head>', '<script type="application/ld+json">' + json.dumps(bc, ensure_ascii=False, separators=(',', ':')) + '</script>\n</head>', 1)
         if 'id="en-blog-guide"' in text:
             return text
         anchor = '<nav class="related" aria-label="All articles">'
@@ -1695,14 +2110,49 @@ a.seo-card:hover b{color:var(--clay-600)}
         text = text.replace('<title>Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah</title>',
             "<title>Montessori Nursery in Jeddah: A Parent's Guide | Kawkab Al-Tifl</title>")
         text = text.replace('Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah', 'Montessori Nursery in Jeddah')
-        text = text.replace('<title>Blog | Kawkab Al-Tifl Al-Hurr Kindergarten &mdash; Parent Guides</title>',
-            '<title>Nursery, Preschool &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>')
-        return en_facts(text)
+        for old in ('<title>Blog | Kawkab Al-Tifl Al-Hurr Kindergarten &mdash; Parent Guides</title>',
+                    '<title>Nursery, Preschool &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>'):
+            text = text.replace(old, '<title>Nursery &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>')
+        # English pages carry no hreflang at all; give each a self-referencing
+        # en + x-default next to its canonical (there is no Arabic twin).
+        if 'hreflang=' not in text:
+            m = re.search(r'<link rel="canonical" href="([^"]+)"\s*/?>', text)
+            if m:
+                tags = f'<link rel="alternate" hreflang="en" href="{m.group(1)}"/><link rel="alternate" hreflang="x-default" href="{m.group(1)}"/>'
+                text = text[:m.end()] + tags + text[m.end():]
+        return en_facts(en_entities(text))
+    # English articles: tie the BlogPosting to the business entity and to
+    # the Montessori and Jeddah entities, as the Arabic articles are.
+    def en_entities(text):
+        if '"about"' in text:
+            return text
+        def fix(m):
+            try:
+                d = json.loads(m.group(1))
+            except ValueError:
+                return m.group(0)
+            if not isinstance(d, dict) or d.get('@type') not in ('BlogPosting', 'Article'):
+                return m.group(0)
+            for k in ('author', 'publisher'):
+                if isinstance(d.get(k), dict) and '@id' not in d[k]:
+                    d[k] = {'@type': d[k].get('@type', 'Organization'), '@id': SITE + '/#business', **{kk: vv for kk, vv in d[k].items() if kk != '@type'}}
+            d['about'] = [{'@type': 'Thing', 'name': 'Montessori education', 'sameAs': 'https://en.wikipedia.org/wiki/Montessori_education'},
+                          {'@type': 'City', 'name': 'Jeddah', 'sameAs': 'https://en.wikipedia.org/wiki/Jeddah'}]
+            return '<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) + '</script>'
+        return re.sub(r'<script type="application/ld\+json">(.*?)</script>', fix, text, count=0, flags=re.S)
     # English pages were written outside the facts gate. Bring them in line:
     # no review count (facts.py: the number changes), and the official stage
     # names (Pre-KG 2-3, KG1 3-4, KG2 4-5) instead of "Nursery, Pre-K,
     # Kindergarten" for our own programmes.
     def en_facts(text):
+        text = text.replace('Kawkab Al-Tifl Al-Hurr: Montessori nursery, daycare and kindergarten in Al Faisaliyyah, Jeddah for ages 2–5, with Arabic, English and Quran. Open Sun–Thu 08:00–13:00.',
+                            'Kawkab Al-Tifl Al-Hurr: Montessori nursery and kindergarten in Al Faisaliyyah, Jeddah, ages 2–5, with Arabic, English and Quran. Open Sun–Thu 08:00–13:00.')
+        text = text.replace('Practical guides for parents in Jeddah: choosing a daycare, nursery, or kindergarten, and understanding the Montessori method. From our Al Faisaliyyah Montessori nursery.',
+                            'Practical guides for Jeddah parents: choosing a daycare, nursery or kindergarten, and understanding the Montessori method, from our Al Faisaliyyah nursery.')
+        # Site audit: the English homepage title is 69 characters and gets cut
+        # in the SERP; keep the head terms and the brand within 60.
+        text = text.replace('<title>Montessori Nursery, Daycare &amp; Kindergarten in Jeddah | Kawkab Al-Tifl</title>',
+                            '<title>Montessori Nursery &amp; Kindergarten in Jeddah | Kawkab Al-Tifl</title>', 1)
         text = re.sub(r'(4\.7(?:&#9733;</strong>|\u2605</strong>| stars)?)\s+from\s+\d+\s+(?:Google\s+)?reviews',
                       r'\1 on Google Maps', text)
         text = re.sub(r'\b[Nn]ursery, [Pp]re-K(?:\s*/\s*[Pp]reschool)?,?\s+(?:and\s+)?[Kk]indergarten',
@@ -1721,6 +2171,94 @@ def article_date(article, fallback):
         return datetime.date.fromisoformat(str(raw)[:10]) if raw else fallback
     except (TypeError, ValueError):
         return fallback
+
+def write_feed(q):
+    """/blog/feed.xml: the 30 newest indexable guides as RSS 2.0, for feed
+    readers, Bing and assistants that discover content through feeds."""
+    items = []
+    for a in sorted(q, key=lambda x: str(x.get('published') or ''), reverse=True):
+        slug = a.get('slug', '')
+        if (not a.get('published') or is_noindex(a) or slug in REDIRECTED or slug in CANONICAL_TO
+                or not (ROOT/'blog'/slug/'index.html').exists()):
+            continue
+        try:
+            d = datetime.date.fromisoformat(str(a['published'])[:10])
+            pub = d.strftime('%a, %d %b %Y 08:00:00 +0300')
+        except ValueError:
+            continue
+        link = f'{SITE}/blog/{slug}/'
+        items.append(f"<item><title>{esc(a.get('seoTitle') or a.get('title') or slug)}</title><link>{link}</link>"
+                     f"<guid isPermaLink=\"true\">{link}</guid><pubDate>{pub}</pubDate>"
+                     f"<description>{esc(a.get('metaDescription') or '')}</description></item>")
+        if len(items) >= 30:
+            break
+    if not items:
+        return
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>'
+           '<title>مدوّنة روضة كوكب الطفل الحر بجدة</title>'
+           f'<link>{SITE}/blog/</link><description>أدلة تربوية لأولياء الأمور في جدة: الحضانة والروضة ومنهج مونتيسوري للأطفال من سنتين إلى ٥ سنوات.</description>'
+           '<language>ar</language>' + ''.join(items) + '</channel></rss>\n')
+    p = ROOT/'blog'/'feed.xml'
+    try:
+        if p.exists() and p.read_text(encoding='utf-8') == xml:
+            return
+        p.write_text(xml, encoding='utf-8')
+        log(f'blog feed updated ({len(items)} items)')
+    except Exception as ex:
+        log(f'blog feed write failed: {ex}')
+
+def _bump_home_lastmod(before, today):
+    """When repair_static_site changed a homepage, say so in the sitemap and
+    to IndexNow: the homepages' <lastmod> was stuck at the day they were
+    first generated."""
+    smp = ROOT/'sitemap.xml'
+    try:
+        sm = smp.read_text(encoding='utf-8')
+    except Exception:
+        return
+    new = sm
+    for f, old_txt, loc in (('index.html', before[0], f'{SITE}/'), ('en/index.html', before[1], f'{SITE}/en/')):
+        pth = ROOT/f
+        if pth.exists() and old_txt and pth.read_text(encoding='utf-8') != old_txt:
+            new = re.sub(r'(<loc>%s</loc>\s*<lastmod>)[^<]*(</lastmod>)' % re.escape(loc), r'\g<1>%s\g<2>' % today.isoformat(), new)
+            indexnow(loc)
+    if new != sm:
+        smp.write_text(new, encoding='utf-8')
+        log('homepage sitemap lastmod bumped')
+
+def refresh_index_cards(q):
+    """Cards on /blog/ are written once at publish time; a rewrite or text
+    fix changed the article's title and meta but not its card, so half the
+    index showed titles the articles no longer carry. Rewrite each card's
+    title and description from the queue."""
+    idxp = ROOT/'blog'/'index.html'
+    try:
+        idx = idxp.read_text(encoding='utf-8')
+    except Exception:
+        return
+    new, n = idx, 0
+    for a in q:
+        slug = a.get('slug')
+        if not a.get('published') or not slug or not a.get('title'):
+            continue
+        # Text-only groups ([^<]*): a card with different markup is skipped
+        # instead of letting the match run across neighbouring cards and
+        # sections (the first version did exactly that in a dry run).
+        pat = re.compile(r'(<a class="bcard" href="/blog/%s/"><span class="bcard__cat">[^<]*</span><h3 class="bcard__title">)([^<]*)(</h3><p class="bcard__desc">)([^<]*)(</p>)' % re.escape(slug))
+        m = pat.search(new)
+        if not m:
+            continue
+        t, d = esc(a['title']), esc(a.get('metaDescription') or '')
+        if m.group(2) != t or m.group(4) != d:
+            new = new[:m.start()] + m.group(1) + t + m.group(3) + d + m.group(5) + new[m.end():]
+            n += 1
+    # Never write a structurally different page: same number of cards and
+    # sections, or leave the index untouched.
+    if n and new.count('class="bcard"') == idx.count('class="bcard"') and new.count('<section') == idx.count('<section'):
+        idxp.write_text(new, encoding='utf-8')
+        log(f'blog index: {n} card(s) refreshed')
+    elif n:
+        log('blog index refresh skipped: card or section count would change')
 
 def repair_published_articles(q, today):
     titles={x.get('slug',''):{'title':x.get('title',''),'cat':x.get('cat','dev'),'pub':bool(x.get('published')),'rw':x.get('rewritten')} for x in q}
@@ -1771,11 +2309,17 @@ def main():
     raw_q=ensure_auto_queue(raw_q, today)
     raw_q=prune_templated_pending(raw_q)
     raw_q=apply_rewrites(raw_q)
+    raw_q=apply_text_fixes(raw_q)
     q=[normalized_article(a) for a in raw_q]
+    compute_underlinked(q)
     if q != raw_q or _REWRITE_APPLIED:
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
+    _home_before = [(ROOT/f).read_text(encoding='utf-8') if (ROOT/f).exists() else '' for f in ('index.html', 'en/index.html')]
     repair_static_site()
+    _bump_home_lastmod(_home_before, today)
+    refresh_index_cards(q)
     repair_published_articles(q, today)
+    write_feed(q)
     write_llms_txt(q)
     write_llms_full(q)
     prune_noindex_from_sitemap(q)
