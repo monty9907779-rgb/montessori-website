@@ -108,6 +108,7 @@ ALIASES = {
     'guardian_phone': ('guardian phone', 'parent phone', 'phone', 'هاتف ولي الأمر',
                        'تليفون ولي الأمر'),
     'note': ('note', 'notes', 'remark', 'remarks', 'ملاحظات', 'ملاحظة'),
+    'status': ('payment status', 'status', 'حالة الدفع', 'حالة السداد'),
     'amount': ('amount', 'value', 'expense amount', 'المبلغ', 'القيمة', 'التكلفة'),
     'date': ('date', 'expense date', 'التاريخ', 'تاريخ المصروف'),
     'teacher': ('teacher name', 'teacher', 'employee', 'اسم المعلمة', 'المعلمة',
@@ -277,27 +278,95 @@ def _entry_date_string(value, target_ym):
     return parsed.strftime('%Y-%m-%d')
 
 
+# ملخص الشيت («Accounting Summary»): أول 12 صفًا من كل تبويب شهري، كل عنوان
+# على سطرين «English\nعربي» وقيمته في الخلية التي تحته مباشرة (نفس العمود).
+# المطابقة بالضبط على الجزء الإنجليزي أو الجزء العربي — بلا احتواء — حتى لا
+# يلتبس «Net» بـ«Net On hand Randa» ولا «Salaries» بـ«Expected Salaries» أو
+# «Total Salaries» (صف الإجماليات تحت جدول الرواتب) ولا «Students» بـ«Paid Students».
+SUMMARY_ROWS = 12
+_SUMMARY_LABELS = {
+    'opening balance': 'opening_balance', 'رصيد افتتاحي': 'opening_balance',
+    'total received': 'collected', 'إجمالي المحصّل': 'collected',
+    'randa cash': 'randa_cash', 'كاش راندا': 'randa_cash',
+    'bank transfer': 'bank_transfer', 'تحويل بنكي': 'bank_transfer',
+    'expenses': 'expenses', 'المصروفات': 'expenses',
+    'on hand randa': 'on_hand_randa', 'رصيد راندا': 'on_hand_randa',
+    'expected salaries': 'expected_salaries', 'الرواتب المتوقعة': 'expected_salaries',
+    'net on hand randa': 'cash_after_salaries', 'بعد الرواتب': 'cash_after_salaries',
+    'salaries paid': 'salaries_paid', 'رواتب مصروفة': 'salaries_paid',
+    'net': 'net', 'الصافي': 'net',
+    'students': 'student_count', 'عدد الطلاب': 'student_count',
+    'paid students': 'paid_students', 'دافعين': 'paid_students',
+    'unpaid students': 'unpaid_students', 'غير دافعين': 'unpaid_students',
+    'books fees': 'books', 'رسوم الكتب': 'books',
+    'remaining': 'remaining_total', 'الباقي': 'remaining_total',
+    # عناوين الشيتات القديمة بسطر واحد
+    'salaries': 'salaries', 'delta': 'delta',
+}
+_ARABIC_RE = re.compile(r'[\u0600-\u06ff]')
+# الحركات والشدة والتطويل لا تدخل في المطابقة («المحصّل» == «المحصل»)
+_TASHKEEL_RE = re.compile(r'[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640]')
+
+
+def _summary_key(label):
+    return _norm(_TASHKEEL_RE.sub('', label))
+
+
+SUMMARY_LABELS = {_summary_key(label): key for label, key in _SUMMARY_LABELS.items()}
+
+
+def _summary_label_parts(cell):
+    """('english part', 'arabic part') of a one- or two-line summary label.
+
+    The English part is the text before the newline (or before the first
+    Arabic letter on single-line labels); the Arabic part is the rest. Both
+    come back normalised with _norm() and stripped of diacritics.
+    """
+    if not isinstance(cell, str) or not cell.strip():
+        return '', ''
+    text = _TASHKEEL_RE.sub('', cell)
+    if '\n' in text:
+        head, tail = text.split('\n', 1)
+    else:
+        match = _ARABIC_RE.search(text)
+        head, tail = (text[:match.start()], text[match.start():]) if match else (text, '')
+    english = _norm(_ARABIC_RE.sub(' ', head))
+    arabic = _norm(re.sub(r'[A-Za-z]+', ' ', tail))
+    return english, arabic
+
+
 def _summary_values(rows):
-    """Read labeled summary cells without inventing a value from other rows."""
+    """Read labeled summary cells without inventing a value from other rows.
+
+    Only the summary block (first SUMMARY_ROWS rows) is read, so the side
+    table titles/headers (row 139/140) and the totals row (162) can never
+    be mistaken for a summary label. Table header rows inside the block are
+    skipped too. The first label wins; an explicit 0 is kept as 0.0, while
+    an empty value cell yields None so the caller falls back to arithmetic.
+    The legacy audit "On hand Randa" (row index >= 10) is still collected
+    from anywhere in the sheet under 'audit_on_hand_randa'.
+    """
     result = {}
-    labels = {
-        'total received': 'collected', 'randa cash': 'randa_cash',
-        'expenses': 'expenses', 'bank transfer': 'bank_transfer',
-        'salaries': 'salaries', 'students عدد الطلاب': 'student_count',
-        'books fees رسوم الكتب': 'books', 'remaining الباقي': 'remaining_total',
-        'net': 'net', 'expected salaries': 'expected_salaries',
-        'on hand randa': 'on_hand_randa', 'delta': 'delta',
-    }
-    for row_index, row in enumerate(rows or []):
+    rows = rows or []
+    for row_index, row in enumerate(rows):
+        if row_index + 1 >= len(rows):
+            break
+        in_block = row_index < SUMMARY_ROWS
+        if in_block and _header_kind(list(row or [])):
+            continue
         for column, cell in enumerate(row or []):
-            label = _norm(cell)
-            key = labels.get(label)
-            if not key or row_index + 1 >= len(rows):
+            english, arabic = _summary_label_parts(cell)
+            key = SUMMARY_LABELS.get(english) or SUMMARY_LABELS.get(arabic)
+            if not key:
                 continue
-            value = rows[row_index + 1][column] if column < len(rows[row_index + 1]) else None
-            if key == 'on_hand_randa':
-                key = 'on_hand_randa' if row_index < 10 else 'audit_on_hand_randa'
-            result[key] = _number(value)
+            if key == 'on_hand_randa' and row_index >= 10:
+                key = 'audit_on_hand_randa'
+            elif not in_block:
+                continue
+            if key in result:
+                continue
+            below = rows[row_index + 1] or []
+            result[key] = _number(below[column] if column < len(below) else None)
     return result
 
 
@@ -821,6 +890,9 @@ def _student_record(headers, row, source, is_master, target_ym=None):
         'book_remaining_present': 'book_remaining' in source_columns,
         'remaining_present': 'remaining' in source_columns,
         'method': _clean(val('method'), 40),
+        # «Payment status» (paid/unpaid) — احتياطي لعدّ الدافعين وغير الدافعين
+        # لو ملخص الشيت ما فيهوش الخليتين.
+        'status': _norm(val('status', exact=True)),
         'guardian_name': _clean(val('guardian_name'), 120),
         'guardian_phone': _clean(val('guardian_phone'), 50),
         'note': _clean(val('note')),
@@ -1256,12 +1328,9 @@ def _find_student(record, env):
     # reused class-local serial, redirect an Excel row to another student.
     if record.get('db_id') is not None:
         student = Student.browse(int(record['db_id']))
-        if not student.exists():
-            return False, 'الـ ID %s الموجود في Excel غير موجود في الموقع.' % int(record['db_id'])
-        if _student_name_key(student.name) != _student_name_key(record.get('name')):
-            return False, 'الـ ID %s يخص الطالب %s وليس %s.' % (
-                int(record['db_id']), student.name, record.get('name'))
-        return student, ''
+        if student.exists() and _student_name_key(student.name) == _student_name_key(record.get('name')):
+            return student, ''
+        # ID ignored on purpose (unknown or belongs to another name): fall back to matching by name
     excel_name = _student_excel_name_key(record.get('name'))
     if excel_name:
         # Archived rows are searched too: unnumbered workbook rows are kept
@@ -1641,9 +1710,14 @@ def _upsert_entry(record, month, env):
 
 
 def _excel_month_metrics(parsed, target_ym):
-    """Return the September summary using the workbook's own arithmetic.
+    """Return the month summary exactly as the workbook states it.
 
-    The workbook intentionally has three payment rows without a serial. They
+    Each of the 15 cells of the sheet's "Accounting Summary" block is
+    authoritative when its label is present (an explicit 0 included); the
+    figures computed here from the student/salary/expense tables are only
+    the fallbacks for workbooks without that block.
+
+    The workbook intentionally has payment rows without a serial. They
     belong in collected cash/bank totals, while the student count remains the
     count of numbered rows. Keeping both measures separate is what makes the
     site match the workbook instead of silently normalizing it.
@@ -1665,19 +1739,26 @@ def _excel_month_metrics(parsed, target_ym):
                          if row.get('book_remaining_present'))
     expense_rows = [row for row in entries if row.get('kind') == 'expense']
     # The workbook writes outflows as negative values and its "Expenses" cell
-    # is the positive magnitude of the whole movement (E3 = -SUM(values)).
+    # is the positive magnitude of the whole movement (A11 = -J162).
     expense_movement = sum(float(row.get('amount') or 0.0) for row in expense_rows)
     calculated_expenses = -expense_movement
-    # The first positive expense line is the workbook's opening cash brought
-    # in by Nesrin.  It is kept as a source entry, but is also stored as the
-    # month's opening balance so it is not counted twice in the closing cash.
+    # Positive lines of the expense table are cash brought in (September:
+    # نسرين 10,360; October: «متبقي شهر سبتمبر» 4,090). The dashboard's legacy
+    # chart counts them as income so income - salaries - other still equals
+    # the workbook's Net. They are NOT the opening balance of the cards: that
+    # is the sheet's explicit "Opening Balance" cell.
+    cash_in = sum(float(row.get('amount') or 0.0) for row in expense_rows
+                  if float(row.get('amount') or 0.0) > 0)
+    # Legacy opening notion (nursery.month first-month rule): the positive
+    # Nesrin line. Used only when the sheet has no "Opening Balance" cell and
+    # for the month record's own opening_balance field.
     opening_row = next(
         (row for row in expense_rows
          if float(row.get('amount') or 0.0) > 0
          and 'نسرين' in str(row.get('name') or '')),
         None,
     )
-    opening_balance = float(opening_row.get('amount') or 0.0) if opening_row else 0.0
+    legacy_opening = float(opening_row.get('amount') or 0.0) if opening_row else 0.0
     expenses_paid_out = sum(
         float(row.get('amount') or 0.0)
         for row in expense_rows
@@ -1693,43 +1774,78 @@ def _excel_month_metrics(parsed, target_ym):
         and re.search(r'مرتب|راتب|رواتب|salar', str(row.get('name') or ''), re.I)
     )
     other_expenses = -expenses_paid_out - salary_payout
-    calculated_cash_closing = opening_balance + calculated_cash + expenses_paid_out
+    # On hand Randa in the sheet = Randa Cash - Expenses, i.e. the cash plus
+    # every expense-table line (cash-in lines included).
+    calculated_cash_closing = cash_in + calculated_cash + expenses_paid_out
     calculated_salaries = sum(float(row.get('amount') or 0.0) for row in entries
                    if row.get('kind') == 'salary')
     if not calculated_salaries and salary_payout:
         calculated_salaries = salary_payout
+    calculated_expected = sum(float(row.get('expected') or 0.0) for row in entries
+                              if row.get('kind') == 'salary')
     calculated_numbered_students = sum(1 for row in students if row.get('serial') is not None)
+    calculated_paid_students = sum(1 for row in students
+                                   if row.get('serial') is not None
+                                   and row.get('status') == 'paid')
+    calculated_unpaid_students = sum(1 for row in students
+                                     if row.get('serial') is not None
+                                     and row.get('status') == 'unpaid')
     calculated_remaining_total = sum(
         float(row.get('remaining') or 0.0)
         for row in students
         if row.get('serial') is not None and row.get('remaining_present')
     )
     def exact(name, fallback):
+        # الخلية الصريحة في الملخص لها الأولوية — حتى لو كانت صفراً.
         value = summary.get(name)
         return float(value) if value is not None else float(fallback)
 
+    opening_balance = exact('opening_balance', legacy_opening)
+    # افتتاحي سجل الشهر على الموقع (nursery.month) — غير افتتاحي الكروت:
+    # nursery.month._sheet_opening() و roles._month_totals() يقرآن
+    # nursery.excel_month_<ym>.opening_balance بمعناه القديم «الافتتاحي
+    # الصريح الموجب في الشيت (سطر نسرين الموجب لأول شهر)»، والصفر عندهما
+    # معناه «يرث ختامي الشهر السابق» لا «افتتاحي صفر». فخلية A3 = 0 الصريحة
+    # (سبتمبر) تذهب للكروت عبر ext_fin فقط، ويبقى هنا سطر نسرين (10,360)
+    # حتى لا يرث سبتمبر ختامي أغسطس (قيود يدوية قديمة — قرار 2026-10-03).
+    month_opening = opening_balance if opening_balance > 0 else legacy_opening
     collected = exact('collected', calculated_collected)
     cash = exact('randa_cash', calculated_cash)
     transfer = exact('bank_transfer', calculated_transfer)
     books = exact('books', calculated_books)
     expenses = exact('expenses', calculated_expenses)
-    salaries = exact('salaries', calculated_salaries)
+    # Legacy `salaries` == salaries actually paid (D9, else the Actual column;
+    # old single-line "Salaries" sheets still feed it).
+    salaries_paid = exact('salaries_paid', exact('salaries', calculated_salaries))
+    salaries = salaries_paid
+    expected_salaries = exact('expected_salaries', calculated_expected or salaries_paid)
     numbered_students = int(exact('student_count', calculated_numbered_students))
+    paid_students = int(exact('paid_students', calculated_paid_students))
+    unpaid_students = int(exact('unpaid_students', calculated_unpaid_students))
     remaining_total = exact('remaining_total', calculated_remaining_total)
     on_hand_randa = exact('on_hand_randa', calculated_cash_closing)
     cash_closing = on_hand_randa
+    cash_after_salaries = exact(
+        'cash_after_salaries',
+        on_hand_randa - max(expected_salaries - salaries_paid, 0.0))
     randa_on_hand = exact('audit_on_hand_randa', 0.0)
     excel_delta = exact('delta', randa_on_hand - salaries)
     # Workbook Net = Total Received - Expenses; the expense table already
     # carries the payroll hand-over line, so salaries are not deducted again.
     net = exact('net', collected - expenses)
+    explicit = sorted(key for key, value in summary.items() if value is not None)
     return {
         'ym': target_ym,
         'student_count': numbered_students,
+        'paid_students': paid_students,
+        'unpaid_students': unpaid_students,
         'payment_rows': sum(1 for row in students if float(row.get('paid') or 0.0) > 0),
         'collected': collected,
         'randa_cash': cash,
         'bank_transfer': transfer,
+        'cash_in': cash_in,
+        'income': collected + cash_in,
+        'extra_income': cash_in,
         'books': books,
         'due_total': calculated_due,
         'books_due_total': books,
@@ -1742,17 +1858,134 @@ def _excel_month_metrics(parsed, target_ym):
         'salary_payout': salary_payout,
         'other_expenses': other_expenses,
         'opening_balance': opening_balance,
-        'opening_source': (opening_row.get('name') if opening_row else ''),
+        'opening_source': ('sheet' if 'opening_balance' in explicit
+                           else (opening_row.get('name') if opening_row else '')),
+        'legacy_opening': legacy_opening,
+        # ما يُكتب في nursery.excel_month_<ym>.opening_balance (انظر أعلاه)
+        'month_opening': month_opening,
+        'month_opening_source': ('sheet' if opening_balance > 0 and 'opening_balance' in explicit
+                                 else (opening_row.get('name') if opening_row else '')),
         'cash_closing': cash_closing,
-        'cash_after_salaries': cash_closing - salaries,
+        'cash_after_salaries': cash_after_salaries,
         'salaries': salaries,
-        'expected_salaries': sum(float(row.get('expected') or 0.0) for row in entries
-                                 if row.get('kind') == 'salary') or salaries,
+        'salaries_paid': salaries_paid,
+        'expected_salaries': expected_salaries,
         'on_hand_randa': on_hand_randa,
         'randa_on_hand': randa_on_hand,
         'delta': excel_delta,
         'net': net,
+        'explicit_keys': explicit,
     }
+
+
+def _ext_fin_row(metrics):
+    """صف شهر واحد في nursery.ext_fin — مصدر كروت المالية الـ15 ورسم الشهور.
+
+    Dashboard arithmetic is income - salaries - other. Feed it the workbook's
+    own pieces: student fees plus the cash-in lines as income, the salaries
+    actually paid, and the remaining outflows (payroll hand-over excluded) as
+    other expenses — so its net equals the workbook's Net.
+    """
+    return {
+        'ym': metrics['ym'],
+        'income': metrics['income'],
+        'student_income': metrics['collected'],
+        'extra_income': metrics['extra_income'],
+        'collected': metrics['collected'],
+        'cash_in': metrics['cash_in'],
+        'salaries': metrics['salaries'],
+        'salaries_paid': metrics['salaries_paid'],
+        'expected_salaries': metrics['expected_salaries'],
+        'other': metrics['other_expenses'],
+        'expenses': metrics['expenses'],
+        'cash': metrics['randa_cash'],
+        'transfer': metrics['bank_transfer'],
+        'books': metrics['books'],
+        'books_due_total': metrics['books_due_total'],
+        'books_paid_total': metrics['books_paid_total'],
+        'books_remaining_total': metrics['books_remaining_total'],
+        'remaining_total': metrics['remaining_total'],
+        'payment_rows': metrics['payment_rows'],
+        'student_count': metrics['student_count'],
+        'paid_students': metrics['paid_students'],
+        'unpaid_students': metrics['unpaid_students'],
+        'on_hand_randa': metrics['on_hand_randa'],
+        'randa_on_hand': metrics['randa_on_hand'],
+        'delta': metrics['delta'],
+        'opening_balance': metrics['opening_balance'],
+        'opening_source': metrics['opening_source'],
+        'expenses_paid_out': metrics['expenses_paid_out'],
+        'cash_closing': metrics['cash_closing'],
+        'cash_after_salaries': metrics['cash_after_salaries'],
+        'net': metrics['net'],
+    }
+
+
+def _excel_month_payload(metrics):
+    """ما يُكتب في nursery.excel_month_<ym> — ملخص الشهر كما يقرأه nursery.month.
+
+    نفس المقاييس، إلا أن opening_balance هنا بمعناه القديم الذي تعتمد عليه
+    nursery.month._sheet_opening()/_effective_opening()/_carry_closing()
+    (models_nursery) و roles._month_totals(): الافتتاحي الصريح الموجب في
+    الشيت، وإلا سطر نسرين الموجب — والصفر معناه «يرث ختامي الشهر السابق».
+    خلية A3 الصريحة للكروت (قد تكون 0 معتمدًا، كسبتمبر) تبقى في ext_fin
+    وتُحفظ هنا تحت sheet_opening_balance للمرجع فقط.
+    """
+    payload = dict(metrics)
+    payload['sheet_opening_balance'] = metrics['opening_balance']
+    payload['sheet_opening_source'] = metrics.get('opening_source', '')
+    payload['opening_balance'] = metrics.get('month_opening', metrics['opening_balance'])
+    payload['opening_source'] = metrics.get('month_opening_source', payload['opening_source'])
+    return payload
+
+
+def _month_record_opening(metrics, previous):
+    """افتتاحي سجل nursery.month عند الاستبدال الكامل من الشيت.
+
+    نفس قاعدة nursery.month._effective_opening(): الافتتاحي الصريح الموجب في
+    الشيت (وإلا سطر نسرين الموجب لأول شهر) هو المرجع ولا يورّث؛ وإلا ختامي
+    آخر شهر سابق فيه حركة (في يد رندة)؛ وإلا 0. خلية A3 = 0 الصريحة لا تعني
+    «افتتاحي صفر» هنا بل «يرث» — عكس كروت اللوحة. الشهور الفارغة المفتوحة
+    مسبقًا لا تُعدّ «سابقة» (nursery.month._previous_month).
+    """
+    sheet_opening = float(metrics.get('month_opening') or 0.0)
+    if sheet_opening > 0 or not previous:
+        return sheet_opening
+    closing_fn = (getattr(previous, '_carry_closing', None)
+                  or getattr(previous, '_month_closing', None))
+    return float(closing_fn() if closing_fn else (previous.opening_balance or 0.0))
+
+
+def _write_month_summary(metrics, target_ym, env):
+    """يكتب ملخص الشهر في المعاملين nursery.excel_month_<ym> و nursery.ext_fin[<ym>].
+
+    المسار الوحيد لكتابة الملخص: يستخدمه الاستبدال الكامل والتحديث الملخّص
+    معًا حتى لا يختلف شكل الصف بين المسارين.
+    """
+    icp = env['ir.config_parameter'].sudo()
+    icp.set_param('nursery.excel_month_%s' % target_ym,
+                  json.dumps(_excel_month_payload(metrics), ensure_ascii=False))
+    ext = {}
+    try:
+        ext = json.loads(icp.get_param('nursery.ext_fin', '') or '{}')
+    except Exception:
+        ext = {}
+    if not isinstance(ext, dict):
+        ext = {}
+    ext[target_ym] = _ext_fin_row(metrics)
+    icp.set_param('nursery.ext_fin', json.dumps(ext, ensure_ascii=False))
+    return ext[target_ym]
+
+
+def refresh_month_summary(parsed, target_ym, env):
+    """تحديث ملخص شهر من الشيت فقط (الـ15 رقم) بلا أي تغيير في السجلات.
+
+    لا يمس الفواتير ولا القيود ولا قائمة الطلاب ولا حالة الشهر، لذلك يصلح
+    للشهور المقفولة. يعيد الملخص المكتوب.
+    """
+    metrics = _excel_month_metrics(parsed, target_ym)
+    _write_month_summary(metrics, target_ym, env)
+    return metrics
 
 
 def _replace_month_from_excel(parsed, target_ym, env, roster=True):
@@ -1776,18 +2009,15 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
     # the workbook's positive Nesrin line; that entry stays in the ledger for
     # audit either way. Empty months opened ahead of the season do not count
     # as "previous" (nursery.month._previous_month).
-    # A workbook that states its own opening cash (positive Nesrin line) is
-    # authoritative and does not inherit from an earlier month.
+    # A workbook that states its own positive opening cash (A3 > 0, or the
+    # positive Nesrin line) is authoritative and does not inherit from an
+    # earlier month. An explicit A3 = 0 (September) is NOT "no opening" for
+    # the month record: the Nesrin line stays the site's opening, so September
+    # never inherits August's old manual entries (metrics['month_opening']).
     prev_fn = getattr(month, '_previous_month', None)
     previous = prev_fn() if prev_fn else env['nursery.month'].sudo().search(
         [('ym', '<', target_ym)], order='ym desc', limit=1)
-    if previous and not float(metrics.get('opening_balance') or 0.0):
-        closing_fn = (getattr(previous, '_carry_closing', None)
-                      or getattr(previous, '_month_closing', None))
-        month.write({'opening_balance': float(
-            closing_fn() if closing_fn else (previous.opening_balance or 0.0))})
-    else:
-        month.write({'opening_balance': metrics['opening_balance']})
+    month.write({'opening_balance': _month_record_opening(metrics, previous)})
 
     Fee = env['nursery.month.fee'].sudo()
     Payment = env['nursery.fee.payment'].sudo()
@@ -1927,48 +2157,7 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
         env,
     )
 
-    icp = env['ir.config_parameter'].sudo()
-    icp.set_param('nursery.excel_month_%s' % target_ym, json.dumps(metrics, ensure_ascii=False))
-    # The dashboard has a compact monthly override for the financial chart.
-    ext = {}
-    try:
-        ext = json.loads(icp.get_param('nursery.ext_fin', '') or '{}')
-    except Exception:
-        ext = {}
-    if not isinstance(ext, dict):
-        ext = {}
-    # Dashboard arithmetic is income - salaries - other. Feed it the workbook's
-    # own pieces: student fees plus the opening cash line as income, the
-    # itemised salaries, and the remaining outflows (payroll hand-over
-    # excluded) as other expenses — so its net equals the workbook's Net.
-    ext[target_ym] = {
-        'ym': target_ym,
-        'income': metrics['collected'] + metrics['opening_balance'],
-        'student_income': metrics['collected'],
-        'extra_income': metrics['opening_balance'],
-        'salaries': metrics['salaries'],
-        'other': metrics['other_expenses'],
-        'expenses': metrics['expenses'],
-        'cash': metrics['randa_cash'],
-        'transfer': metrics['bank_transfer'],
-        'books': metrics['books'],
-        'books_due_total': metrics['books_due_total'],
-        'books_paid_total': metrics['books_paid_total'],
-        'books_remaining_total': metrics['books_remaining_total'],
-        'remaining_total': metrics['remaining_total'],
-        'payment_rows': metrics['payment_rows'],
-        'student_count': metrics['student_count'],
-        'on_hand_randa': metrics['on_hand_randa'],
-        'randa_on_hand': metrics['randa_on_hand'],
-        'delta': metrics['delta'],
-        'opening_balance': metrics['opening_balance'],
-        'opening_source': metrics['opening_source'],
-        'expenses_paid_out': metrics['expenses_paid_out'],
-        'cash_closing': metrics['cash_closing'],
-        'cash_after_salaries': metrics['cash_after_salaries'],
-        'net': metrics['net'],
-    }
-    icp.set_param('nursery.ext_fin', json.dumps(ext, ensure_ascii=False))
+    _write_month_summary(metrics, target_ym, env)
 
     return {
         'students_created': created,

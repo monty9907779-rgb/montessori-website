@@ -17,6 +17,15 @@
 - لو الشهر مقفول يفتحه مؤقتاً ثم يقفله بنفس التوقيت والمستخدم بعد الاستيراد.
 - lock=True يقفل الشهر بعد الاستيراد حتى لو كان مفتوحاً.
 - يطبع ملخص الأرقام (المحصّل، كاش رندة، المصروفات، في يد رندة، الرواتب، الطلاب).
+
+تحديث الملخص فقط (بنفس خطوات التشغيل أعلاه، لكن بدل run):
+
+    refresh(env, '/root/randa.xlsx', '2026-10')
+
+- يعيد قراءة كتلة «Accounting Summary» من تبويب الشهر ويكتب الـ15 رقمًا في
+  nursery.excel_month_<ym> و nursery.ext_fin[<ym>] فقط — بلا أي تغيير في
+  الفواتير أو القيود أو قائمة الطلاب أو حالة الشهر، فيصلح للشهور المقفولة.
+- يطبع الـ15 قيمة + الشهر كـJSON.
 """
 import base64
 import json
@@ -38,6 +47,42 @@ def _excel_import_module():
             package = os.path.basename(candidate)
             return __import__('%s.excel_import' % package, fromlist=['excel_import'])
     raise SystemExit('لم أجد excel_import.py بجانب هذا السكريبت أو في addon nursery')
+
+
+# الـ15 خلية في كتلة ملخص الشيت بترتيب كروت اللوحة (عمود عمود)
+SUMMARY_KEYS = (
+    'opening_balance', 'collected', 'randa_cash', 'bank_transfer', 'expenses',
+    'on_hand_randa', 'expected_salaries', 'cash_after_salaries', 'salaries_paid', 'net',
+    'student_count', 'paid_students', 'unpaid_students', 'books', 'remaining_total',
+)
+
+
+def _parse_workbook(excel_import, path, ym):
+    if not excel_import._valid_ym(ym):
+        raise SystemExit('شهر غير صالح: %s' % ym)
+    with open(path, 'rb') as handle:
+        raw = handle.read()
+    files = [{'name': os.path.basename(path),
+              'content': base64.b64encode(raw).decode('ascii')}]
+    return excel_import._parse_records(files, ym)
+
+
+def refresh(env, path, ym):
+    """تحديث ملخص الشهر فقط من الشيت — بلا سجلات ولا حالة شهر (يصلح للمقفول)."""
+    excel_import = _excel_import_module()
+    parsed = _parse_workbook(excel_import, path, ym)
+    if not parsed['summary'] and not parsed['students'] and not parsed['entries']:
+        raise SystemExit('لم أجد تبويب الشهر %s في %s' % (ym, path))
+    metrics = excel_import.refresh_month_summary(parsed, ym, env)
+    env.cr.commit()
+    out = {'ym': ym}
+    for key in SUMMARY_KEYS:
+        out[key] = metrics.get(key)
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    warnings = [w for w in parsed.get('warnings', []) if not w.startswith('تم تجاهل شيت')]
+    if warnings:
+        print(json.dumps({'warnings': warnings}, ensure_ascii=False), file=sys.stderr)
+    return metrics
 
 
 def run(env, path, ym, lock=True, roster=True):

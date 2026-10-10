@@ -27,19 +27,78 @@ function fRows(){
     return rows.filter(function(r){ return (!P.from||r.label>=P.from)&&(!P.to||r.label<=P.to); });
   return rows;
 }
+/* ---------- قراءة قيمة من صف شهر (by_month أو excel_summary) ----------
+   المفاتيح الجديدة اللي بتيجي من بلوك ملخص الشيت (collected / expected_salaries / salaries_paid /
+   paid_students / unpaid_students …) ممكن تكون لسه مش موجودة في صف قديم، فبنرجع للمفتاح القديم
+   اللي بنفس المعنى، وإلا null (المستدعي بيقرر 0 أو عدّ حي). */
+function rowNum(r,k){
+  if(!r||r[k]==null||r[k]==='') return null;
+  var n=Number(r[k]); return isNaN(n)?null:n;
+}
+function rowVal(r,k){
+  var v=rowNum(r,k), w;
+  if(v!=null) return v;
+  if(k==='collected'){ v=rowNum(r,'student_income'); return v!=null?v:rowNum(r,'income'); }
+  if(k==='student_income') return rowNum(r,'income');
+  if(k==='extra_income'){ v=rowNum(r,'income'); w=rowNum(r,'student_income'); return (v!=null&&w!=null)?v-w:null; }
+  if(k==='cash') return rowNum(r,'randa_cash');
+  if(k==='transfer') return rowNum(r,'bank_transfer');
+  if(k==='expenses') return rowNum(r,'other');
+  if(k==='salaries_paid') return rowNum(r,'salaries');      /* salaries القديم = الرواتب المصروفة فعلاً */
+  if(k==='on_hand_randa') return rowNum(r,'cash_closing');
+  if(k==='net'){ v=rowNum(r,'income'); return v==null?null:v-(rowNum(r,'salaries')||0)-(rowNum(r,'other')||0); }
+  return null;
+}
+/* ---------- تجميع الفترة المختارة ----------
+   تدفّقات (FLOW) بتتجمّع على كل شهور الفترة: المحصّل، الإيرادات، الكاش، التحويل، المصروفات،
+     الرواتب (المتوقعة والمصروفة)، رسوم الكتب، الصافي.
+   لقطات (SNAPSHOT) مش بتتجمّع: الرصيد الافتتاحي = أول شهر في الفترة؛ رصيد راندا، صافي راندا بعد
+     الرواتب، عدد الطلاب / الدافعين / غير الدافعين، الباقي = آخر شهر في الفترة.
+   الصفوف بتترتّب تصاعديًا بالـlabel قبل الحساب. المفتاح الناقص = 0، ما عدا العدّادات = null
+   عشان كارت الطلاب يرجع للعدّ الحي. */
+var FIN_FLOW=['collected','income','student_income','extra_income','cash','transfer','other','expenses',
+              'salaries','expected_salaries','salaries_paid','books','net'];
+var FIN_SNAP_LAST=['on_hand_randa','cash_after_salaries','remaining_total'];
+var FIN_CNT_LAST=['student_count','paid_students','unpaid_students'];
 function finSums(rows){
-  var s={income:0,student_income:0,extra_income:0,salaries:0,other:0,net:0,
-    cash:0,transfer:0,books:0,remaining_total:0,on_hand_randa:0,randa_on_hand:0,delta:0};
-  rows.forEach(function(r){
-    var inc=Number(r.income)||0, stu=(r.student_income!=null?Number(r.student_income):inc)||0;
-    s.income+=inc; s.student_income+=stu; s.extra_income+=(r.extra_income!=null?Number(r.extra_income):(inc-stu))||0;
-    s.salaries+=(r.salaries||0); s.other+=(r.other||0);
-    s.cash+=(r.cash||0); s.transfer+=(r.transfer||0); s.books+=(r.books||0);
-    s.remaining_total+=(r.remaining_total||0);
-    s.on_hand_randa+=(r.on_hand_randa||0); s.randa_on_hand+=(r.randa_on_hand||0); s.delta+=(r.delta||0);
-  });
-  s.net=s.income-s.salaries-s.other;
+  var s={opening_balance:0};
+  FIN_FLOW.forEach(function(k){ s[k]=0; });
+  FIN_SNAP_LAST.forEach(function(k){ s[k]=0; });
+  FIN_CNT_LAST.forEach(function(k){ s[k]=null; });
+  var srt=(rows||[]).slice().sort(function(a,b){
+    var x=String(a.label||''), y=String(b.label||''); return x<y?-1:(x>y?1:0); });
+  srt.forEach(function(r){ FIN_FLOW.forEach(function(k){ s[k]+=rowVal(r,k)||0; }); });
+  if(srt.length){
+    var first=srt[0], last=srt[srt.length-1];
+    s.opening_balance=rowVal(first,'opening_balance')||0;
+    FIN_SNAP_LAST.forEach(function(k){ s[k]=rowVal(last,k)||0; });
+    FIN_CNT_LAST.forEach(function(k){ s[k]=rowVal(last,k); });
+  }
   return s;
+}
+/* عدّادات الطلاب للفترة (عدد الطلاب / الدافعين / غير الدافعين):
+   1) لو students.sheet بيخص آخر شهر في الفترة فهو المرجع: السيرفر بيكتب فيه عدد الشيت كما هو (int)،
+      و null لو الشيت ما عدّش المفتاح. (صف by_month لنفس الشهر بيحمل 0 مكان الناقص — صفر كاذب —
+      فممنوع نقرأ منه طالما students.sheet موجود؛ ده اللي كان بيعرض «الدافعين 0» قبل الإصلاح.)
+   2) غير كده (شهر تاني أو سيرفر قديم بلا students.sheet) بنقرأ من صف الشهر نفسه (F) — null لو المفتاح ناقص.
+   3) الناقص (null) يرجع للعدّ الحي من السجلات: st.total / st.paid / max(0, الإجمالي − الدافعين)،
+      وكل كارت بياخد sub بتاعه: نص الفترة لو من الشيت، «عدّ حي من السجلات» لو حي. */
+var LIVE_SUB='عدّ حي من السجلات';
+function sheetCounts(F,FR,st,ptxt){
+  st=st||{};
+  var last=FR.length?String(FR[FR.length-1].label||''):'';
+  var sh=(st.sheet&&st.sheet.ym&&String(st.sheet.ym)===last)?st.sheet:null;
+  function pick(k){
+    if(sh&&Object.prototype.hasOwnProperty.call(sh,k)) return rowNum(sh,k);
+    return F[k]!=null?F[k]:null;
+  }
+  var total=pick('student_count'), paid=pick('paid_students'), unpaid=pick('unpaid_students');
+  var has=total>0, liveT=Number(st.total)||0, liveP=Number(st.paid)||0;
+  var T=has?total:liveT, hasP=has&&paid!=null, hasU=has&&unpaid!=null;
+  var Pd=hasP?paid:liveP;
+  var U=hasU?unpaid:Math.max(0,T-Pd);
+  return {total:T,paid:Pd,unpaid:U,
+          sub:has?ptxt:LIVE_SUB, subPaid:hasP?ptxt:LIVE_SUB, subUnpaid:hasU?ptxt:LIVE_SUB};
 }
 function periodShort(rows){
   if(P.mode==='last3') return 'آخر ٣ أشهر';
@@ -66,7 +125,7 @@ function periodBar(){
     '<span class="seg">'+seg('all','من البداية')+seg('last3','آخر ٣ أشهر')+seg('cur','هذا الشهر')+seg('custom','مخصّص')+'</span>'+
     /* قائمة منسدلة بكل شهور الموسم (الماضي والحالي والجاي) + أي شهر تاني فيه بيانات.
        اختيار شهر = فترة مخصّصة من/إلى نفس الشهر؛ الشهر اللي ملوش بيانات بيتعلّم كده. */
-    '<select id="p-month" title="اختيار شهر" style="margin-inline-start:8px;padding:6px 10px;border:1px solid #e9e0cf;border-radius:8px;background:#fff;font:inherit;color:#184e3e">'+
+    '<select id="p-month" title="اختيار شهر">'+
       '<option value="">— اختر شهر —</option>'+
       monthOptions(rows).map(function(k){ var on=(P.mode==='custom'&&P.from===k.ym&&P.to===k.ym);
         return '<option value="'+NS.attr(k.ym)+'"'+(on?' selected':'')+'>'+NS.esc(mLabel(k.ym))+(k.has?'':' (لا بيانات)')+(k.ym===CUR_YM?' — الحالي':'')+'</option>'; }).join('')+
@@ -91,11 +150,33 @@ function wirePeriod(){
   if(f) f.addEventListener('change',upd);
   if(t) t.addEventListener('change',upd);
   var mo=document.getElementById('p-month');
-  if(mo) mo.addEventListener('change',function(){
-    if(!mo.value) return;
-    P.mode='custom'; P.from=mo.value; P.to=mo.value; savePeriod(); render();
-  });
+  if(mo){
+    /* شكل القائمة عبر CSSOM — خاصية style الداخلية في الماركب محجوبة بالـCSP (style-src-attr) */
+    try{ mo.style.marginInlineStart='8px'; mo.style.padding='6px 10px'; mo.style.border='1px solid '+C_LINE;
+         mo.style.borderRadius='8px'; mo.style.background='#fff'; mo.style.font='inherit'; mo.style.color=C_FOREST; }catch(e){}
+    mo.addEventListener('change',function(){
+      if(!mo.value) return;
+      P.mode='custom'; P.from=mo.value; P.to=mo.value; savePeriod(); render();
+    });
+  }
 }
+
+/* ---------- تخطيط كروت المالية 3 أعمدة × 5 صفوف (العمود بيتملي من فوق لتحت) ----------
+   عبر CSSOM بعد الرسم مش خاصية style داخل الماركب (CSP بتحجب style-src-attr). على الشاشة الضيقة (≤680px)
+   بنسيب dashboard.css يتصرّف. بتتنادى بعد كل render وعلى resize. */
+function layoutFinKpis(){
+  var el=document.getElementById('fin-kpis'); if(!el||!el.style) return;
+  var w=Number(window.innerWidth)||(document.documentElement&&document.documentElement.clientWidth)||0;
+  if(w>680){
+    el.style.display='grid';
+    el.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
+    el.style.gridTemplateRows='repeat(5,auto)';
+    el.style.gridAutoFlow='column';
+  } else {
+    el.style.display=''; el.style.gridTemplateColumns=''; el.style.gridTemplateRows=''; el.style.gridAutoFlow='';
+  }
+}
+try{ window.addEventListener('resize',layoutFinKpis); }catch(e){}
 
 /* colors pulled from the design system (light theme) */
 var C_FOREST='#184e3e', C_FOREST6='#2a7d61', C_CLAY='#c67c54', C_AMBER='#e0a458',
@@ -171,6 +252,7 @@ function render(){
   mounted=true;
   var m=D.money||{}, st=D.students||{}, at=D.att_today||{}, sf=D.staff||{};
   var FR=fRows(), F=finSums(FR), ptxt=periodShort(FR);
+  var SC=sheetCounts(F,FR,st,ptxt);
   var EX=m.excel_summary||{};
 
   var right='<span class="live" title="تُحدَّث تلقائياً كل دقيقة"><span class="dot"></span>'+
@@ -189,19 +271,29 @@ function render(){
       '<div id="stale"></div>'+
       periodBar()+
 
-      /* ---- KPI row (financial KPIs follow the selected period) ---- */
-      '<div class="kpis">'+
-        stat('is-forest','wallet','إجمالي الإيرادات',NS.riyal(F.income),'الطلبة: '+NS.riyal(F.student_income)+' · دخل آخر: '+NS.riyal(F.extra_income),'/accounts/#source-income')+
-        stat('is-clay','users','المرتبات',NS.riyal(F.salaries),ptxt,'/accounts/#source-salary')+
-        stat('is-danger','wallet','مصاريف أخرى',NS.riyal(F.other),ptxt,'/accounts/#source-expense')+
-        stat(F.net>=0?'is-forest':'is-danger','chart','صافي الشيت (ليس رصيداً)',NS.riyal(F.net),ptxt,'/accounts/#source-income')+
-        stat('is-forest','wallet','Randa Cash',NS.riyal(F.cash),ptxt,'/accounts/#source-fees')+
-        stat('is-clay','wallet','تحويل بنكي',NS.riyal(F.transfer),ptxt,'/accounts/#source-fees')+
+      /* ---- صف الملخّص المالي: 15 كارت بنفس ترتيب بلوك «Accounting Summary» في شيت راندا
+              (بتتبع الفترة المختارة) — ترتيب الـDOM عمودي: العمود 1 ثم 2 ثم 3، والتخطيط 3×5 في layoutFinKpis ---- */
+      '<div class="kpis" id="fin-kpis">'+
+        stat('is-forest','wallet','الرصيد الافتتاحي',NS.riyal(F.opening_balance),ptxt,'/accounts/#source-income')+
+        stat('is-forest','wallet','إجمالي المحصّل',NS.riyal(F.collected),'كاش '+NS.riyal(F.cash)+' · تحويل '+NS.riyal(F.transfer),'/accounts/#source-fees')+
+        stat('is-forest','wallet','كاش راندا',NS.riyal(F.cash),ptxt,'/accounts/#source-fees')+
+        stat('is-clay','wallet','التحويل البنكي',NS.riyal(F.transfer),ptxt,'/accounts/#source-fees')+
+        stat('is-danger','wallet','المصروفات',NS.riyal(F.expenses),ptxt,'/accounts/#source-expense')+
+        stat('is-forest','chart','رصيد راندا',NS.riyal(F.on_hand_randa),ptxt,'/accounts/#source-expense')+
+        stat('is-clay','users','الرواتب المتوقعة',NS.riyal(F.expected_salaries),ptxt,'/accounts/#source-salary')+
+        stat(F.cash_after_salaries>=0?'is-forest':'is-danger','chart','صافي راندا بعد الرواتب',NS.riyal(F.cash_after_salaries),ptxt,'/accounts/#source-salary')+
+        stat('is-clay','users','الرواتب المصروفة',NS.riyal(F.salaries_paid),ptxt,'/accounts/#source-salary')+
+        stat(F.net>=0?'is-forest':'is-danger','chart','الصافي',NS.riyal(F.net),ptxt,'/accounts/#source-income')+
+        stat('is-forest','users','عدد الطلاب',NS.fmtMoney(SC.total),SC.sub,'/students/')+
+        stat('is-forest','users','الدافعين',NS.fmtMoney(SC.paid),SC.subPaid,'/students/')+
+        stat(SC.unpaid>0?'is-amber':'is-forest','alert','غير الدافعين',NS.fmtMoney(SC.unpaid),SC.subUnpaid,'/receivables/')+
+        stat('is-clay','wallet','رسوم الكتب',NS.riyal(F.books),ptxt,'/accounts/#source-fees')+
         stat(F.remaining_total>0?'is-danger':'is-forest','alert','الباقي',NS.riyal(F.remaining_total),ptxt,'/accounts/#source-fees')+
-        stat('is-forest','chart','On hand Randa / الإغلاق النقدي',NS.riyal(F.on_hand_randa),ptxt,'/accounts/#source-expense')+
-        stat(F.delta>=0?'is-forest':'is-danger','alert','Delta الشيت (تدقيق فقط)',NS.riyal(F.delta),ptxt,'/accounts/#source-salary')+
+      '</div>'+
+
+      /* ---- صف المؤشرات التشغيلية (حيّة من السجلات، مش بتتبع الفترة) ---- */
+      '<div class="kpis" id="ops-kpis">'+
         stat('is-forest','sparkle','دخل اليوم',NS.riyal(m.income_today),(Number(m.count_today)||0)+' دفعة اليوم','/accounts/#source-fees')+
-        stat('is-forest','users','الطلاب',NS.fmtMoney(st.total),(Number(st.paid)||0)+' سدّدوا الرسوم','/students/')+
         stat(st.overdue_count?'is-amber':'is-forest','alert','متأخرو السداد',NS.fmtMoney(st.overdue_count),st.overdue_count?'بحاجة لمتابعة':'لا يوجد متأخرون','/receivables/')+
         stat('is-clay','pin','حضور اليوم',(Number(at.present)||0)+' <small>/ '+(Number(st.total)||0)+'</small>',absent?(absent+' غائب · '+markedTxt):markedTxt,'/classes/')+
         stat(sf.late_today?'is-amber':'is-forest','clock','تأخّر الموظفين',NS.fmtMoney(sf.late_today),sf.late_today?'اليوم':'الجميع في الموعد','/salaries/')+
@@ -250,6 +342,7 @@ function render(){
     '<footer class="dash-footer">روضة كوكب الطفل الحر · جدة</footer>';
 
   app.innerHTML=h;
+  layoutFinKpis();
   NS.wireLogout('mt');
   wirePeriod();
   wireAttendance();
@@ -278,24 +371,25 @@ function stat(accent,icon,label,value,sub,href){
 }
 /* note: 'is-forest' is the default .stat accent (no override class needed); harmless if unstyled */
 
+/* نفس الـ15 حقل بنفس ترتيب بلوك ملخص الشيت (عمود A ثم D ثم G). القراءة عبر rowVal عشان صف
+   excel_summary (= صف الشهر الحالي في by_month بمفاتيح income/cash/transfer/salaries) يتقري حتى لو
+   لسه من غير المفاتيح الجديدة. الحقل اللي مش موجود خالص بيتعرض «—». */
+var LEDGER_FIELDS=[
+  ['الرصيد الافتتاحي','opening_balance'],['إجمالي المحصّل','collected'],['كاش راندا','cash'],
+  ['التحويل البنكي','transfer'],['المصروفات','expenses'],
+  ['رصيد راندا','on_hand_randa'],['الرواتب المتوقعة','expected_salaries'],['صافي راندا بعد الرواتب','cash_after_salaries'],
+  ['الرواتب المصروفة','salaries_paid'],['الصافي','net'],
+  ['عدد الطلاب','student_count',1],['الدافعين','paid_students',1],['غير الدافعين','unpaid_students',1],
+  ['رسوم الكتب','books'],['الباقي','remaining_total']
+];
 function excelLedgerCard(x){
-  /* صف الشهر جوّه by_month بييجي من nursery.ext_fin بمفاتيح income/cash/transfer —
-     مش collected/randa_cash/bank_transfer زي ملخص excel_month. نقرأ الاتنين. */
-  var rows=[
-    ['إجمالي المحصل',(x.collected!=null?x.collected:(x.student_income!=null?x.student_income:x.income))],
-    ['Randa Cash',(x.randa_cash!=null?x.randa_cash:x.cash)],
-    ['تحويل بنكي',(x.bank_transfer!=null?x.bank_transfer:x.transfer)],
-    ['الباقي',x.remaining_total],['حركة المصروفات بالشيت',(x.expenses!=null?x.expenses:x.other)],
-    ['الرصيد النقدي المرحّل',x.on_hand_randa],['الرواتب',x.salaries],
-    ['الطلبة',x.student_count],['رسوم الكتب',x.books],
-    ['Randa on hand (بلوك التدقيق)',x.randa_on_hand],['Delta الشيت (تدقيق فقط)',x.delta],['Net الشيت (ليس رصيداً)',x.net]
-  ];
   var h='<section class="card card--pad col-2 excel-ledger">'+
     '<div class="card__head"><span class="card__title">'+I('file')+' مطابقة ملخص Excel — '+NS.esc(mLabel(x.ym))+'</span>'+
     '<span class="tag tag--soft">المصدر: 2026-2027 Montessori</span></div>'+
     '<div class="table-wrap"><table class="table"><tbody>';
-  rows.forEach(function(r){
-    var value=(r[0]==='الطلبة'?NS.fmtMoney(r[1]):NS.riyal(r[1]));
+  LEDGER_FIELDS.forEach(function(r){
+    var v=rowVal(x,r[1]);
+    var value=(v==null?'—':(r[2]?NS.fmtMoney(v):NS.riyal(v)));
     h+='<tr><td><b>'+NS.esc(r[0])+'</b></td><td class="tabnum">'+value+'</td></tr>';
   });
   return h+'</tbody></table></div></section>';
