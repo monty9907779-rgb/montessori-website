@@ -873,8 +873,8 @@ def jsonld(a, iso):
         "author":{"@type":"Organization","@id":SITE+"/#business","name":"كوكب الطفل الحر","url":SITE+"/"},
         "publisher":{"@type":"Organization","@id":SITE+"/#business","name":"كوكب الطفل الحر","logo":{"@type":"ImageObject","url":SITE+"/logo.png"}},
         "image":a['imageUrl'],"keywords":", ".join(k for k in kws if k),"articleSection":cat,"wordCount":a.get('wordCount'),
-        "about":[{"@type":"Thing","name":"Montessori education","sameAs":"https://en.wikipedia.org/wiki/Montessori_education"},
-                 {"@type":"City","name":"جدة","sameAs":"https://ar.wikipedia.org/wiki/جدة"}]}
+        "about":[{"@type":"Thing","name":"Montessori education"},
+                 {"@type":"City","name":"جدة"}]}
     fq={"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":f['q'],"acceptedAnswer":{"@type":"Answer","text":f['a']}} for f in (a.get('faq') or [])]}
     bc={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
@@ -2136,8 +2136,8 @@ a.seo-card:hover b{color:var(--clay-600)}
             for k in ('author', 'publisher'):
                 if isinstance(d.get(k), dict) and '@id' not in d[k]:
                     d[k] = {'@type': d[k].get('@type', 'Organization'), '@id': SITE + '/#business', **{kk: vv for kk, vv in d[k].items() if kk != '@type'}}
-            d['about'] = [{'@type': 'Thing', 'name': 'Montessori education', 'sameAs': 'https://en.wikipedia.org/wiki/Montessori_education'},
-                          {'@type': 'City', 'name': 'Jeddah', 'sameAs': 'https://en.wikipedia.org/wiki/Jeddah'}]
+            d['about'] = [{'@type': 'Thing', 'name': 'Montessori education'},
+                          {'@type': 'City', 'name': 'Jeddah'}]
             return '<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) + '</script>'
         return re.sub(r'<script type="application/ld\+json">(.*?)</script>', fix, text, count=0, flags=re.S)
     # English pages were written outside the facts gate. Bring them in line:
