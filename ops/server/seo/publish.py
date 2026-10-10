@@ -738,7 +738,7 @@ def header():
     <div class="mnav__cta">
       <a class="lang-toggle" href="/app/" aria-label="تطبيقات الجوال" title="تطبيقات الجوال" style="gap:5px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg>تطبيق</a>
       <a class="lang-toggle" href="/en/" lang="en" dir="ltr" aria-label="Switch to English" title="English"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg>EN</a>
-      <a class="btn btn--ghost btn--sm" href="/login/">دخول</a>
+      <a class="btn btn--ghost btn--sm" href="/login/" rel="nofollow">دخول</a>
       <a class="btn btn--primary btn--sm" href="/#register">احجز زيارة</a>
     </div></div></header>'''
 
@@ -746,7 +746,7 @@ def footer():
     return '''<footer class="foot"><div class="foot__in">
     <div class="soc"><a href="https://wa.me/966541558173" target="_blank" rel="noopener" aria-label="واتساب" id="f-wa"></a></div>
     <nav class="fnav"><a href="/">الرئيسية</a><a href="/blog/">المدوّنة</a><a href="/#programs">برامجنا</a>
-      <a href="/#register">احجز زيارة</a><a href="/partners/">شركاؤنا</a><a href="/privacy/">الخصوصية</a><a href="/login/">دخول</a></nav>
+      <a href="/#register">احجز زيارة</a><a href="/partners/">شركاؤنا</a><a href="/privacy/">الخصوصية</a><a href="/login/" rel="nofollow">دخول</a></nav>
     <div class="cr">كوكب الطفل الحر © ٢٠٢٦ — جدة، المملكة العربية السعودية · جميع الحقوق محفوظة</div>
   </div></footer>
 <button id="totop" aria-label="للأعلى"></button>
@@ -1590,6 +1590,9 @@ def repair_static_site():
             '"description": "Kawkab Al-Tifl Al-Hurr: a Montessori nursery and kindergarten in Al Faisaliyah (Mohammed Abdulkarim St), Jeddah, for children aged 2 to 5 (Pre-KG, KG1, KG2), teaching in Modern Standard Arabic and English with Quran, with more than 10 years of experience. Open Sunday to Thursday, 08:00 to 13:00."', 1)
         text = text.replace('"sameAs": ["https://www.tiktok.com/@montessori_nursery23"]',
             '"sameAs": ["https://www.tiktok.com/@montessori_nursery23", "https://www.instagram.com/montessori_nursery/", "https://www.facebook.com/p/Montessori-nursery-100063063920027/"]', 1)
+        # /login/ answers 403 to anyone without a session and is linked from
+        # every page: mark the links nofollow so crawlers stop requesting it.
+        text = re.sub(r'<a((?![^>]*\brel=)[^>]*\bhref="/login/"[^>]*)>', r'<a\1 rel="nofollow">', text)
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
