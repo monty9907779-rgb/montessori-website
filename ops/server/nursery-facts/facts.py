@@ -203,6 +203,36 @@ def _check_orphan_stage_ages(t):
     return out
 
 
+# المدى قبل الاسم: «من 3 إلى 4 سنوات (التمهيدي)». الفحصان أعلاه يقرآن المدى
+# بعد اسم المرحلة فقط، فمرّت صفحة montessori-for-kids-guide الحيّة بثلاثة
+# عناوين بهذا الشكل (اكتُشفت 2026-10-10). «الروضة/الحضانة» بين القوسين
+# تسمية مخترعة كما في _check_orphan_stage_ages، ويُسمح بمدى الاستقبال 2-5.
+_RANGE_BEFORE = re.compile(
+    '(' + _NUM + r')\s*(?:إلى|الى|حتى|[-–—])\s*(' + _NUM + r')'
+    r'\s*(?:سنوات|سنة|أعوام|عام)?\s*\(\s*'
+    r'(PREKG|(?:ال)?مستوى الأول|(?:ال)?مستوى الثاني|(?:ال)?تمهيدي'
+    r'|(?:برنامج |مرحلة )?(?:ال)?(?:روضة|حضانة))\s*\)')
+
+
+def _check_stage_ages_before(t):
+    """مدى أعمار يسبق اسم المرحلة بين قوسين."""
+    out = []
+    for m in _RANGE_BEFORE.finditer(t):
+        got = (_num(m.group(1)), _num(m.group(2)))
+        name = m.group(3).strip()
+        stage = next(((label, lo, hi) for label, pattern, (lo, hi) in STAGE_AGES
+                      if re.fullmatch(pattern, name)), None)
+        if stage:
+            label, lo, hi = stage
+            if got != (lo, hi):
+                out.append('عمر مرحلة خاطئ — %s: وجد %s-%s والصحيح %d-%d'
+                           % (label, got[0], got[1], lo, hi))
+        elif got != (2, 5):
+            out.append('«%s» مقترنة بعمر مرحلة (%s-%s) — التسمية الصحيحة '
+                       'المستوى الأول/الثاني/التمهيدي' % (name, got[0], got[1]))
+    return out
+
+
 # وصف سوق الحضانات في جدة يحتفظ بتسميته الشائعة (قرار المالك 2026-09-13):
 # سلّم المراحل الجديد يخصّ مراحلنا نحن فقط، لا وصف السوق.
 MARKET_CUES = ('الحضانات', 'حضانات', 'الروضات', 'السوق', 'بشكل عام',
@@ -269,6 +299,7 @@ def check_text(text):
     bad.extend(_check_invented_price(t))
     bad.extend(_ours_only(t, _check_stage_ages))
     bad.extend(_ours_only(t, _check_orphan_stage_ages))
+    bad.extend(_ours_only(t, _check_stage_ages_before))
     bad.extend(_check_program_count(t))
     if not MUST.search(t):
         bad.append('ما ذكرش نطاق أعمارنا (٢–٥) صراحةً')

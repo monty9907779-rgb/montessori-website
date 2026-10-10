@@ -96,6 +96,24 @@ class TestNonAgeUnitDoesNotMaskWrongAge(unittest.TestCase):
         self.assertTrue(reasons)
 
 
+class TestRangeBeforeStageName(unittest.TestCase):
+    """«من 3 إلى 4 سنوات (التمهيدي)»: المدى قبل الاسم كان يمرّ بلا اعتراض
+    (صفحة montessori-for-kids-guide الحيّة، 2026-10-10)."""
+    def test_wrong_age_before_stage_name_is_rejected(self):
+        reasons = ' '.join(facts.check_text('المرحلة الأولى: من 3 إلى 4 سنوات (التمهيدي).' + INTAKE))
+        self.assertIn('عمر مرحلة خاطئ', reasons)
+
+    def test_words_before_invented_stage_is_rejected(self):
+        reasons = ' '.join(facts.check_text('المرحلة الثانية: من أربع إلى خمس (الروضة).' + INTAKE))
+        self.assertIn('مقترنة بعمر مرحلة', reasons)
+
+    def test_correct_age_before_stage_name_passes(self):
+        self.assertEqual([], facts.check_text('من ٥ إلى ٦ سنوات (التمهيدي) هي سنة التهيئة.' + INTAKE))
+
+    def test_intake_range_before_nursery_word_passes(self):
+        self.assertEqual([], facts.check_text('نستقبل من سنتين إلى 5 سنوات (الحضانة).' + INTAKE))
+
+
 class TestIntakeRangeRequired(unittest.TestCase):
     def test_missing_intake_range_is_rejected(self):
         reasons = ' '.join(facts.check_text('مرحبا بكم في روضتنا بجدة.'))
