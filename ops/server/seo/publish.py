@@ -1089,6 +1089,24 @@ def write_llms_full(q):
         line = f'- [{title}]({SITE}/blog/{slug}/): {(a.get("metaDescription") or "").strip()}'
         if ok(line):
             lines.append(line)
+    # The articles' own FAQ pairs, each with its source URL: an assistant can
+    # answer a parent's question directly and cite the page. Same filters and
+    # per-line gate as the index; at most four pairs per article.
+    lines += ['', '## أسئلة وأجوبة من المقالات / Q&A from the guides']
+    for a in sorted(q, key=lambda x: str(x.get('published') or ''), reverse=True):
+        slug = a.get('slug', '')
+        if (not a.get('published') or is_noindex(a) or slug in REDIRECTED
+                or slug in CANONICAL_TO or not (ROOT/'blog'/slug/'index.html').exists()):
+            continue
+        for item in (a.get('faq') or [])[:4]:
+            if not isinstance(item, dict):
+                continue
+            qq = re.sub(r'<[^>]+>', '', str(item.get('q') or '')).strip()
+            aa = re.sub(r'<[^>]+>', '', str(item.get('a') or '')).strip()
+            if qq and aa:
+                line = f'- **{qq}** {aa} (المصدر: {SITE}/blog/{slug}/)'
+                if ok(line):
+                    lines.append(line)
     txt = '\n'.join(lines) + '\n'
     why = gate(txt)
     if why:
