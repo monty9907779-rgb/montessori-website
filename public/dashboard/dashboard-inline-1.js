@@ -60,6 +60,13 @@ var FIN_FLOW=['collected','income','student_income','extra_income','cash','trans
               'salaries','expected_salaries','salaries_paid','books','net'];
 var FIN_SNAP_LAST=['on_hand_randa','cash_after_salaries','remaining_total'];
 var FIN_CNT_LAST=['student_count','paid_students','unpaid_students'];
+/* شهور الشيت بس: الصف اللي جاي من nursery.ext_fin بيحمل ym؛ الشهور اللي من سجلات أودو القديمة قبل موسم
+   الشيت (يونيو–أغسطس 2026) ملهاش ym، فبنستبعدها من كروت المالية الـ15 (بتفضل في الرسم والجدول الشهري).
+   لو مفيش ولا شهر شيت في الفترة بنرجع لكل الصفوف. */
+function sheetRows(rows){
+  var s=(rows||[]).filter(function(r){ return r&&r.ym; });
+  return s.length?s:(rows||[]);
+}
 function finSums(rows){
   var s={opening_balance:0};
   FIN_FLOW.forEach(function(k){ s[k]=0; });
@@ -251,8 +258,8 @@ function clearStale(){ var host=document.getElementById('stale'); if(host) host.
 function render(){
   mounted=true;
   var m=D.money||{}, st=D.students||{}, at=D.att_today||{}, sf=D.staff||{};
-  var FR=fRows(), F=finSums(FR), ptxt=periodShort(FR);
-  var SC=sheetCounts(F,FR,st,ptxt);
+  var FR=fRows(), FS=sheetRows(FR), F=finSums(FS), ptxt=periodShort(FR);
+  var SC=sheetCounts(F,FS,st,ptxt);
   var EX=m.excel_summary||{};
 
   var right='<span class="live" title="تُحدَّث تلقائياً كل دقيقة"><span class="dot"></span>'+

@@ -389,6 +389,41 @@ class _FakeEnv(dict):
 
 
 @unittest.skipUnless(os.path.exists(REAL_WORKBOOK), 'randa.xlsx not next to the tests')
+class RosterRulesTests(unittest.TestCase):
+    """قواعد قائمة الطلاب: الرقم التسلسلي المكرر لاسمين، وعلامة «مدفوع» من عمود الحالة."""
+
+    def setUp(self):
+        self.mod = _load_module()
+
+    def _rec(self, name, serial, cls='KG2', **extra):
+        base = {'kind': 'student', 'name': name, 'serial': serial, 'class_name': cls,
+                'db_id': None, 'source': 'f / Oct / صف %s' % serial, 'paid': 0, 'status': ''}
+        base.update(extra)
+        return base
+
+    def test_duplicate_class_serial_with_different_names_stays_two_students(self):
+        rows = [self._rec('youssef alaa', 31), self._rec('alya M', 31, paid=1950)]
+        merged = self.mod._merge_records(rows, 'student')
+        self.assertEqual([r['name'] for r in merged], ['youssef alaa', 'alya M'])
+        self.assertTrue(merged[1].get('serial_conflict'))
+        self.assertFalse(merged[0].get('serial_conflict'))
+
+    def test_same_name_same_serial_still_merges(self):
+        rows = [self._rec('mayan', 8), self._rec('mayan', 8, paid=1300)]
+        merged = self.mod._merge_records(rows, 'student')
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged[0]['paid'], 1300)
+
+    def test_paid_flag_follows_payment_status_column(self):
+        flag = self.mod._student_paid_flag
+        self.assertTrue(flag({'status': 'paid', 'paid': 0}))        # ترم / دفع سنة / شهر مقدم
+        self.assertFalse(flag({'status': 'unpaid', 'paid': 0}))
+        self.assertFalse(flag({'status': 'unpaid', 'paid': 500}))   # الشيت أقوى من المبلغ
+        self.assertTrue(flag({'status': '', 'paid': 500}))          # شيت قديم بلا عمود حالة
+        self.assertFalse(flag({'status': '', 'paid': 0}))
+        self.assertFalse(flag({'paid': None}))
+
+
 class RealWorkbookTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -542,6 +577,23 @@ class RealWorkbookTests(unittest.TestCase):
         bare_prev = types.SimpleNamespace(opening_balance=7.0)
         self.assertEqual(excel_import._month_record_opening({'month_opening': 0.0}, bare_prev), 7.0)
 
+
+    def test_october_roster_keeps_both_serial_31_students_and_flags_prepaid(self):
+        parsed = self.parsed['2026-10']
+        names = [r['name'] for r in parsed['students'] if r.get('active')]
+        self.assertEqual(len(names), 86)
+        self.assertIn('youssef alaa', names)
+        self.assertIn('alya M', names)
+        self.assertEqual(sum(1 for r in parsed['students'] if r.get('serial_conflict')), 1)
+        self.assertTrue(any('رقم تسلسلي مكرر' in w for w in parsed['warnings']))
+        active = [r for r in parsed['students'] if r.get('active')]
+        # يُعدّ على القائمة لا على قاموس بالأسماء: «fares» طالبان مختلفان في KG3
+        self.assertEqual(sum(1 for r in active if excel_import._student_paid_flag(r)), 80)
+        self.assertEqual(sum(1 for r in active if not excel_import._student_paid_flag(r)), 6)
+        by_name = {r['name']: r for r in active}
+        self.assertTrue(excel_import._student_paid_flag(by_name['alya']))          # دفع سنة بلا دفعة في أكتوبر
+        self.assertTrue(excel_import._student_paid_flag(by_name['youssef alaa']))  # شهر مقدم
+        self.assertEqual(sum(1 for r in active if r['name'] == 'fares'), 2)
 
 if __name__ == '__main__':
     unittest.main()

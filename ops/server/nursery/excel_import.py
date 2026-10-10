@@ -1119,8 +1119,14 @@ def _parse_records(files, target_ym):
                         row_count += 1
                     elif any(value not in (None, '') for value in spec_row):
                         warnings.append('تم تجاهل صف غير مكتمل في %s.' % source)
+    merged_students = _merge_records(students, 'student')
+    for record in merged_students:
+        if record.get('serial_conflict'):
+            warnings.append('رقم تسلسلي مكرر في %s: الطالب %s يحمل نفس رقم طالب آخر في نفس الفصل '
+                            '(تم إبقاؤهما طالبين منفصلين — صحّحي الرقم في الشيت).'
+                            % (record.get('source') or '', record.get('name') or ''))
     return {
-        'students': _merge_records(students, 'student'),
+        'students': merged_students,
         'entries': _merge_records(entries, 'entry'),
         'summary': summary,
         'warnings': warnings,
@@ -1235,12 +1241,38 @@ def _merge_student_records(records):
             key = 'class-serial:%s:%s' % (class_name, serial)
         else:
             key = 'class-name:%s:%s' % (class_name, name)
+        if key in merged and serial is not None and name \
+                and _student_excel_name_key(merged[key].get('name')) not in ('', name):
+            # نفس الفصل ونفس الرقم التسلسلي لاسمين مختلفين = خطأ إدخال في الشيت
+            # (أكتوبر 2026: «youssef alaa» و«alya M» الاثنان 31 في KG2). الدمج هنا كان
+            # بيبلع طالبًا كاملًا بصمت؛ نبقيهما طالبين ونعلّم الصف ليُبلَّغ كتحذير.
+            suffix = 2
+            while '%s#%s' % (key, suffix) in merged:
+                suffix += 1
+            key = '%s#%s' % (key, suffix)
+            record = dict(record, serial_conflict=True)
         if key not in merged:
             merged[key] = dict(record)
             order.append(key)
         else:
             _merge_student_values(merged[key], record)
     return [merged[key] for key in order]
+
+
+def _student_paid_flag(record):
+    """علامة «مدفوع» على سجل الطالب في الموقع.
+
+    عمود «Payment status» في الشيت هو المرجع لو موجود: paid = الطالب مغطّى هذا
+    الشهر ولو من دفعة سابقة (ترم / دفع سنة / شهر مقدم) من غير دفعة في الشهر
+    نفسه؛ unpaid = غير مغطّى. ولو العمود غير موجود نرجع للقاعدة القديمة:
+    دفعة الشهر > 0.
+    """
+    status = _norm(record.get('status'))
+    if status in ('paid', 'مدفوع', 'مدفوعه'):
+        return True
+    if status in ('unpaid', 'not paid', 'overdue', 'غير مدفوع', 'غير مدفوعه', 'متاخر'):
+        return False
+    return float(record.get('paid') or 0.0) > 0
 
 
 def _field_exists(model, name):
@@ -2089,7 +2121,7 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
                 'remark': record.get('note') or False,
                 'fees': float(record.get('fees') or 0.0),
                 'books_fees': float(record.get('books') or 0.0),
-                'paid': float(record.get('paid') or 0.0) > 0,
+                'paid': _student_paid_flag(record),
                 'paid_at': record.get('paid_date') or False,
                 'paid_until': record.get('paid_until') or False,
                 'payment_method': (_method(record.get('method'))
