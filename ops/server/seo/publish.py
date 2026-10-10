@@ -2032,12 +2032,19 @@ a.seo-card:hover b{color:var(--clay-600)}
                 d = json.loads(m.group(1))
             except ValueError:
                 return m.group(0)
-            if not isinstance(d, dict) or d.get('@type') != 'LocalBusiness' or '@id' in d:
+            if not isinstance(d, dict) or not isinstance(d.get('@graph'), list):
                 return m.group(0)
-            d = {'@context': d.get('@context', 'https://schema.org'), '@type': ['ChildCare', 'Preschool'],
-                 '@id': SITE + '/#business', **{k: v for k, v in d.items() if k not in ('@context', '@type')}}
-            d['url'] = SITE + '/'
-            d['mainEntityOfPage'] = SITE + '/wa/'
+            changed = False
+            for i, it in enumerate(d['@graph']):
+                if isinstance(it, dict) and it.get('@type') == 'LocalBusiness' and '@id' not in it:
+                    node = {'@type': ['ChildCare', 'Preschool'], '@id': SITE + '/#business',
+                            **{k: v for k, v in it.items() if k != '@type'}}
+                    node['url'] = SITE + '/'
+                    node['mainEntityOfPage'] = SITE + '/wa/'
+                    d['@graph'][i] = node
+                    changed = True
+            if not changed:
+                return m.group(0)
             return '<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) + '</script>'
         return re.sub(r'<script type="application/ld\+json">(.*?)</script>', fix, text, flags=re.S)
     _patch_file(ROOT/'wa'/'index.html', unify_wa_business)
