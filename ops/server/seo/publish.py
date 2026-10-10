@@ -1439,6 +1439,29 @@ def repair_static_site():
             }
             frag = ',\n  '.join(f'"{k}": {json.dumps(v, ensure_ascii=False)}' for k, v in extra.items())
             text = re.sub(r'("hasMap": "[^"]*",)', lambda m: m.group(1) + '\n  ' + frag + ',', text, count=1)
+        # Entity signals AI assistants key on: the names parents and
+        # assistants actually use for us (an English answer that says
+        # "Kawkab Al-Tifl Al-Hurr" should resolve to this business), and
+        # what the business is known for.
+        if '"knowsAbout"' not in text and '"hasMap"' in text:
+            if english:
+                names = ['Kawkab Al-Tifl Al-Hurr', 'Kawkab Al-Tifl', 'Kawkab Al Tifl Al Hur', 'روضة كوكب الطفل الحر', 'كوكب الطفل الحر']
+                knows = ['Montessori education', 'Early childhood education (ages 2 to 5)', 'Bilingual Arabic and English nursery',
+                         'Quran for young children', 'Nursery and kindergarten in Al Faisaliyah, Jeddah']
+            else:
+                names = ['كوكب الطفل الحر', 'روضة كوكب الطفل', 'Kawkab Al-Tifl Al-Hurr', 'Kawkab Al-Tifl']
+                knows = ['منهج مونتيسوري', 'تعليم الطفولة المبكرة من سنتين إلى ٥ سنوات', 'حضانة ثنائية اللغة عربي وإنجليزي',
+                         'تعليم القرآن للأطفال', 'حضانة وروضة في حي الفيصلية بجدة']
+            frag = f'"knowsAbout": {json.dumps(knows, ensure_ascii=False)}'
+            text = re.sub(r'("hasMap": "[^"]*",)', lambda m: m.group(1) + '\n  ' + frag + ',', text, count=1)
+            m = re.search(r'"alternateName": (\[[^\]]*\])', text)
+            if m:
+                try:
+                    cur = json.loads(m.group(1))
+                    cur += [n for n in names if n not in cur]
+                    text = text[:m.start(1)] + json.dumps(cur, ensure_ascii=False) + text[m.end(1):]
+                except ValueError:
+                    pass
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
