@@ -2011,6 +2011,10 @@ a.seo-card:hover b{color:var(--clay-600)}
     _patch_file(css, patch_css)
 
     def patch_privacy(text, english=False):
+        # The privacy pages listed a different WhatsApp number (+966 54 306
+        # 8147) from the one on every other page, in the schema and in
+        # llms.txt (+966 54 155 8173): one business, one number.
+        text = text.replace('+966 54 306 8147', '+966 54 155 8173')
         if 'hreflang="ar"' in text:
             return text
         canonical = re.search(r'<link rel="canonical" href="([^"]+)"\s*/?>', text, re.I)
