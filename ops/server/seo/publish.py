@@ -1010,12 +1010,13 @@ LLMS_QUICK_ANSWERS = [
      'A prepared environment, qualified teachers, practical-life, sensorial, language and maths work, CCTV cameras, a daily parent app, more than 10 years of experience, and a 4.7/5 rating on Google Maps.'),
 ]
 
-def write_llms_txt():
+def write_llms_txt(q=None):
     """Regenerate /llms.txt from the facts in facts.py so AI assistants read
     the same stage names, ages and claims as the rest of the site."""
     lines = [
         '# روضة كوكب الطفل الحر — جدة | Kawkab Al-Tifl Al-Hurr Kindergarten, Jeddah',
         '',
+        f'> آخر تحديث / Last updated: {datetime.date.today().isoformat()}',
         '> روضة كوكب الطفل الحر حضانة وروضة بمنهج مونتيسوري في حي الفيصلية، شارع محمد عبدالكريم، جدة. '
         'تستقبل الأطفال من سنتين إلى ٥ سنوات، وتجمع بين منهج مونتيسوري الأصيل واللغة العربية الفصحى والإنجليزية وتعليم القرآن. '
         'التقييم 4.7 من 5 على خرائط جوجل. الدوام: الأحد إلى الخميس، من الثامنة صباحًا حتى الواحدة ظهرًا.',
@@ -1052,6 +1053,19 @@ def write_llms_txt():
           if (ROOT/'en'/'blog'/slug/'index.html').exists()]
     if en:
         lines += ['', '## English guides'] + en
+    # The five newest indexable guides: a freshness cue, and the pages an
+    # assistant has least likely seen yet.
+    latest = []
+    for a in sorted(q or [], key=lambda x: str(x.get('published') or ''), reverse=True):
+        slug = a.get('slug', '')
+        if (not a.get('published') or is_noindex(a) or slug in REDIRECTED
+                or slug in CANONICAL_TO or not (ROOT/'blog'/slug/'index.html').exists()):
+            continue
+        latest.append(f"- [{(a.get('seoTitle') or a.get('title') or slug).strip()}]({SITE}/blog/{slug}/) — {str(a.get('published'))[:10]}")
+        if len(latest) >= 5:
+            break
+    if latest:
+        lines += ['', '## أحدث المقالات / Latest guides'] + latest
     lines += ['', '## إجابات مباشرة / Quick answers']
     lines += [f'- **{qq}** {aa}' for qq, aa in LLMS_QUICK_ANSWERS]
     lines += [
@@ -1762,7 +1776,7 @@ def main():
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     repair_static_site()
     repair_published_articles(q, today)
-    write_llms_txt()
+    write_llms_txt(q)
     write_llms_full(q)
     prune_noindex_from_sitemap(q)
     announce_rewrites(q, today)
