@@ -1145,8 +1145,12 @@ def seo_healthcheck():
         add("خريطة الموقع","fail",f"HTTP {st}")
     # 3) robots
     st,b=_get("/robots.txt")
-    add("robots.txt","ok" if (st==200 and "Sitemap:" in b and "/blog/" in b) else "warn",
-        "يسمح بالمدوّنة ويشير للخريطة" if st==200 else f"HTTP {st}")
+    # robots.txt is now «User-agent: * / Allow: /» + Sitemap (the AI-crawler
+    # unblock): it no longer names /blog/, so ok means: served, points at the
+    # sitemap, and has no site-wide Disallow.
+    robots_ok = st==200 and "Sitemap:" in b and not re.search(r'(?im)^disallow:\s*/\s*$', b)
+    add("robots.txt","ok" if robots_ok else "warn",
+        "يسمح بالمدوّنة ويشير للخريطة" if robots_ok else (f"HTTP {st}" if st!=200 else "تحقّق: Disallow عام أو بلا Sitemap"))
     # 4) فهرس المدوّنة + آخر مقالين منشورين
     st,_=_get("/blog/")
     add("فهرس المدوّنة","ok" if st==200 else "fail",f"HTTP {st}")
@@ -2234,7 +2238,10 @@ def refresh_index_cards(q):
         slug = a.get('slug')
         if not a.get('published') or not slug or not a.get('title'):
             continue
-        pat = re.compile(r'(<a class="bcard" href="/blog/%s/">.*?<h3 class="bcard__title">)(.*?)(</h3><p class="bcard__desc">)(.*?)(</p>)' % re.escape(slug), re.S)
+        # Text-only groups ([^<]*): a card with different markup is skipped
+        # instead of letting the match run across neighbouring cards and
+        # sections (the first version did exactly that in a dry run).
+        pat = re.compile(r'(<a class="bcard" href="/blog/%s/"><span class="bcard__cat">[^<]*</span><h3 class="bcard__title">)([^<]*)(</h3><p class="bcard__desc">)([^<]*)(</p>)' % re.escape(slug))
         m = pat.search(new)
         if not m:
             continue
@@ -2242,9 +2249,13 @@ def refresh_index_cards(q):
         if m.group(2) != t or m.group(4) != d:
             new = new[:m.start()] + m.group(1) + t + m.group(3) + d + m.group(5) + new[m.end():]
             n += 1
-    if n:
+    # Never write a structurally different page: same number of cards and
+    # sections, or leave the index untouched.
+    if n and new.count('class="bcard"') == idx.count('class="bcard"') and new.count('<section') == idx.count('<section'):
         idxp.write_text(new, encoding='utf-8')
         log(f'blog index: {n} card(s) refreshed')
+    elif n:
+        log('blog index refresh skipped: card or section count would change')
 
 def repair_published_articles(q, today):
     titles={x.get('slug',''):{'title':x.get('title',''),'cat':x.get('cat','dev'),'pub':bool(x.get('published')),'rw':x.get('rewritten')} for x in q}
