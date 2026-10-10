@@ -2024,6 +2024,23 @@ a.seo-card:hover b{color:var(--clay-600)}
             text = re.sub(r'<a class="bcard" href="/blog/%s/">.*?</a>' % re.escape(old), '', text, flags=re.S)
         return text
     _patch_file(ROOT/'blog'/'index.html', fix_redirect_links)
+    # /wa/ declared its own LocalBusiness (url /wa/, no @id): a second,
+    # thinner entity for the same nursery. Fold it into the business node.
+    def unify_wa_business(text):
+        def fix(m):
+            try:
+                d = json.loads(m.group(1))
+            except ValueError:
+                return m.group(0)
+            if not isinstance(d, dict) or d.get('@type') != 'LocalBusiness' or '@id' in d:
+                return m.group(0)
+            d = {'@context': d.get('@context', 'https://schema.org'), '@type': ['ChildCare', 'Preschool'],
+                 '@id': SITE + '/#business', **{k: v for k, v in d.items() if k not in ('@context', '@type')}}
+            d['url'] = SITE + '/'
+            d['mainEntityOfPage'] = SITE + '/wa/'
+            return '<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) + '</script>'
+        return re.sub(r'<script type="application/ld\+json">(.*?)</script>', fix, text, flags=re.S)
+    _patch_file(ROOT/'wa'/'index.html', unify_wa_business)
     _feed_link = '<link rel="alternate" type="application/rss+xml" title="مدوّنة روضة كوكب الطفل الحر" href="/blog/feed.xml"/>'
     for _p in (ROOT/'blog'/'index.html', ROOT/'index.html'):
         _patch_file(_p, lambda t: t if 'application/rss+xml' in t else t.replace('</head>', _feed_link + '\n</head>', 1))
