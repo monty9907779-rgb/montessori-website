@@ -975,6 +975,9 @@ LLMS_GUIDES = [
     ('jeddah-nurseries-districts-guide', 'دليل حضانات جدة بالأحياء — كيف تختارين حضانة قريبة من بيتك'),
     ('nursery-prices-jeddah', 'أسعار الحضانات في جدة — كيف تُحسب الرسوم وما الذي يشمله الاشتراك'),
     ('nursery-registration-documents-jeddah', 'أوراق التسجيل في الحضانة بجدة وخطواته'),
+    ('quran-nursery-jeddah-montessori', 'تعليم القرآن للأطفال في الحضانة مع العربية والإنجليزية — ما يناسب كل عمر'),
+    ('bilingual-nursery-jeddah', 'حضانة ثنائية اللغة عربي وإنجليزي في جدة'),
+    ('nursery-with-cctv-cameras-jeddah', 'كاميرات المراقبة في الحضانة — ما الذي يطمئنك فعلاً'),
 ]
 
 def write_llms_txt():
