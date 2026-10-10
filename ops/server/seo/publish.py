@@ -640,6 +640,9 @@ INLINE_LINKS = [
     ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
     ('أنشطة الرياضيات', 'montessori-math-activities-preschool-jeddah'),
     ('أنشطة اللغة', 'montessori-language-activities-arabic-english'),
+    ('مواد مونتيسوري', 'montessori-activities-at-home'),
+    ('معلمة مونتيسوري', 'qualified-teachers-nursery-jeddah'),
+    ('أخطاء شائعة عند البحث', 'how-to-choose-nursery-jeddah'),
     ('حي الفيصلية', '/'),
     ('الأسئلة الشائعة', 'nursery-faq-jeddah-parents'),
     ('منهج مونتيسوري', 'what-is-montessori-method'),
@@ -1607,8 +1610,16 @@ a.seo-card:hover b{color:var(--clay-600)}
         text = text.replace('<title>Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah</title>',
             "<title>Montessori Nursery in Jeddah: A Parent's Guide | Kawkab Al-Tifl</title>")
         text = text.replace('Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah', 'Montessori Nursery in Jeddah')
-        text = text.replace('<title>Blog | Kawkab Al-Tifl Al-Hurr Kindergarten &mdash; Parent Guides</title>',
-            '<title>Nursery, Preschool &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>')
+        for old in ('<title>Blog | Kawkab Al-Tifl Al-Hurr Kindergarten &mdash; Parent Guides</title>',
+                    '<title>Nursery, Preschool &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>'):
+            text = text.replace(old, '<title>Nursery &amp; Montessori Guides for Jeddah Parents | Kawkab Al-Tifl</title>')
+        # English pages carry no hreflang at all; give each a self-referencing
+        # en + x-default next to its canonical (there is no Arabic twin).
+        if 'hreflang=' not in text:
+            m = re.search(r'<link rel="canonical" href="([^"]+)"\s*/?>', text)
+            if m:
+                tags = f'<link rel="alternate" hreflang="en" href="{m.group(1)}"/><link rel="alternate" hreflang="x-default" href="{m.group(1)}"/>'
+                text = text[:m.end()] + tags + text[m.end():]
         return en_facts(text)
     # English pages were written outside the facts gate. Bring them in line:
     # no review count (facts.py: the number changes), and the official stage
