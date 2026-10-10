@@ -1582,6 +1582,14 @@ def repair_static_site():
                     text = text[:m.start(1)] + json.dumps(cur, ensure_ascii=False) + text[m.end(1):]
                 except ValueError:
                     pass
+        # Business description an assistant can quote, and the same social
+        # profiles on both homepages (the English one listed TikTok only).
+        text = text.replace('"description": "حضانة وروضة كوكب الطفل الحر في جدة — حي الفيصلية. رعاية وتعليم للأطفال من عمر سنتين إلى ٥ سنوات."',
+            '"description": "روضة كوكب الطفل الحر: حضانة وروضة بمنهج مونتيسوري في حي الفيصلية، شارع محمد عبدالكريم، جدة، للأطفال من سنتين إلى ٥ سنوات (ما قبل الروضة، المستوى الأول، المستوى الثاني)، باللغة العربية الفصحى والإنجليزية وتعليم القرآن، بخبرة أكثر من ١٠ سنوات. الدوام من الأحد إلى الخميس 08:00–13:00."', 1)
+        text = text.replace('"description": "Kawkab Al-Tifl Al-Hurr nursery and kindergarten in Jeddah — Al Faisaliyyah. Care and education for children aged 2 to 5."',
+            '"description": "Kawkab Al-Tifl Al-Hurr: a Montessori nursery and kindergarten in Al Faisaliyah (Mohammed Abdulkarim St), Jeddah, for children aged 2 to 5 (Pre-KG, KG1, KG2), teaching in Modern Standard Arabic and English with Quran, with more than 10 years of experience. Open Sunday to Thursday, 08:00 to 13:00."', 1)
+        text = text.replace('"sameAs": ["https://www.tiktok.com/@montessori_nursery23"]',
+            '"sameAs": ["https://www.tiktok.com/@montessori_nursery23", "https://www.instagram.com/montessori_nursery/", "https://www.facebook.com/p/Montessori-nursery-100063063920027/"]', 1)
         # The long accent line must be allowed to wrap on narrow screens.
         text = text.replace(
             '.hero h1 .em{color:var(--clay);position:relative;white-space:nowrap}',
