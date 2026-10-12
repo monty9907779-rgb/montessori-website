@@ -1492,11 +1492,21 @@ def _entry_preview(record, month, kind, env):
             'status_label': 'تحديث' if entry else 'جديد', 'changes': changes}, False
 
 
+# Warnings the reader emits about things it already handled (a tab for
+# another month, an incomplete row, two children sharing a serial). They are
+# shown for review but never disable the approval: nothing on the site can
+# resolve them, only the sheet can.
+NOTICE_PREFIXES = ('تم تجاهل', 'رقم تسلسلي مكرر')
+
+
+def _is_notice(warning):
+    return any(str(warning or '').startswith(prefix) for prefix in NOTICE_PREFIXES)
+
+
 def _preview(parsed, target_ym, env):
     month = _month(env, target_ym)
     warnings = list(parsed['warnings'])
-    blocking = [warning for warning in warnings
-                if not warning.startswith('تم تجاهل شيت')]
+    blocking = [warning for warning in warnings if not _is_notice(warning)]
     if _import_blocked(month):
         blocking.append('الشهر %s مقفول، لذلك تم منع التحديث.' % _month_label(target_ym))
     changes = []
