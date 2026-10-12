@@ -326,9 +326,8 @@ function render(){
           '<div class="legend"><span><i class="chip-forest6"></i>سدّدوا '+(Number(st.paid)||0)+'</span>'+
           '<span><i class="chip-line"></i>متبقّي '+Math.max(0,(Number(st.total)||0)-(Number(st.paid)||0))+'</span></div>')+
 
-        card('col-2','chart','إعلانات جوجل',
-          ((D.ads&&D.ads.configured)?((D.ads.problems||[]).length?'يحتاج انتباه':(D.ads.partial?'أرقام فقط':'سليم')):'غير مربوط'),
-          adsCard(D.ads))+
+        card('col-2','clock','حضور المدرّسات وخصومات الشهر','هذا الشهر',
+          staffDeductionsTable(sf))+
 
         card('col-2','alert','متأخرو السداد','',
           overdueTable(st.overdue||[]))+
@@ -341,8 +340,6 @@ function render(){
 
         attCard()+
 
-        card('col-2','clock','خصومات الموظفين','هذا الشهر',
-          deductionsTable(sf.deductions||[]))+
 
       '</div>'+
     '</main>'+
@@ -400,6 +397,45 @@ function excelLedgerCard(x){
     h+='<tr><td><b>'+NS.esc(r[0])+'</b></td><td class="tabnum">'+value+'</td></tr>';
   });
   return h+'</tbody></table></div></section>';
+}
+
+/* ================= حضور المدرّسات وخصومات الشهر =================
+   صف لكل مدرّسة (المعفى مستبعد): حالة اليوم من sf.today، وعدّادات الشهر
+   والمبلغ من sf.deductions (نفس اسم الموظف في الاثنين). بلا style= (CSP). */
+function riyadhClock(){
+  try{ return new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Riyadh',hour12:false}).slice(0,5); }
+  catch(e){ return '23:59'; }
+}
+function staffDeductionsTable(sf){
+  sf=sf||{};
+  var byName={};
+  (sf.deductions||[]).forEach(function(d){ byName[d.name]=d; });
+  var dayDone=riyadhClock()>='13:30';
+  var rows=(sf.today||[]).filter(function(r){ return !r.exempt; }).map(function(r){
+    var m=byName[r.name]||{};
+    var early=(r.ded||[]).some(function(x){ return x.dtype==='early'; });
+    var today = early ? '<span class="tag tag--warn">انصراف مبكر</span>'
+      : !r.check_in ? (dayDone?'<span class="tag tag--none">لم تحضر</span>':'<span class="tag tag--soft">لم تحضر بعد</span>')
+      : r.late_min>0 ? '<span class="tag tag--warn">متأخّرة '+NS.esc(r.late_min)+' د</span>'
+      : '<span class="tag tag--ok">في الموعد</span>';
+    var parts=[];
+    if(m.absences) parts.push('غياب '+m.absences);
+    if(m.lates) parts.push('تأخير '+m.lates);
+    if(m.earlies) parts.push('مبكر '+m.earlies);
+    return {name:r.name, today:today, month:parts.length?parts.join(' · '):'—', amount:Number(m.amount)||0};
+  });
+  if(!rows.length) return NS.empty('users','لا توجد مدرّسات مسجّلات','ستظهر هنا حالة الحضور وخصومات الشهر.');
+  rows.sort(function(a,b){ return (b.amount-a.amount)||a.name.localeCompare(b.name); });
+  var total=rows.reduce(function(sum,r){ return sum+r.amount; },0);
+  var h='<div class="table-wrap"><table class="table att-summary"><thead><tr>'+
+    '<th>المدرّسة</th><th>اليوم</th><th>الشهر</th><th>الخصم المتوقع</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    h+='<tr><td class="od-name">'+NS.esc(r.name)+'</td><td>'+r.today+'</td>'+
+       '<td class="tabnum">'+NS.esc(r.month)+'</td>'+
+       '<td class="tabnum">'+(r.amount?'<span class="tag tag--warn">'+NS.esc(NS.riyal(r.amount))+'</span>':'0')+'</td></tr>';
+  });
+  h+='<tr><td class="od-name"><b>الإجمالي</b></td><td></td><td></td><td class="tabnum"><b>'+NS.esc(NS.riyal(total))+'</b></td></tr>';
+  return h+'</tbody></table></div>';
 }
 
 /* ================= إعلانات جوجل ================= */
