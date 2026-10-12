@@ -598,6 +598,8 @@ function absentList(at){
 }
 
 function staffTable(rows){
+  // المعفى من تسجيل الحضور ما يظهرش في جدول اليوم (قرار المالك 12/10/2026).
+  rows=(rows||[]).filter(function(r){ return !r.exempt; });
   if(!rows.length) return NS.empty('users','لا يوجد موظفون اليوم','ستظهر هنا سجلّات حضور فريق العمل.');
   var h='<div class="table-wrap"><table class="table staff-today"><thead><tr>'+
     '<th>الموظف</th><th>حضور</th><th>انصراف</th><th>الحالة</th></tr></thead><tbody>';
