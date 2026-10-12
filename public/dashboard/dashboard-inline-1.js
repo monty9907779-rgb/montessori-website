@@ -29,7 +29,8 @@ function fRows(){
 }
 function finSums(rows){
   var s={income:0,student_income:0,extra_income:0,salaries:0,other:0,net:0,
-    cash:0,transfer:0,books:0,remaining_total:0,on_hand_randa:0,randa_on_hand:0,delta:0};
+    cash:0,transfer:0,books:0,remaining_total:0,on_hand_randa:0,randa_on_hand:0,delta:0,
+    opening_balance:0,cash_after_salaries:0};
   rows.forEach(function(r){
     var inc=Number(r.income)||0, stu=(r.student_income!=null?Number(r.student_income):inc)||0;
     s.income+=inc; s.student_income+=stu; s.extra_income+=(r.extra_income!=null?Number(r.extra_income):(inc-stu))||0;
@@ -37,7 +38,10 @@ function finSums(rows){
     s.cash+=(r.cash||0); s.transfer+=(r.transfer||0); s.books+=(r.books||0);
     s.remaining_total+=(r.remaining_total||0);
     s.on_hand_randa+=(r.on_hand_randa||0); s.randa_on_hand+=(r.randa_on_hand||0); s.delta+=(r.delta||0);
+    s.cash_after_salaries+=(r.cash_after_salaries||0);
   });
+  /* الرصيد الافتتاحي رصيد نقطة زمنية مش تدفّق: افتتاحي الفترة = افتتاحي أول شهر فيها (مش مجموع) */
+  s.opening_balance=rows.length?(Number(rows[0].opening_balance)||0):0;
   s.net=s.income-s.salaries-s.other;
   return s;
 }
@@ -178,6 +182,7 @@ function render(){
 
   var absent=(at.absent_names||[]).length;
   var markedTxt=at.marked?'مُسجَّل':'لم يُسجَّل بعد';
+  var unpaid=Math.max(0,(Number(st.total)||0)-(Number(st.paid)||0));
 
   var h=NS.appbar({sub:'لوحة التحكم', nav:NS.adminNav('dashboard'), right:right})+
     '<main class="app-main">'+
@@ -189,19 +194,33 @@ function render(){
       '<div id="stale"></div>'+
       periodBar()+
 
-      /* ---- KPI row (financial KPIs follow the selected period) ---- */
-      '<div class="kpis">'+
-        stat('is-forest','wallet','إجمالي الإيرادات',NS.riyal(F.income),'الطلبة: '+NS.riyal(F.student_income)+' · دخل آخر: '+NS.riyal(F.extra_income),'/accounts/#source-income')+
-        stat('is-clay','users','المرتبات',NS.riyal(F.salaries),ptxt,'/accounts/#source-salary')+
-        stat('is-danger','wallet','مصاريف أخرى',NS.riyal(F.other),ptxt,'/accounts/#source-expense')+
-        stat(F.net>=0?'is-forest':'is-danger','chart','صافي الشيت (ليس رصيداً)',NS.riyal(F.net),ptxt,'/accounts/#source-income')+
-        stat('is-forest','wallet','Randa Cash',NS.riyal(F.cash),ptxt,'/accounts/#source-fees')+
-        stat('is-clay','wallet','تحويل بنكي',NS.riyal(F.transfer),ptxt,'/accounts/#source-fees')+
+      /* ---- كروت المالية: 3 أعمدة × 5 كروت بترتيب شيت راندا (الأرقام بتتبع الفترة المختارة).
+              الـDOM بترتيب الأعمدة (العمود الأول كامل ثم الثاني ثم الثالث) و layoutFinKpis() بتخلّي الـgrid يتملي عمودياً ---- */
+      '<div class="kpis kpis--fin" id="fin-kpis">'+
+        /* العمود الأول */
+        stat('is-forest','wallet','الرصيد الافتتاحي',NS.riyal(F.opening_balance),ptxt,'/accounts/#source-income')+
+        stat('is-forest','wallet','إجمالي المحصّل',NS.riyal(F.income),'الطلبة: '+NS.riyal(F.student_income)+' · دخل آخر: '+NS.riyal(F.extra_income),'/accounts/#source-income')+
+        stat('is-forest','wallet','كاش راندا',NS.riyal(F.cash),ptxt,'/accounts/#source-fees')+
+        stat('is-clay','wallet','التحويل البنكي',NS.riyal(F.transfer),ptxt,'/accounts/#source-fees')+
+        stat('is-danger','wallet','المصروفات',NS.riyal(F.other),ptxt,'/accounts/#source-expense')+
+        /* العمود الثاني */
+        stat('is-forest','chart','رصيد راندا',NS.riyal(F.on_hand_randa),ptxt,'/accounts/#source-expense')+
+        stat('is-clay','users','الرواتب المتوقعة',NS.riyal(F.salaries),ptxt,'/accounts/#source-salary')+
+        stat(F.cash_after_salaries>=0?'is-forest':'is-danger','chart','صافي راندا بعد الرواتب',NS.riyal(F.cash_after_salaries),ptxt,'/accounts/#source-salary')+
+        /* لا توجد قيمة «رواتب مصروفة» في /api/dashboard (الشيت بيدّي المتوقع بس) — صفر لحد ما تتوفّر */
+        stat('is-clay','users','الرواتب المصروفة',NS.riyal(0),'غير متاح في البيانات بعد','/salaries/')+
+        stat(F.net>=0?'is-forest':'is-danger','chart','الصافي',NS.riyal(F.net),ptxt,'/accounts/#source-income')+
+        /* العمود الثالث */
+        stat('is-forest','users','عدد الطلاب',NS.fmtMoney(st.total),'طالب مسجّل','/students/')+
+        stat('is-forest','users','الدافعين',NS.fmtMoney(Number(st.paid)||0),'سدّدوا الرسوم','/students/')+
+        stat(unpaid?'is-amber':'is-forest','alert','غير الدافعين',NS.fmtMoney(unpaid),unpaid?'بحاجة لمتابعة':'الجميع سدّدوا','/receivables/')+
+        stat('is-forest','wallet','رسوم الكتب',NS.riyal(F.books),ptxt,'/accounts/#source-fees')+
         stat(F.remaining_total>0?'is-danger':'is-forest','alert','الباقي',NS.riyal(F.remaining_total),ptxt,'/accounts/#source-fees')+
-        stat('is-forest','chart','On hand Randa / الإغلاق النقدي',NS.riyal(F.on_hand_randa),ptxt,'/accounts/#source-expense')+
-        stat(F.delta>=0?'is-forest':'is-danger','alert','Delta الشيت (تدقيق فقط)',NS.riyal(F.delta),ptxt,'/accounts/#source-salary')+
+      '</div>'+
+
+      /* ---- مؤشرات التشغيل اليومية (غير مالية) ---- */
+      '<div class="kpis">'+
         stat('is-forest','sparkle','دخل اليوم',NS.riyal(m.income_today),(Number(m.count_today)||0)+' دفعة اليوم','/accounts/#source-fees')+
-        stat('is-forest','users','الطلاب',NS.fmtMoney(st.total),(Number(st.paid)||0)+' سدّدوا الرسوم','/students/')+
         stat(st.overdue_count?'is-amber':'is-forest','alert','متأخرو السداد',NS.fmtMoney(st.overdue_count),st.overdue_count?'بحاجة لمتابعة':'لا يوجد متأخرون','/receivables/')+
         stat('is-clay','pin','حضور اليوم',(Number(at.present)||0)+' <small>/ '+(Number(st.total)||0)+'</small>',absent?(absent+' غائب · '+markedTxt):markedTxt,'/classes/')+
         stat(sf.late_today?'is-amber':'is-forest','clock','تأخّر الموظفين',NS.fmtMoney(sf.late_today),sf.late_today?'اليوم':'الجميع في الموعد','/salaries/')+
@@ -250,6 +269,7 @@ function render(){
     '<footer class="dash-footer">روضة كوكب الطفل الحر · جدة</footer>';
 
   app.innerHTML=h;
+  layoutFinKpis();
   NS.wireLogout('mt');
   wirePeriod();
   wireAttendance();
@@ -266,6 +286,18 @@ function render(){
   if(sheetBtn&&NS.excelSync) sheetBtn.addEventListener('click',function(){ NS.excelSync.openSheet(TOKEN); });
   window.__refreshDashboard=function(){ fetchData().then(function(d){ if(d&&d.ok){ D=d; render(); } }); };
 }
+
+/* ---------- تخطيط كروت المالية: 3 أعمدة × 5 صفوف بتعبئة عمودية ----------
+   بنضبط الـgrid عبر CSSOM بعد الرسم (مش style="" جوّه innerHTML — CSP style-src-attr بتحجبه).
+   على الشاشات الضيقة (≤680px) بنسيب قواعد dashboard.css (عمودين/عمود) والـDOM أصلاً بترتيب الأعمدة. */
+function layoutFinKpis(){
+  var g=document.getElementById('fin-kpis'); if(!g) return;
+  var wide=!(window.matchMedia&&window.matchMedia('(max-width:680px)').matches);
+  g.style.gridTemplateColumns=wide?'repeat(3,minmax(0,1fr))':'';
+  g.style.gridTemplateRows=wide?'repeat(5,auto)':'';
+  g.style.gridAutoFlow=wide?'column':'';
+}
+window.addEventListener('resize',layoutFinKpis);
 
 /* ---------- small builders ---------- */
 function stat(accent,icon,label,value,sub,href){
