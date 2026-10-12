@@ -88,7 +88,6 @@ ALIASES = {
     'name': ('student name', 'student', 'name', 'اسم الطالب', 'الاسم', 'اسم الطفل',
              'اسم المصروف', 'expense', 'expense name', 'البيان', 'teacher name'),
     'serial': ('serial', 'no', 'number', 'الرقم', 'رقم', 'رقم الطالب'),
-    'db_id': ('id', 'student id', 'studentid', 'معرف الطالب', 'كود الطالب'),
     'class_name': ('class', 'class name', 'الفصل', 'الصف', 'المستوى'),
     'joining_date': ('joining date', 'join date', 'تاريخ الالتحاق', 'تاريخ الانضمام'),
     'fees': ('agreed monthly fees', 'monthly fees', 'fees', 'monthly fee',
@@ -482,7 +481,7 @@ def _header_kind(headers):
     if entry_name_col is not None and amount_col is not None and date_col is not None:
         return 'expense'
     student_hint = any(_header_col(headers, ALIASES[key]) is not None
-                       for key in ('serial', 'db_id', 'class_name'))
+                       for key in ('serial', 'class_name'))
     if student_name_col is not None and student_hint:
         return 'student'
     return ''
@@ -562,7 +561,7 @@ def _table_specs(headers):
     student_name_index = _header_index(
         headers, ('student name', 'student', 'name', 'اسم الطالب', 'الاسم', 'اسم الطفل'))
     student_hint = any(_header_index(headers, ALIASES[key]) is not None
-                       for key in ('serial', 'db_id', 'class_name'))
+                       for key in ('serial', 'class_name'))
     # A salary/expense header row also carries "Teacher Name" and "Serial",
     # which look like a student table; never read staff rows as students.
     if main_kind == 'student' or (main_kind not in ('salary', 'expense')
@@ -863,7 +862,6 @@ def _student_record(headers, row, source, is_master, target_ym=None):
     paid_cell = None if is_master else val('paid')
     record = {
         'kind': 'student', 'name': name, 'source': source,
-        'db_id': _number(val('db_id', exact=True)),
         'serial': _number(val('serial', exact=True)),
         # Excel's student count is based on numbered rows. Rows without a
         # serial can still carry a payment, so keep them in the month ledger
@@ -900,7 +898,7 @@ def _student_record(headers, row, source, is_master, target_ym=None):
     if not record['fees'] and is_master:
         record['fees'] = _number(val('fees'))
     if not any(record.get(key) not in (None, '') for key in (
-        'db_id', 'serial', 'class_name', 'fees', 'paid', 'paid_until',
+        'serial', 'class_name', 'fees', 'paid', 'paid_until',
             'guardian_name', 'guardian_phone', 'remaining')):
         return None
     return record
@@ -1136,8 +1134,6 @@ def _parse_records(files, target_ym):
 
 def _record_key(record, kind):
     if kind == 'student':
-        if record.get('db_id') is not None:
-            return 'id:%s' % int(record['db_id'])
         if record.get('serial') is not None:
             return 'serial:%s' % int(record['serial'])
         return 'name:%s' % _norm(record.get('name'))
@@ -1147,18 +1143,7 @@ def _record_key(record, kind):
 
 def _merge_records(records, kind):
     if kind == 'student':
-        id_names = {}
-        for record in records:
-            if record.get('db_id') is not None:
-                identifier = int(record['db_id'])
-                id_names.setdefault(identifier, set()).add(_student_name_key(record.get('name')))
-        conflicting_ids = {identifier for identifier, names in id_names.items()
-                           if len(names) > 1}
-        records = [dict(record, db_id=None)
-                   if record.get('db_id') is not None
-                   and int(record['db_id']) in conflicting_ids else dict(record)
-                   for record in records]
-        return _merge_student_records(records)
+        return _merge_student_records([dict(record) for record in records])
     merged = {}
     order = []
     aliases = {}
@@ -1167,9 +1152,7 @@ def _merge_records(records, kind):
             key = _record_key(record, kind)
         else:
             identity_keys = []
-            if record.get('db_id') is not None:
-                identity_keys.append('id:%s' % int(record['db_id']))
-            elif record.get('serial') is not None and record.get('class_name'):
+            if record.get('serial') is not None and record.get('class_name'):
                 identity_keys.append('class-serial:%s:%s' % (
                     _norm(record['class_name']), int(record['serial'])))
             identity_keys.append('name:%s' % _norm(record.get('name')))
@@ -1217,15 +1200,7 @@ def _merge_student_values(previous, record):
 def _merge_student_records(records):
     merged = {}
     order = []
-    for record in (item for item in records if item.get('db_id') is not None):
-        key = 'id:%s' % int(record['db_id'])
-        if key not in merged:
-            merged[key] = dict(record)
-            order.append(key)
-        else:
-            _merge_student_values(merged[key], record)
-
-    for record in (item for item in records if item.get('db_id') is None):
+    for record in records:
         name = _student_excel_name_key(record.get('name'))
         class_name = _norm(record.get('class_name'))
         serial = (int(record['serial']) if record.get('serial') is not None else None)
@@ -1354,56 +1329,64 @@ def _class_choices(parsed, env):
 
 
 def _find_student(record, env):
+    """The workbook row is matched to a site student by name only.
+
+    There is no ID anywhere: the sheet and the site identify a student by
+    the name as written, narrowed by the class and the class-local serial
+    when several students share that name. A unique name follows the row
+    even when the class changed; a row whose name matches nothing (a new
+    child, or a corrected spelling) becomes a new student.
+    """
     Student = env['nursery.student'].sudo()
-    # The workbook is authoritative for names and the ID in that workbook is
-    # the only cross-system identity. Do not let a similar site name, or a
-    # reused class-local serial, redirect an Excel row to another student.
-    if record.get('db_id') is not None:
-        student = Student.browse(int(record['db_id']))
-        if student.exists() and _student_name_key(student.name) == _student_name_key(record.get('name')):
-            return student, ''
-        # ID ignored on purpose (unknown or belongs to another name): fall back to matching by name
     excel_name = _student_excel_name_key(record.get('name'))
-    if excel_name:
-        # Archived rows are searched too: unnumbered workbook rows are kept
-        # inactive on the site, and a re-import must find them instead of
-        # creating a duplicate. When several rows share a name, the single
-        # active one wins.
-        candidates = Student.with_context(active_test=False).search([])
-        exact = candidates.filtered(
-            lambda item: _student_excel_name_key(item.name) == excel_name)
+    if not excel_name:
+        return False, ''
+    # Archived rows are searched too: unnumbered workbook rows are kept
+    # inactive on the site, and a re-import must find them instead of
+    # creating a duplicate. When several rows share a name, the single
+    # active one wins.
+    candidates = Student.with_context(active_test=False).search([])
+    exact = candidates.filtered(
+        lambda item: _student_excel_name_key(item.name) == excel_name)
+    if not exact:
+        return False, ''
 
-        def single(items):
-            if len(items) == 1:
-                return items
-            if not items:
-                return False
-            active = items.filtered('active')
-            if len(active) == 1:
-                return active
-            if not active:
-                # Only archived copies exist (earlier re-imports duplicated
-                # unnumbered rows): reuse the newest copy instead of adding one.
-                return items.sorted(key=lambda item: item.id, reverse=True)[:1]
+    def single(items):
+        if len(items) == 1:
+            return items
+        if not items:
             return False
+        active = items.filtered('active')
+        if len(active) == 1:
+            return active
+        if not active:
+            # Only archived copies exist (earlier re-imports duplicated
+            # unnumbered rows): reuse the newest copy instead of adding one.
+            return items.sorted(key=lambda item: item.id, reverse=True)[:1]
+        return False
 
-        class_rec = _class_for(record.get('class_name'), env) if record.get('class_name') else False
-        if class_rec and _field_exists(Student, 'class_id'):
-            same_class = single(exact.filtered(lambda item: item.class_id.id == class_rec.id))
-            if same_class:
-                return same_class, ''
-        if record.get('serial') is not None and _field_exists(Student, 'serial'):
-            same_serial = single(exact.filtered(lambda item: item.serial == int(record['serial'])))
-            if same_serial:
-                return same_serial, ''
-        if record.get('serial') is None and not class_rec:
-            alone = single(exact)
-            if alone:
-                return alone, ''
-        if len(exact) > 1:
-            # Excel remains authoritative when its row has no ID. Do not pick
-            # one of several site records; let this row be created as-is.
-            return False, ''
+    serial = int(record['serial']) if record.get('serial') is not None else None
+    class_rec = _class_for(record.get('class_name'), env) if record.get('class_name') else False
+    has_class = bool(class_rec) and _field_exists(Student, 'class_id')
+    has_serial = serial is not None and _field_exists(Student, 'serial')
+    if has_class:
+        in_class = exact.filtered(lambda item: item.class_id.id == class_rec.id)
+        if has_serial:
+            found = single(in_class.filtered(lambda item: item.serial == serial))
+            if found:
+                return found, ''
+        found = single(in_class)
+        if found:
+            return found, ''
+    if has_serial:
+        found = single(exact.filtered(lambda item: item.serial == serial))
+        if found:
+            return found, ''
+    found = single(exact)
+    if found:
+        return found, ''
+    # Several active namesakes and nothing narrows them down: never guess,
+    # let the row be created as-is.
     return False, ''
 
 
@@ -1469,11 +1452,9 @@ def _student_preview(record, month, env):
         ('note', 'note'),
     ):
         value = record.get(source_field)
-        if field == 'serial' and record.get('db_id') is None:
-            continue
         if value not in (None, '') and _field_exists(student, field):
             _append_change(changes, field, getattr(student, field), value)
-    if class_rec and record.get('db_id') is not None and _field_exists(student, 'class_id'):
+    if class_rec and _field_exists(student, 'class_id'):
         _append_change(changes, 'class_name', student.class_id.name if student.class_id else '',
                        class_rec.name)
     if record.get('fees') is not None and fee:
@@ -1595,9 +1576,8 @@ def _open_month(env, ym):
 def _student_vals(record, class_rec, target_ym):
     vals = {}
     columns = record.get('source_columns') or set()
-    if record.get('db_id') is not None and record.get('name'):
-        # Keep the site's stored name aligned with the authoritative Excel row
-        # after the ID has safely identified the existing student.
+    if record.get('name'):
+        # The sheet is the authority for the name as written.
         vals['name'] = record['name']
     if record.get('serial') is not None:
         vals['serial'] = int(record['serial'])
@@ -1675,9 +1655,6 @@ def _upsert_student(record, month, env, target_ym):
                  if record.get('class_name') else False)
     vals = _student_vals(record, class_rec, target_ym)
     if student:
-        if record.get('db_id') is None:
-            vals.pop('serial', None)
-            vals.pop('class_id', None)
         if vals:
             student.write(vals)
     else:
@@ -2084,16 +2061,9 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
     skipped_unmatched = 0
 
     for record in parsed.get('students') or []:
-        student = False
-        db_id = record.get('db_id')
-        if db_id is not None:
-            student = Student.browse(int(db_id))
-            if not student.exists():
-                student = False
-        else:
-            # Rows without an ID were created by an earlier import; find them
-            # by name/class/serial so a re-import never duplicates them.
-            student, _unused = _find_student(record, env)
+        # Rows are matched by name/class/serial so a re-import never
+        # duplicates a student that an earlier import created.
+        student, _unused = _find_student(record, env)
         if student:
             updated += 1
         elif not roster:
@@ -2131,10 +2101,7 @@ def _replace_month_from_excel(parsed, target_ym, env, roster=True):
             # created instead of guessing one of the existing subgroups.
             class_rec = (_ensure_class_for(record.get('class_name'), env, target_ym)
                          if record.get('class_name') else False)
-            if class_rec:
-                vals['class_id'] = class_rec.id
-            elif not db_id:
-                vals['class_id'] = False
+            vals['class_id'] = class_rec.id if class_rec else False
             level = _student_record_level(record)
             if level in ('prekg', 'kg1', 'kg2', 'kg3'):
                 vals['level'] = level
@@ -2277,16 +2244,21 @@ def _student_export_workbook(env):
     if os.path.exists(template):
         book = load_workbook(template)
         sheet = book['الطلاب']
+        # Older templates carried a student ID column; the site no longer
+        # deals in IDs, so drop it wherever it sits.
+        for column in range(sheet.max_column, 0, -1):
+            if str(sheet.cell(1, column).value or '').strip().upper() == 'ID':
+                sheet.delete_cols(column)
     else:
         book = Workbook()
         sheet = book.active
         sheet.title = 'الطلاب'
         sheet.append(['الاسم', 'الصف', 'حالة الدفع', 'إجمالي المدفوع',
                       'آخر دفعة', 'مدفوع حتى', 'مرتبط بولي الأمر',
-                      'اسم ولي الأمر', 'هاتف ولي الأمر', 'ID', 'ملاحظات'])
+                      'اسم ولي الأمر', 'هاتف ولي الأمر', 'ملاحظات'])
 
     students = env['nursery.student'].sudo().search([], order='name')
-    style_cells = [copy(sheet.cell(2, column)._style) for column in range(1, 12)]
+    style_cells = [copy(sheet.cell(2, column)._style) for column in range(1, 11)]
     today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
     for row_number, student in enumerate(students, 2):
         last = student.payment_ids.sorted(
@@ -2302,7 +2274,7 @@ def _student_export_workbook(env):
             student.total_paid or 0.0, last.amount if last else 0.0,
             student.paid_until or '', 'نعم' if student.parent_user_id else 'لا',
             student.guardian_name or '', student.guardian_phone or '',
-            student.id, student.remark or '',
+            student.remark or '',
         ]
         for column, value in enumerate(values, 1):
             cell = sheet.cell(row_number, column, value)
@@ -2320,7 +2292,7 @@ class NurseryExcelImport(http.Controller):
         groups = [('الفصول','nursery.class',['id','name','level','teacher_id','active']),('المدفوعات','nursery.fee.payment',['id','student_id','date','amount','method','period','note']),('الحضور','nursery.attendance',['id','student_id','date','status','arrival','departure','by_parent','note']),('الكتب','nursery.book',['id','name','code','level','price','cost','received_qty','issued_qty','stock_qty','note','active']),('حركة الكتب','nursery.book.move',['id','book_id','move_type','qty','date','student_id','paid','note']),('المرتبات','nursery.salary',['id','teacher','employee_id','expected','actual','paid_date','term','notes']),('المصروفات','nursery.expense',['id','date','value','term','note']),('الشهور','nursery.month',['id','ym','state','opening_balance','closed_at']),('رسوم الشهور','nursery.month.fee',['id','month_id','student_id','name','fees','paid','paid_date','method','note']),('قيود الشهور','nursery.month.entry',['id','month_id','etype','name','amount','date','note']),('الإجازات','nursery.holiday',['id','name','date_from','date_to','note'])]
         book, students = _student_export_workbook(request.env)
         student_header_styles = [copy(book['الطلاب'].cell(1, column)._style)
-                                 for column in range(1, 12)]
+                                 for column in range(1, 11)]
         overview = book.create_sheet('ملخص التصدير', 0); overview.append(['المجموعة','عدد السجلات'])
         overview.append(['الطلاب', len(students)])
         for title, model_name, names in groups:
@@ -2337,7 +2309,7 @@ class NurseryExcelImport(http.Controller):
                 sheet.append(row)
             sheet.freeze_panes = 'A2'; sheet.auto_filter.ref = sheet.dimensions
             for column, cell in enumerate(sheet[1], 1):
-                cell._style = copy(student_header_styles[min(column, 11) - 1])
+                cell._style = copy(student_header_styles[min(column, 10) - 1])
             overview.append([title, len(records)])
         output = io.BytesIO(); book.save(output); output.seek(0)
         filename = 'montessori-export-%s.xlsx' % datetime.now(pytz.timezone('Asia/Riyadh')).strftime('%Y-%m-%d')
