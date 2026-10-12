@@ -35,7 +35,10 @@ def _load_module():
     try:
         import pytz  # noqa: F401 — used only inside the controller routes
     except ImportError:
-        sys.modules.setdefault('pytz', types.ModuleType('pytz'))
+        import datetime as _dt
+        pytz_stub = types.ModuleType('pytz')
+        pytz_stub.timezone = lambda name: _dt.timezone.utc
+        sys.modules.setdefault('pytz', pytz_stub)
     package = types.ModuleType('nursery_test_pkg')
     package.__path__ = []
     roles = types.ModuleType('nursery_test_pkg.roles')
@@ -594,6 +597,208 @@ class RealWorkbookTests(unittest.TestCase):
         self.assertTrue(excel_import._student_paid_flag(by_name['alya']))          # دفع سنة بلا دفعة في أكتوبر
         self.assertTrue(excel_import._student_paid_flag(by_name['youssef alaa']))  # شهر مقدم
         self.assertEqual(sum(1 for r in active if r['name'] == 'fares'), 2)
+
+
+# ── no student ID anywhere: the sheet and the site identify a student by name ──
+
+class _Record(object):
+    """A fake Odoo record: plain attributes, plus write()."""
+
+    def __init__(self, **values):
+        self.__dict__.update(values)
+
+    def write(self, vals):
+        self.__dict__.update(vals)
+        return True
+
+
+class _Model(object):
+    """A fake recordset with the handful of methods the importer calls."""
+
+    _fields = {name: True for name in (
+        'name', 'serial', 'class_id', 'active', 'joining_date', 'guardian_name',
+        'guardian_phone', 'note', 'remark', 'paid_until', 'books_fees', 'fees', 'paid',
+        'paid_at', 'payment_method', 'level', 'term', 'excel_remaining', 'month_id',
+        'student_id')}
+
+    def __init__(self, store, records=None):
+        self._store = store
+        self._records = list(store if records is None else records)
+
+    def _wrap(self, records):
+        return _Model(self._store, records)
+
+    def sudo(self):
+        return self
+
+    def with_context(self, **kwargs):
+        return self
+
+    def search(self, domain=None, limit=None, order=None):
+        items = list(self._store)
+        for field, op, value in domain or []:
+            if op == '=ilike':
+                items = [r for r in items
+                         if str(getattr(r, field, '') or '').lower() == str(value).lower()]
+            elif op == '=':
+                items = [r for r in items if getattr(r, field, None) == value]
+        if limit:
+            items = items[:limit]
+        return self._wrap(items)
+
+    def browse(self, ids=None):
+        if ids is None:
+            return self._wrap([])
+        wanted = ids if isinstance(ids, (list, tuple, set)) else [ids]
+        return self._wrap([r for r in self._store if r.id in wanted])
+
+    def create(self, vals):
+        record = _Record(id=max([r.id for r in self._store] + [0]) + 1, **vals)
+        for name in self._fields:
+            record.__dict__.setdefault(name, False)
+        record.__dict__.setdefault('active', True)
+        self._store.append(record)
+        return self._wrap([record])
+
+    def write(self, vals):
+        for record in self._records:
+            record.write(vals)
+        return True
+
+    def exists(self):
+        return self
+
+    def filtered(self, func):
+        if callable(func):
+            return self._wrap([r for r in self._records if func(r)])
+        return self._wrap([r for r in self._records if getattr(r, func, False)])
+
+    def sorted(self, key=None, reverse=False):
+        return self._wrap(sorted(self._records, key=key, reverse=reverse))
+
+    def __len__(self):
+        return len(self._records)
+
+    def __bool__(self):
+        return bool(self._records)
+
+    __nonzero__ = __bool__
+
+    def __iter__(self):
+        return iter(self._wrap([r]) for r in self._records)
+
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            return self._wrap(self._records[item])
+        return self._wrap([self._records[item]])
+
+    def __getattr__(self, name):
+        records = self.__dict__.get('_records') or []
+        if len(records) == 1:
+            return getattr(records[0], name)
+        if name == 'id' and not records:
+            return False
+        raise AttributeError(name)
+
+
+def _site(students, classes):
+    """Build a fake env: classes = {name: id}; students = (id, name, class, serial)."""
+    class_records = [_Record(id=cid, name=name, active=True) for name, cid in classes.items()]
+    by_id = {c.id: c for c in class_records}
+    student_records = [
+        _Record(id=sid, name=name, class_id=by_id.get(cid, False), serial=serial, active=True,
+                joining_date=False, guardian_name=False, guardian_phone=False, note=False,
+                paid_until=False, books_fees=0.0, fees=0.0, payment_ids=_Model([]),
+                total_paid=0.0, parent_user_id=False, paid=False, remark='')
+        for sid, name, cid, serial in students]
+    env = {
+        'nursery.student': _Model(student_records),
+        'nursery.class': _Model(class_records),
+        'nursery.month': _Model([]),
+        'nursery.month.fee': _Model([]),
+    }
+    return env
+
+
+class NoStudentIdTests(unittest.TestCase):
+    """الموقع لا يتعامل بالـID: عمود ID في الشيت يُتجاهل، والتعريف بالاسم ثم الفصل ثم الرقم."""
+
+    def setUp(self):
+        self.mod = _load_module()
+
+    def _rec(self, name, cls, serial, **extra):
+        base = {'kind': 'student', 'name': name, 'serial': serial, 'class_name': cls,
+                'source': 'f / Sep / %s' % name, 'paid': 0, 'status': '',
+                'source_columns': {'name', 'serial', 'class_name'}}
+        base.update(extra)
+        return base
+
+    def test_id_column_is_ignored_when_parsing(self):
+        parsed = self.mod._parse_records(
+            [{'name': 'sep.xlsx', 'content': base64.b64encode(_workbook()).decode('ascii')}],
+            '2026-09')
+        self.assertTrue(parsed['students'])
+        for record in parsed['students']:
+            self.assertIsNone(record.get('db_id'), record['name'])
+
+    def test_wrong_id_in_the_sheet_never_blocks_the_preview(self):
+        """The ID column may still exist in an old sheet; a stale value must not matter."""
+        env = _site([(172, 'lolia', 2, 20), (9, 'mohamed', 2, 5)], {'KG1': 1, 'KG2': 2})
+        parsed = {'students': [self._rec('mohamed', 'KG2', 5, db_id=172, paid=2300,
+                                         paid_present=True)],
+                  'entries': [], 'warnings': [], 'rows': 1}
+        result = self.mod._preview(parsed, '2026-10', env)
+        self.assertFalse(result['blocked'], result['warnings'])
+        self.assertTrue(result['can_commit'])
+        self.assertEqual([c['name'] for c in result['changes']], ['mohamed'])
+        self.assertEqual(result['changes'][0]['status'], 'update')
+
+    def test_name_and_class_then_serial_tell_two_namesakes_apart(self):
+        env = _site([(1, 'fares', 3, 3), (2, 'fares', 3, 9)], {'KG3': 3})
+        student, error = self.mod._find_student(self._rec('fares', 'KG3', 9), env)
+        self.assertEqual(error, '')
+        self.assertEqual(student.id, 2)
+
+    def test_a_unique_name_follows_a_class_move(self):
+        env = _site([(5, 'alya', 1, 4)], {'KG1': 1, 'KG2': 2})
+        student, error = self.mod._find_student(self._rec('alya', 'KG2', 7), env)
+        self.assertEqual(error, '')
+        self.assertEqual(student.id, 5)
+
+    def test_a_renamed_student_is_a_new_student(self):
+        env = _site([(5, 'alya', 1, 4)], {'KG1': 1})
+        student, error = self.mod._find_student(self._rec('alia', 'KG1', 4), env)
+        self.assertFalse(student)
+        self.assertEqual(error, '')
+
+    def test_preview_reports_serial_and_class_changes_without_an_id(self):
+        env = _site([(5, 'alya', 1, 4)], {'KG1': 1, 'KG2': 2})
+        item, blocked = self.mod._student_preview(self._rec('alya', 'KG2', 7), False, env)
+        self.assertFalse(blocked)
+        changed = {c['field']: (c['old'], c['new']) for c in item['changes']}
+        self.assertEqual(changed.get('serial'), (4, 7))
+        self.assertEqual(changed.get('class_name'), ('KG1', 'KG2'))
+
+    def test_upsert_writes_serial_and_class_without_an_id(self):
+        env = _site([(5, 'alya', 1, 4)], {'KG1': 1, 'KG2': 2})
+        month = _Record(id=1, ym='2026-10', state='open', env=env)
+        self.mod._upsert_payment = lambda *args, **kwargs: None
+        student = self.mod._upsert_student(self._rec('alya', 'KG2', 7), month, env, '2026-10')
+        self.assertEqual(student.id, 5)
+        self.assertEqual(student.serial, 7)
+        self.assertEqual(student.class_id, 2)
+        self.assertEqual(len(env['nursery.student']._store), 1)
+
+    def test_export_has_no_id_column(self):
+        env = _site([(5, 'alya', 1, 4)], {'KG1': 1})
+        book, students = self.mod._student_export_workbook(env)
+        sheet = book['الطلاب']
+        headers = [cell.value for cell in sheet[1]]
+        self.assertNotIn('ID', headers)
+        self.assertEqual(len(headers), 10)
+        row = [cell.value for cell in sheet[2]]
+        self.assertEqual(row[0], 'alya')
+        self.assertNotIn(5, row)
 
 if __name__ == '__main__':
     unittest.main()
