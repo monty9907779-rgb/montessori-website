@@ -631,7 +631,8 @@ function attBody(){
   if(ATT.loading&&!ATT.data) return NS.empty('clock','جارٍ تحميل السجل…','');
   var d=ATT.data; if(!d) return NS.empty('users','لا يوجد سجل بعد','');
   if(d.error) return NS.empty('alert','تعذّر تحميل السجل',String(d.error));
-  var s=d.summary||[];
+  // المعفى من تسجيل الحضور ما يظهرش في السجل كمان (قرار المالك 12/10/2026).
+  var s=(d.summary||[]).filter(function(r){ return !r.exempt; });
   if(!s.length) return NS.empty('users','لا يوجد موظفون بحسابات دخول','لا يمكن تسجيل الحضور بدون حساب.');
   var h='<div class="table-wrap"><table class="table att-summary"><thead><tr>'+
     '<th>الموظف</th><th>حضور</th><th>تأخير</th><th>غياب</th></tr></thead><tbody>';
