@@ -789,6 +789,22 @@ class NoStudentIdTests(unittest.TestCase):
         self.assertEqual(student.class_id, 2)
         self.assertEqual(len(env['nursery.student']._store), 1)
 
+    def test_skipped_rows_and_serial_notices_never_block_the_approval(self):
+        """A skipped incomplete row or a duplicate serial is reported, not a reason to disable the button."""
+        env = _site([], {})
+        parsed = {'students': [self._rec('alya', 'KG1', 4, paid=1300, paid_present=True)],
+                  'entries': [],
+                  'warnings': ['تم تجاهل شيت November 2026 لأنه خاص بشهر نوفمبر 2026.',
+                               'تم تجاهل صف غير مكتمل في f.xlsx / October 2026 / صف 140.',
+                               'رقم تسلسلي مكرر في f.xlsx: الطالب x يحمل نفس رقم طالب آخر في نفس الفصل.'],
+                  'rows': 3}
+        result = self.mod._preview(parsed, '2026-10', env)
+        self.assertFalse(result['blocked'], result['warnings'])
+        self.assertTrue(result['can_commit'])
+        self.assertEqual(len(result['warnings']), 3)
+        broken = dict(parsed, warnings=['الملف f.xlsx مشفّر أو تالف ولا يمكن قراءته.'])
+        self.assertTrue(self.mod._preview(broken, '2026-10', env)['blocked'])
+
     def test_export_has_no_id_column(self):
         env = _site([(5, 'alya', 1, 4)], {'KG1': 1})
         book, students = self.mod._student_export_workbook(env)
