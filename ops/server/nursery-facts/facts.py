@@ -348,7 +348,8 @@ EN_BANS = [
     ('price', re.compile(r'(?:\d[\d,\.]*\s*(?:SAR|SR|riyals?|ريال)|(?:SAR|SR)\s*\d)', re.I)),
     ('our fees', re.compile(r'\b(?:our|the nursery.s|kawkab.s)\s+(?:monthly\s+|annual\s+|tuition\s+)?(?:fees?|prices?|tuition|rates?)\b[^.]{0,50}\d', re.I)),
     ('fees starting from', re.compile(r'\b(?:fees?|prices?|tuition)\s+(?:start|begin)s?\s+(?:from|at)\b[^.]{0,20}\d', re.I)),
-    ('review count', re.compile(r'\b\d[\d,]*\s+(?:google\s+)?(?:reviews?|ratings?)\b|\bfrom\s+\d+\s+(?:parents|families)\b', re.I)),
+    # "4.7/5 rating" is a score, not a count: the digit after a slash is exempt
+    ('review count', re.compile(r'(?<![/\d.])\d[\d,]*\s+(?:google\s+)?(?:reviews?|ratings?)\b|\bfrom\s+\d+\s+(?:parents|families)\b', re.I)),
     ('infants', re.compile(_EN_US + r'[^.?!]{0,60}\b(?:infants?|babies|baby|newborns?|toddlers? under|under (?:2|two)|from (?:1|one) year|1[-–]year)', re.I)),
     ('wrong hours', re.compile(r'\b(?:until|till|to|-|–)\s*(?:2|14)(?::00)?\s*(?:pm|p\.m\.)|\b14:00\b|\b2:00\s*pm\b', re.I)),
     # generic advice ("check that a nursery is licensed") is fine; claiming it for us is not
