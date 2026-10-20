@@ -1752,6 +1752,12 @@ def repair_static_site():
          'طفل الرابعة يكون في المستوى الثاني (٤–٥) حسب التسمية السعودية الرسمية، ويركّز على القراءة الأولى والعدد والاعتماد على النفس في بيئة مونتيسوري مُعدّة. نستقبل الأطفال من سنتين إلى ٥ سنوات.'),
         ('كم سنة خبرة لدى الروضة؟',
          'أكثر من ١٠ سنوات في تعليم الطفولة المبكرة، مع معلمات مؤهلات. نستقبل الأطفال من سنتين إلى ٥ سنوات في حي الفيصلية بجدة.'),
+        # 2026-10-20 quick wins: the homepage ranks 10–19 for the «منتسوري»
+        # spelling and a blog page ranks 17 for «حضانات جده»; answer both here.
+        ('هل «منتسوري» و«مونتيسوري» نفس المنهج؟',
+         'نعم، منتسوري ومونتيسوري كتابتان عربيتان لاسم واحد هو منهج ماريا مونتيسوري. روضة كوكب الطفل الحر روضة منتسوري وحضانة منتسوري أصيلة في حي الفيصلية بجدة، تستقبل الأطفال من سنتين إلى ٥ سنوات في بيئة مُعدّة بأدوات حسية وعملية.'),
+        ('كيف أقارن بين حضانات جدة قبل التسجيل؟',
+         'قارني حضانات جدة على أربعة أمور: المنهج وطريقة التعلّم، تأهيل المعلمات وحجم المجموعات، السلامة من كاميرات مراقبة وتواصل يومي مع الأسرة، ثم الموقع والدوام. في روضة كوكب الطفل الحر بحي الفيصلية نستقبل الأطفال من سنتين إلى ٥ سنوات ونرحّب بزيارتكم لرؤية الفصول قبل القرار، والدوام من الأحد إلى الخميس من ٨:٠٠ صباحاً إلى ١:٠٠ ظهراً.'),
     ]
     HOME_FAQ_EN = [
         ('Which kindergarten in Jeddah teaches in both Arabic and English?',
@@ -1760,6 +1766,12 @@ def repair_static_site():
          'Yes. Our Pre-KG stage is for children aged 2 to 3, with a gentle settling-in period, small groups and a prepared Montessori environment. We welcome children aged 2 to 5, Sunday to Thursday, 8:00 AM to 1:00 PM.'),
         ('How much experience does the nursery have?',
          'More than 10 years in early childhood education, with qualified teachers, in the Al Faisaliyyah district of Jeddah.'),
+        # 2026-10-20 quick wins: /en/ ranks 10–29 for "daycare in jeddah",
+        # "kindergarten jeddah", "nursery jeddah" and "day care jeddah".
+        ('Is Kawkab a daycare, a nursery school or a preschool?',
+         'All three, depending on the age. Parents in Jeddah look for a daycare or day care for a 2-year-old, a nursery school for a 3-year-old and a preschool or kindergarten for a 4-year-old; our Pre-KG, KG1 and KG2 stages cover ages 2 to 5 in one Montessori setting in Al Faisaliyyah, Jeddah, Sunday to Thursday, 8:00 AM to 1:00 PM.'),
+        ('How do I choose a kindergarten in Jeddah?',
+         "Compare the curriculum, the teachers' qualifications and group sizes, safety (CCTV and daily communication with parents), then the location and hours. Visit before you decide: at Kawkab Al-Tifl Al-Hurr in Al Faisaliyyah we welcome children aged 2 to 5 and a tour of the classrooms, and the English guides on this page walk through each question."),
     ]
 
     def add_home_faq(text, english):
