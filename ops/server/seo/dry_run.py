@@ -127,6 +127,13 @@ def main(days=3):
                 problems.append(f'{k}: not in llms.txt')
             if re.search(r'https?://(?!montessori-ksa\.com|www\.googletagmanager\.com|wa\.me|www\.instagram\.com|www\.facebook\.com|schema\.org|fonts\.)', pg.replace('http://www.w3.org', '')):
                 problems.append(f'{k}: unexpected external URL')
+        ehome = (web / 'en' / 'index.html').read_text(encoding='utf-8')
+        rwj = json.load(open(opt / 'rewrites.json', encoding='utf-8'))
+        for k in en_live:
+            if rwj[k].get('homeCard') and f'href="/en/blog/{k}/"' not in ehome:
+                problems.append(f'{k}: homeCard but no link on /en/')
+        if ehome.count('<section id="guides"') != 1 or 'application/ld+json' not in ehome:
+            problems.append('/en/ guides section or schema damaged')
         keep = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
         if keep:
             shutil.rmtree(keep, ignore_errors=True); shutil.copytree(web, keep)
