@@ -2161,6 +2161,30 @@ a.seo-card:hover b{color:var(--clay-600)}
                       'Pre-KG (2\u20133), KG1 (3\u20134), KG2 (4\u20135)', text)
         return text
     _patch_file(ROOT/'en'/'index.html', en_facts)
+    # English homepage: link the new English guides (rewrites.json entries
+    # flagged "homeCard") from the existing "Parent guides" grid, once each,
+    # ahead of the "All English guides" card. Only guides that are live.
+    def add_home_en_guide_cards(text):
+        entries = english_entries()
+        m = re.search(r'<section id="guides"[^>]*>.*?</section>', text, re.S)
+        if not entries or not m:
+            return text
+        sec = m.group(0)
+        marker = '<a class="cc rev seo-card" href="/en/blog/">'
+        if marker not in sec:
+            return text
+        add = ''
+        for slug, e in entries.items():
+            if not e.get('homeCard') or f'href="/en/blog/{slug}/"' in sec:
+                continue
+            if not (ROOT/'en'/'blog'/slug/'index.html').exists():
+                continue
+            add += '    ' + _seo_card(f'/en/blog/{slug}/', H.escape(e.get('listTitle') or e['title']), H.escape(e.get('homeBlurb') or e['blurb'])) + '\n'
+        if not add:
+            return text
+        sec2 = sec.replace('    ' + marker, add + '    ' + marker, 1)
+        return text[:m.start()] + sec2 + text[m.end():]
+    _patch_file(ROOT/'en'/'index.html', add_home_en_guide_cards)
     en_blog = ROOT/'en'/'blog'
     if en_blog.is_dir():
         for page in en_blog.rglob('index.html'):

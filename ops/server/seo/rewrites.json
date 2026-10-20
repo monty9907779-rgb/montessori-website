@@ -2020,7 +2020,9 @@
     "q": "How do I book a visit?",
     "a": "Message us on WhatsApp at +966541558173 and choose a time. Visits run Sunday to Thursday, 10:00 AM to 12:00 PM."
    }
-  ]
+  ],
+  "homeCard": true,
+  "homeBlurb": "When to start, what a good morning looks like and what to ask"
  },
  "montessori-near-me-jeddah": {
   "lang": "en",
@@ -2062,7 +2064,9 @@
     "q": "Can I watch a class before enrolling?",
     "a": "Yes. Message us on WhatsApp at +966541558173 to book a visit, available Sunday to Thursday between 10:00 AM and 12:00 PM."
    }
-  ]
+  ],
+  "homeCard": true,
+  "homeBlurb": "How to tell authentic Montessori from the label"
  },
  "arabic-english-kindergarten-jeddah": {
   "lang": "en",
@@ -2104,7 +2108,9 @@
     "q": "What are the school hours?",
     "a": "Sunday to Thursday, 8:00 AM to 1:00 PM, with hourly care available when families need it."
    }
-  ]
+  ],
+  "homeCard": true,
+  "homeBlurb": "How bilingual learning works, with Quran, for ages 2 to 5"
  },
  "nursery-for-a-2-year-old-jeddah": {
   "lang": "en",
@@ -2146,7 +2152,9 @@
     "q": "Is the nursery bilingual?",
     "a": "Yes. Children hear Modern Standard Arabic and English every day, and Quran is part of the routine."
    }
-  ]
+  ],
+  "homeCard": true,
+  "homeBlurb": "Readiness signs and what Pre-KG offers at age 2"
  },
  "settling-in-nursery-first-weeks-jeddah": {
   "lang": "en",
@@ -2226,7 +2234,9 @@
     "q": "What ages do you welcome?",
     "a": "Children aged 2 to 5, across Pre-KG (2–3), KG1 (3–4) and KG2 (4–5)."
    }
-  ]
+  ],
+  "homeCard": true,
+  "homeBlurb": "Classroom, teacher and pace compared"
  },
  "montessori-activities-at-home-ages-2-to-5": {
   "lang": "en",
@@ -2302,6 +2312,8 @@
     "q": "What are the school hours?",
     "a": "Sunday to Thursday, 8:00 AM to 1:00 PM, with hourly care available when families need it."
    }
-  ]
+  ],
+  "homeCard": true,
+  "homeBlurb": "Language, hours and settling in for families new to the city"
  }
 }
