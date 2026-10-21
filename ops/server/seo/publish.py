@@ -927,6 +927,15 @@ INLINE_LINKS = [
     ('ترشيحات الأهالي', 'trusted-nursery-recommendation-jeddah'),
     ('علامات ذكاء الطفل', 'child-intelligence-signs-2-3-years'),
     ('الأسئلة الشائعة عن الحضانة', 'nursery-faq-jeddah-parents'),
+    # 2026-10-21: low-difficulty terms we do not rank for yet («حضانة قريبة
+    # مني» 320/mo sd7) and the three guides queued on 2026-10-20; the district
+    # pages all say «حضانة قريبة من حي …», so the prefix anchor reaches them.
+    ('حضانة قريبة مني', 'nursery-near-me-jeddah'),
+    ('حضانة قريبة', 'nursery-near-me-jeddah'),
+    ('مرحلة التمهيدي', 'tamhidi-kindergarten-jeddah-age-guide'),
+    ('طفل الرابعة', 'best-kindergarten-for-4-year-old-jeddah'),
+    ('ألعاب مونتيسوري', 'montessori-toys-books-for-kids-2-5'),
+    ('أفضل حضانة', 'best-montessori-nursery-jeddah'),
     ('المجموعات الصغيرة', 'nursery-small-groups-jeddah'),
     ('روتين اليوم', 'montessori-classroom-routine-jeddah'),
     ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
