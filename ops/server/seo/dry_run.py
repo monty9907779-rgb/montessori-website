@@ -125,7 +125,7 @@ def main(days=3):
                 problems.append(f'{k}: no card in /en/blog/')
             if f'/en/blog/{k}/' not in llm:
                 problems.append(f'{k}: not in llms.txt')
-            if re.search(r'https?://(?!montessori-ksa\.com|www\.googletagmanager\.com|wa\.me|www\.instagram\.com|www\.facebook\.com|schema\.org|fonts\.)', pg.replace('http://www.w3.org', '')):
+            if re.search(r'https?://(?!montessori-ksa\.com|www\.googletagmanager\.com|wa\.me|www\.instagram\.com|www\.facebook\.com|schema\.org|fonts\.|lh3\.googleusercontent\.com/d/)', pg.replace('http://www.w3.org', '')):
                 problems.append(f'{k}: unexpected external URL')
         ehome = (web / 'en' / 'index.html').read_text(encoding='utf-8')
         rwj = json.load(open(opt / 'rewrites.json', encoding='utf-8'))

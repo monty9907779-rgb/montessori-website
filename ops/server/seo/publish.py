@@ -54,6 +54,17 @@ ARTICLE_IMAGES = [
     ('https://lh3.googleusercontent.com/d/1_lh7XoF9FqgyROroAHGmOb7HRh1MuEaQ=w900', 'ركن القراءة في الحضانة'),
     ('https://lh3.googleusercontent.com/d/1cNkIXcn45SF2iG0P09muLu0d4zmEEaVq=w900', 'لعب في الهواء الطلق'),
 ]
+# The same photos on the English guides (render_en_page), with English alt
+# text; before 2026-10-21 those pages shipped /logo.png as their og:image and
+# BlogPosting image and had no photo at all.
+ARTICLE_IMAGE_ALTS_EN = {
+    '18AmxJGSzkXFACqG4pA2qasufXmQMXXHK': 'Children exploring at the nursery',
+    '1tOy85z8eimnAXtmOaa061NYhIdv_NemA': 'A little girl at the nursery graduation',
+    '1X4ke_GBVBaE5dqFJ8ACfAKeoNNzssFNQ': 'Children celebrating at the nursery',
+    '1VMJOmDnqr3niyLeye2SAtyQExXYTj4ns': 'A sensorial activity with Montessori materials',
+    '1_lh7XoF9FqgyROroAHGmOb7HRh1MuEaQ': 'The reading corner at the nursery',
+    '1cNkIXcn45SF2iG0P09muLu0d4zmEEaVq': 'Outdoor play at the nursery',
+}
 
 SEO_TITLE_OVERRIDES = {
     'best-montessori-nursery-jeddah': 'أفضل حضانة مونتيسوري في جدة 2026 | كوكب الطفل الحر',
@@ -2228,8 +2239,30 @@ a.seo-card:hover b{color:var(--clay-600)}
     en_blog = ROOT/'en'/'blog'
     if en_blog.is_dir():
         for page in en_blog.rglob('index.html'):
-            if _patch_file(page, patch_en_blog) and page.parent != en_blog:
-                indexnow(f"{SITE}/en/blog/{page.parent.name}/")
+            changed = _patch_file(page, patch_en_blog)
+            if page.parent != en_blog:
+                changed = _patch_file(page, lambda text, s=page.parent.name: en_photo_meta(text, s)) or changed
+                if changed:
+                    indexnow(f"{SITE}/en/blog/{page.parent.name}/")
+
+def en_photo_meta(text, slug):
+    """The four English pages that predate rewrites.json (daycare-in-jeddah,
+    kindergarten-in-jeddah, nursery-in-jeddah, montessori-nursery-jeddah-guide)
+    are never re-rendered, so they still ship /logo.png as og:image and
+    BlogPosting.image and carry no photo. Give them the same photo rotation and
+    hero figure render_en_page now writes; a no-op once the page has a photo."""
+    if 'content="%s/logo.png"' % SITE not in text or '<figure class="article-hero">' in text:
+        return text
+    img_url, _ = _article_image(slug)
+    img_alt = ARTICLE_IMAGE_ALTS_EN.get(img_url.rsplit('/d/', 1)[-1].split('=')[0], 'Children at Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah')
+    q = lambda v: H.escape(v, quote=True)
+    for name in ('property="og:image"', 'name="twitter:image"'):
+        text = re.sub(r'(<meta %s content=")%s/logo\.png(")' % (name, re.escape(SITE)), lambda m: m.group(1) + q(img_url) + m.group(2), text, count=1)
+    text = text.replace('"image":"%s/logo.png"' % SITE,
+                        json.dumps({'image': {'@type': 'ImageObject', 'url': img_url, 'width': 1200, 'height': 800, 'caption': img_alt}}, ensure_ascii=False, separators=(',', ':'))[1:-1], 1)
+    text = text.replace('<div class="article__body">\n', '<div class="article__body">\n'
+                        f'<figure class="article-hero"><img src="{q(img_url)}" alt="{q(img_alt)}" width="1200" height="800" loading="eager" fetchpriority="high"/></figure>\n', 1)
+    return text
 
 def article_date(article, fallback):
     raw = article.get('published')
@@ -2434,6 +2467,10 @@ def render_en_page(slug, e, template, published, modified, entries):
     meta('property', 'og:url', SITEURL)
     meta('property', 'article:published_time', published)
     meta('name', 'twitter:title', title); meta('name', 'twitter:description', desc)
+    img_url, _ = _article_image(slug)
+    img_alt = ARTICLE_IMAGE_ALTS_EN.get(img_url.rsplit('/d/', 1)[-1].split('=')[0], 'Children at Kawkab Al-Tifl Al-Hurr Kindergarten in Jeddah')
+    meta('property', 'og:image', img_url); meta('property', 'og:image:alt', img_alt)
+    meta('name', 'twitter:image', img_url); meta('name', 'twitter:image:alt', img_alt)
     t = re.sub(r'(<link rel="canonical" href=")[^"]*(")', lambda m: m.group(1) + SITEURL + m.group(2), t, count=1)
     t = re.sub(r'<link rel="alternate" hreflang="[^"]*" href="[^"]*"\s*/?>', '', t)
     t = re.sub(r'(<link rel="canonical" href="[^"]*"\s*/?>)', lambda m: m.group(1) +
@@ -2444,7 +2481,8 @@ def render_en_page(slug, e, template, published, modified, entries):
                'mainEntityOfPage': {'@type': 'WebPage', '@id': SITEURL},
                'datePublished': published, 'dateModified': modified,
                'author': biz, 'publisher': {**biz, 'logo': {'@type': 'ImageObject', 'url': SITE + '/logo.png'}},
-               'image': SITE + '/logo.png', 'keywords': kw, 'articleSection': 'Guide', 'wordCount': words,
+               'image': {'@type': 'ImageObject', 'url': img_url, 'width': 1200, 'height': 800, 'caption': img_alt},
+               'keywords': kw, 'articleSection': 'Guide', 'wordCount': words,
                'about': [{'@type': 'Thing', 'name': 'Montessori education'}, {'@type': 'City', 'name': 'Jeddah'}]}
     faqld = {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
              {'@type': 'Question', 'name': x['q'], 'acceptedAnswer': {'@type': 'Answer', 'text': re.sub(r'<[^>]+>', '', x['a'])}} for x in faq]}
@@ -2477,13 +2515,19 @@ def render_en_page(slug, e, template, published, modified, entries):
             f'    <a class="article__cat" href="/en/blog/">Guide</a>\n    <h1>{H.escape(title)}</h1>\n'
             f'    <div class="article__meta"><span class="am-author"><img loading="lazy" src="/logo.png" alt=""/> Kawkab Al-Tifl Al-Hurr Kindergarten team</span>\n'
             f'      <span class="am-dot">&middot;</span><time datetime="{published}">{_en_date(datetime.date.fromisoformat(published))}</time><span class="am-dot">&middot;</span><span>{minutes} min read</span></div>\n'
-            f'  </header>\n  <div class="article__body">\n{e["bodyHtml"]}\n  </div>\n  {faq_html}\n'
+            f'  </header>\n  <div class="article__body">\n'
+            f'<figure class="article-hero"><img src="{q(img_url)}" alt="{q(img_alt)}" width="1200" height="800" loading="eager" fetchpriority="high"/></figure>\n'
+            f'{e["bodyHtml"]}\n  </div>\n  {faq_html}\n'
             f'  <aside class="cta-card"><div class="cta-card__glow"></div><h2>{H.escape(cta_h)}</h2><p>Kawkab Al-Tifl Al-Hurr Kindergarten in Al Faisaliyyah, Jeddah &mdash; the authentic Montessori method with Arabic and English, rated <strong>4.7&#9733;</strong> on Google Maps. Book a tour and see our prepared environment for yourself.</p><div class="cta-card__btns"><a class="btn btn--primary btn--lg" href="/en/#register">Book a Visit</a><a class="btn btn--soft btn--lg" href="https://wa.me/966541558173" target="_blank" rel="noopener">Chat on WhatsApp</a></div></aside>\n'
             f'  {rel_html}\n  </article>\n</main>')
     m1 = t.find('<main class="container article-wrap">'); m2 = t.find('</main>')
     if m1 < 0 or m2 < m1:
         return None
     return t[:m1] + main + t[m2 + len('</main>'):]
+
+# Bump when render_en_page changes in a way every live English guide should
+# pick up (2026-10-21: photo in og:image, BlogPosting.image and a hero figure).
+EN_RENDER_VERSION = '2026-10-21a'
 
 def publish_english_pages(today):
     """Render new/changed English guides, then wire them into the sitemap,
@@ -2501,7 +2545,9 @@ def publish_english_pages(today):
         if not re.fullmatch(r'[a-z0-9-]+', slug) or not e.get('bodyHtml') or not e.get('title') or not e.get('metaDescription'):
             log(f'english page {slug}: incomplete entry'); continue
         path = ROOT/'en'/'blog'/slug/'index.html'
-        tag = hashlib.sha1(json.dumps(e, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()[:12]
+        # EN_RENDER_VERSION is part of the tag so a renderer change re-renders
+        # every live guide on the next run (updates are not capped by EN_PER_RUN).
+        tag = hashlib.sha1((json.dumps(e, ensure_ascii=False, sort_keys=True) + EN_RENDER_VERSION).encode('utf-8')).hexdigest()[:12]
         old = path.read_text(encoding='utf-8') if path.exists() else None
         if old is not None and f'<!--en-src:{tag}-->' in old:
             done.append(slug); continue
