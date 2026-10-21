@@ -2685,6 +2685,12 @@ def main():
     # mark published
     a['published']=iso
     QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
+    # the feed and llms-full.txt were written above, before today's article
+    # existed, so the live feed trailed the blog by a day (seen 2026-10-21:
+    # feed.xml still topped by the 17 Oct guide). Both writers are no-ops
+    # when nothing changed.
+    write_feed(q)
+    write_llms_full(q)
 
     # verify live + indexnow
     url=f"{SITE}/blog/{a['slug']}/"
