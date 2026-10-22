@@ -905,12 +905,19 @@ GA_TAG = '<!-- Google tag (gtag.js) -->\n<script>addEventListener("load",functio
 # list item links to the article that covers it. Only published, indexable
 # targets; never the article itself; at most INLINE_LINK_MAX per article.
 INLINE_LINKS = [
-    ('روضة كوكب الطفل الحر', '/'),
-    # pillar pages first, so they collect the most contextual links
-    # The homepage is the page for this term (SEO plan 2026-10-02): the
-    # contextual links that used to go to the top-rated article now carry
-    # the money term to the page that targets it.
+    # The homepage is the page for the money terms (SEO plan 2026-10-02):
+    # the contextual links that used to go to the top-rated article now
+    # carry those terms to the page that targets them. Each article links
+    # the homepage at most once (target used once), so the descriptive
+    # anchors come before the brand name: on 2026-10-22, 120 of 132 live
+    # articles linked home as «روضة كوكب الطفل الحر» and only 2 as a search
+    # term, because the brand anchor sat first and took the slot.
     ('حضانة أطفال في جدة', '/'),
+    ('حضانة اطفال جدة', '/'),
+    ('حضانة مونتيسوري في جدة', '/'),
+    ('حضانة في جدة', '/'),
+    ('روضة كوكب الطفل الحر', '/'),
+    # pillar pages next, so they collect the most contextual links
     ('روضة أطفال في جدة', 'kindergarten-rawda-jeddah'),
     ('مركز أطفال مونتيسوري', 'montessori-children-center-jeddah'),
     ('الفرق بين التمهيدي والروضة', 'pre-kg-vs-kg-difference'),
@@ -1064,7 +1071,7 @@ def render_article(a, iso, d, allslugs, titles):
 <meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="{esc(a['seoTitle'])}"/>
 <meta name="twitter:description" content="{esc(a['metaDescription'])}"/><meta name="twitter:image" content="{esc(a['imageUrl'])}"/><meta name="twitter:image:alt" content="{esc(a['imageAlt'])}"/>
 <link rel="icon" href="/logo.png"/><link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-<link rel="stylesheet" href="/assets/fonts.css?v=2"/><link rel="stylesheet" href="/assets/app.css?v=10"/><link rel="stylesheet" href="/assets/blog.css?v=1"/>
+<link rel="stylesheet" href="/assets/fonts.css?v=2"/><link rel="stylesheet" href="/assets/app.css?v=23"/><link rel="stylesheet" href="/assets/blog.css?v=1"/>
 {jsonld(a, iso)}
 </head><body class="blog-body">
 {header()}
