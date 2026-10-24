@@ -2125,6 +2125,13 @@ a.seo-card:hover b{color:var(--clay-600)}
     _feed_link = '<link rel="alternate" type="application/rss+xml" title="مدوّنة روضة كوكب الطفل الحر" href="/blog/feed.xml"/>'
     for _p in (ROOT/'blog'/'index.html', ROOT/'index.html'):
         _patch_file(_p, lambda t: t if 'application/rss+xml' in t else t.replace('</head>', _feed_link + '\n</head>', 1))
+    # Share previews (WhatsApp, Facebook, X): the four index pages shipped
+    # /logo.png as og:image; parents share the homepage link on WhatsApp,
+    # so show the hero photo instead (the same graduation photo the hero
+    # collage loads, at the article width).
+    for _p, _en in ((ROOT/'index.html', False), (ROOT/'en'/'index.html', True),
+                    (ROOT/'blog'/'index.html', False), (ROOT/'en'/'blog'/'index.html', True)):
+        _patch_file(_p, lambda t, e=_en: index_share_image(t, e))
     # /partners/ quoted a review count (facts.py: the number changes).
     _patch_file(ROOT/'partners'/'index.html', lambda t: t.replace('وتقييم ٤٫٧ من ٧١ مراجعة', 'وتقييم ٤٫٧ على خرائط جوجل'))
 
@@ -2251,6 +2258,23 @@ a.seo-card:hover b{color:var(--clay-600)}
                 changed = _patch_file(page, lambda text, s=page.parent.name: en_photo_meta(text, s)) or changed
                 if changed:
                     indexnow(f"{SITE}/en/blog/{page.parent.name}/")
+
+INDEX_SHARE_IMAGE = 'https://lh3.googleusercontent.com/d/1tOy85z8eimnAXtmOaa061NYhIdv_NemA=w1200'
+
+def index_share_image(text, english):
+    """og:image / twitter:image of a homepage or blog index: the hero photo
+    instead of /logo.png, with an alt. No-op once the page carries a photo."""
+    logo = 'content="%s/logo.png"' % SITE
+    if logo not in text:
+        return text
+    alt = 'A little girl at the nursery graduation' if english else 'طفلة في حفل تخرج الحضانة'
+    for name in ('property="og:image"', 'name="twitter:image"'):
+        text = re.sub(r'(<meta %s content=")%s/logo\.png(")' % (name, re.escape(SITE)),
+                      lambda m: m.group(1) + INDEX_SHARE_IMAGE + m.group(2), text, count=1)
+    if 'property="og:image:alt"' not in text:
+        text = re.sub(r'(<meta property="og:image" content="[^"]*"\s*/?>)',
+                      lambda m: m.group(1) + '<meta property="og:image:alt" content="%s"/>' % esc(alt), text, count=1)
+    return text
 
 def en_photo_meta(text, slug):
     """The four English pages that predate rewrites.json (daycare-in-jeddah,
