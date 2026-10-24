@@ -830,6 +830,63 @@ def compute_underlinked(q):
     _UNDER = sorted((s for s, c in cnt.items() if c <= 1), key=lambda s: (cnt[s], s))
     return _UNDER
 
+# English guide <-> Arabic article on the same topic (not translations, so no
+# hreflang pair): each side shows the other as a fourth related card, so the
+# English guides inherit links from the established Arabic pages and Arabic
+# readers who prefer English find the guide.
+EN_AR_PAIRS = {
+    'nursery-fees-jeddah-how-they-are-calculated': 'nursery-prices-jeddah',
+    'best-montessori-nursery-jeddah-how-to-judge': 'best-montessori-nursery-jeddah',
+    'kindergarten-near-me-jeddah-how-to-choose': 'nursery-near-me-jeddah',
+    'montessori-near-me-jeddah': 'montessori-children-center-jeddah',
+    'preschool-in-jeddah': 'jeddah-preschool-4-5-years-guide',
+    'nursery-for-a-2-year-old-jeddah': 'nursery-for-2-year-old-jeddah-montessori',
+    'montessori-vs-traditional-preschool-jeddah': 'montessori-vs-traditional-nursery-jeddah',
+    'montessori-activities-at-home-ages-2-to-5': 'montessori-activities-at-home',
+    'settling-in-nursery-first-weeks-jeddah': 'first-day-nursery-separation-anxiety',
+    'arabic-english-kindergarten-jeddah': 'bilingual-nursery-jeddah',
+    'nursery-school-daycare-preschool-kindergarten-jeddah-terms': 'pre-kg-vs-kg-difference',
+    'daycare-in-jeddah': 'child-care-hourly-jeddah',
+    'kindergarten-in-jeddah': 'kindergarten-rawda-jeddah',
+    'montessori-nursery-jeddah-guide': 'what-is-montessori-method',
+    'nursery-in-jeddah': 'how-to-choose-nursery-jeddah',
+}
+AR_EN_PAIRS = {}
+for _en, _ar in EN_AR_PAIRS.items():
+    AR_EN_PAIRS.setdefault(_ar, _en)
+_AR_TITLES = {}
+
+def _en_pair_card(ar_slug):
+    en = AR_EN_PAIRS.get(ar_slug)
+    if not en or not (ROOT/'en'/'blog'/en/'index.html').exists():
+        return ''
+    title = _en_title_of(en, english_entries()) or en
+    return (f'<a class="rel-card" href="/en/blog/{en}/" hreflang="en" lang="en" dir="ltr"><span class="rel-card__cat">English</span>'
+            f'<span class="rel-card__title">{esc(title)}</span><span class="rel-card__go">Read in English &rarr;</span></a>')
+
+def _ar_pair_card(en_slug):
+    ar = EN_AR_PAIRS.get(en_slug)
+    if not ar or not (ROOT/'blog'/ar/'index.html').exists():
+        return ''
+    if not _AR_TITLES:
+        try:
+            _AR_TITLES.update({x.get('slug'): x.get('title') for x in json.loads(QUEUE.read_text(encoding='utf-8'))})
+        except Exception:
+            return ''
+    title = _AR_TITLES.get(ar)
+    if not title:
+        return ''
+    return (f'<a class="rel-card" href="/blog/{ar}/" hreflang="ar" lang="ar" dir="rtl"><span class="rel-card__cat">بالعربية</span>'
+            f'<span class="rel-card__title">{esc(title)}</span><span class="rel-card__go">اقرأ بالعربية &larr;</span></a>')
+
+def en_pair_patch(text, slug):
+    """Older English pages are never re-rendered: add the Arabic card to their
+    related block once (render_en_page writes it for the rewrites.json pages)."""
+    card = _ar_pair_card(slug)
+    if not card or f'href="/blog/{EN_AR_PAIRS[slug]}/"' in text or '<div class="related__grid">' not in text:
+        return text
+    return text.replace('<div class="related__grid">', '<div class="related__grid">' + card, 1)
+
 def related_block(a, allslugs, titles):
     # Link only to articles that are actually published. Queue entries that
     # are unpublished (or were dropped from the queue) have no page and 404.
@@ -867,6 +924,7 @@ def related_block(a, allslugs, titles):
         if picks:
             more = '<p class="related__more">اقرئي أيضاً: ' + ' · '.join(
                 f'<a href="/blog/{c}/">{esc(titles.get(c, {}).get("title", c))}</a>' for c in picks) + '</p>'
+    cards += _en_pair_card(a['slug'])
     return f'<nav class="related" aria-label="مقالات ذات صلة"><h2>مقالات قد تهمّك</h2><div class="related__grid">{cards}</div>{more}</nav>'
 
 def modified_iso(a, iso):
@@ -2256,6 +2314,7 @@ a.seo-card:hover b{color:var(--clay-600)}
             changed = _patch_file(page, patch_en_blog)
             if page.parent != en_blog:
                 changed = _patch_file(page, lambda text, s=page.parent.name: en_photo_meta(text, s)) or changed
+                changed = _patch_file(page, lambda text, s=page.parent.name: en_pair_patch(text, s)) or changed
                 if changed:
                     indexnow(f"{SITE}/en/blog/{page.parent.name}/")
 
@@ -2538,6 +2597,7 @@ def render_en_page(slug, e, template, published, modified, entries):
         if rt and ((ROOT/'en'/'blog'/rs/'index.html').exists() or rs in entries):
             rel += (f'<a class="rel-card" href="/en/blog/{rs}/"><span class="rel-card__cat">Guide</span>'
                     f'<span class="rel-card__title">{H.escape(rt)}</span><span class="rel-card__go">Read article &rarr;</span></a>')
+    rel += _ar_pair_card(slug)
     rel_html = f'<nav class="related" aria-label="Related articles"><h2>You may also like</h2><div class="related__grid">{rel}</div></nav>' if rel else ''
     cta_h = e.get('ctaHeading') or 'Visit a Montessori classroom in Jeddah'
     main = (f'<main class="container article-wrap">\n'
@@ -2558,7 +2618,7 @@ def render_en_page(slug, e, template, published, modified, entries):
 
 # Bump when render_en_page changes in a way every live English guide should
 # pick up (2026-10-21: photo in og:image, BlogPosting.image and a hero figure).
-EN_RENDER_VERSION = '2026-10-21a'
+EN_RENDER_VERSION = '2026-10-24a'  # 2026-10-24: Arabic pair card in the related block
 
 def publish_english_pages(today):
     """Render new/changed English guides, then wire them into the sitemap,
