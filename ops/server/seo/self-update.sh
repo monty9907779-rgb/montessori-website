@@ -129,7 +129,10 @@ if [ -d "$WEBROOT/dashboard" ]; then
     dst="$WEBROOT/$rel"; f="$TMP/pub-$(basename "$rel")"
     if ! curl -fsSL --max-time 60 -o "$f" "$PUBRAW/$rel?t=$(date +%s)"; then log "skip public/$rel: download failed"; continue; fi
     [ "$(wc -c < "$f")" -gt 500 ] || { log "skip public/$rel: too small"; continue; }
-    case "$rel" in *.js) grep -q '})();' "$f" || { log "skip public/$rel: not a complete script"; continue; } ;; esac
+    case "$rel" in
+      *.js) grep -q '})();' "$f" || { log "skip public/$rel: not a complete script"; continue; } ;;
+      *.jpg) [ "$(head -c 3 "$f" | od -An -tx1 | tr -d ' \n')" = ffd8ff ] || { log "skip public/$rel: not a JPEG"; continue; } ;;
+    esac
     [ -d "$(dirname "$dst")" ] || { log "skip public/$rel: $(dirname "$dst") missing"; continue; }
     if [ -f "$dst" ] && cmp -s "$f" "$dst"; then continue; fi
     if [ -f "$dst" ]; then cp -p "$dst" "$dst.prev"; cat "$f" > "$dst"; else install -m 644 "$f" "$dst"; fi
@@ -139,7 +142,8 @@ dashboard/dashboard-inline-1.js
 dashboard/index.html
 ai/index.html
 assets/ai.js
-assets/ai.css"
+assets/ai.css
+assets/og-home-2026-10.jpg"
 else
   log "webroot $WEBROOT/dashboard not found — dashboard files not installed"
 fi
