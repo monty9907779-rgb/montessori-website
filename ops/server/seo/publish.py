@@ -827,7 +827,9 @@ def compute_underlinked(q):
         for r in [r for r in (x.get('related') or []) if r in live and r != x['slug']][:3]:
             cnt[r] += 1
     global _UNDER
-    _UNDER = sorted((s for s, c in cnt.items() if c <= 1), key=lambda s: (cnt[s], s))
+    # c <= 2: the 2026-10-28 crawl still found six articles with exactly two
+    # inbound links (both from curated related lists) that this pool skipped.
+    _UNDER = sorted((s for s, c in cnt.items() if c <= 2), key=lambda s: (cnt[s], s))
     return _UNDER
 
 # English guide <-> Arabic article on the same topic (not translations, so no
@@ -1667,6 +1669,9 @@ def repair_static_site():
             ]
         else:
             repl = [
+                # 61 characters; Google truncates titles after ~60.
+                ('<title>حضانة أطفال في جدة | روضة كوكب الطفل الحر – منتسوري بالفيصلية</title>',
+                 '<title>حضانة أطفال في جدة | روضة كوكب الطفل الحر – منتسوري الفيصلية</title>'),
                 ('<div class="t"><b>٨–١</b><span>يومياً · الأحد–الخميس</span></div>',
                  '<div class="t"><b>٨:٠٠–١٣:٠٠</b><span>يومياً · الأحد–الخميس</span></div>'),
                 ('"streetAddress": "حي الفيصلية",',
