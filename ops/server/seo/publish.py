@@ -1014,6 +1014,15 @@ INLINE_LINKS = [
     ('طفل الرابعة', 'best-kindergarten-for-4-year-old-jeddah'),
     ('ألعاب مونتيسوري', 'montessori-toys-books-for-kids-2-5'),
     ('أفضل حضانة', 'best-montessori-nursery-jeddah'),
+    # 2026-10-28 batch (inert until each guide is published) and the
+    # Montessori pillar rewrite.
+    ('روضة قريبة من موقعي', 'kindergarten-near-my-location-jeddah'),
+    ('أقرب روضة', 'kindergarten-near-my-location-jeddah'),
+    ('روضة حكومية', 'government-vs-private-kindergarten-jeddah'),
+    ('الروضات الحكومية', 'government-vs-private-kindergarten-jeddah'),
+    ('تنمية مهارات الطفل', 'child-skills-development-games-2-5'),
+    ('معنى مونتيسوري', 'what-is-montessori-method'),
+    ('مبادئ مونتيسوري', 'what-is-montessori-method'),
     ('المجموعات الصغيرة', 'nursery-small-groups-jeddah'),
     ('روتين اليوم', 'montessori-classroom-routine-jeddah'),
     ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
