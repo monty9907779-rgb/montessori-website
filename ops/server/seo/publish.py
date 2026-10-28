@@ -2188,10 +2188,9 @@ a.seo-card:hover b{color:var(--clay-600)}
     _feed_link = '<link rel="alternate" type="application/rss+xml" title="مدوّنة روضة كوكب الطفل الحر" href="/blog/feed.xml"/>'
     for _p in (ROOT/'blog'/'index.html', ROOT/'index.html'):
         _patch_file(_p, lambda t: t if 'application/rss+xml' in t else t.replace('</head>', _feed_link + '\n</head>', 1))
-    # Share previews (WhatsApp, Facebook, X): the four index pages shipped
-    # /logo.png as og:image; parents share the homepage link on WhatsApp,
-    # so show the hero photo instead (the same graduation photo the hero
-    # collage loads, at the article width).
+    # Share previews (WhatsApp, Facebook, X): parents share the homepage link
+    # on WhatsApp, so the four index pages carry the branded share card
+    # (INDEX_SHARE_IMAGE) instead of /logo.png or the old Drive photo.
     for _p, _en in ((ROOT/'index.html', False), (ROOT/'en'/'index.html', True),
                     (ROOT/'blog'/'index.html', False), (ROOT/'en'/'blog'/'index.html', True)):
         _patch_file(_p, lambda t, e=_en: index_share_image(t, e))
@@ -2323,21 +2322,41 @@ a.seo-card:hover b{color:var(--clay-600)}
                 if changed:
                     indexnow(f"{SITE}/en/blog/{page.parent.name}/")
 
-INDEX_SHARE_IMAGE = 'https://lh3.googleusercontent.com/d/1tOy85z8eimnAXtmOaa061NYhIdv_NemA=w1200'
+# Share previews (WhatsApp, Facebook, X) of the homepages and blog indexes:
+# a branded 1200x630 card served from the site itself (logo, headline, ages,
+# district, URL; no child photos). It replaced, on 2026-10-28, the graduation
+# photo hot-linked from a personal Google Drive (2 MB, breaks if sharing
+# changes). self-update.sh installs the file into the webroot before this
+# publisher runs; until it is there the pages are left as they are.
+INDEX_SHARE_IMAGE = SITE + '/assets/og-home-2026-10.jpg'
+INDEX_SHARE_FILE = 'assets/og-home-2026-10.jpg'
+INDEX_SHARE_OLD = ('%s/logo.png' % SITE,
+                   'https://lh3.googleusercontent.com/d/1tOy85z8eimnAXtmOaa061NYhIdv_NemA=w1200')
+INDEX_SHARE_ALT = {False: 'روضة كوكب الطفل الحر – حضانة وروضة مونتيسوري في جدة',
+                   True: 'Kawkab Al-Tifl Al-Hurr – Montessori nursery and kindergarten in Jeddah'}
 
-def index_share_image(text, english):
-    """og:image / twitter:image of a homepage or blog index: the hero photo
-    instead of /logo.png, with an alt. No-op once the page carries a photo."""
-    logo = 'content="%s/logo.png"' % SITE
-    if logo not in text:
+def index_share_image(text, english, root=None):
+    """og:image / twitter:image of a homepage or blog index: the branded share
+    card instead of /logo.png or the old Drive photo, with its alt and size.
+    No-op once the page carries the card, or while the file is not installed."""
+    if not ((root or ROOT) / INDEX_SHARE_FILE).is_file():
         return text
-    alt = 'A little girl at the nursery graduation' if english else 'طفلة في حفل تخرج الحضانة'
+    old = [u for u in INDEX_SHARE_OLD if 'content="%s"' % u in text]
+    if not old:
+        return text
+    alt = esc(INDEX_SHARE_ALT[english])
     for name in ('property="og:image"', 'name="twitter:image"'):
-        text = re.sub(r'(<meta %s content=")%s/logo\.png(")' % (name, re.escape(SITE)),
+        text = re.sub(r'(<meta %s content=")(?:%s)(")' % (name, '|'.join(re.escape(u) for u in old)),
                       lambda m: m.group(1) + INDEX_SHARE_IMAGE + m.group(2), text, count=1)
+    for name in ('property="og:image:alt"', 'name="twitter:image:alt"'):
+        text = re.sub(r'(<meta %s content=")[^"]*(")' % name, lambda m: m.group(1) + alt + m.group(2), text, count=1)
     if 'property="og:image:alt"' not in text:
         text = re.sub(r'(<meta property="og:image" content="[^"]*"\s*/?>)',
-                      lambda m: m.group(1) + '<meta property="og:image:alt" content="%s"/>' % esc(alt), text, count=1)
+                      lambda m: m.group(1) + '<meta property="og:image:alt" content="%s"/>' % alt, text, count=1)
+    if 'property="og:image:width"' not in text:
+        text = re.sub(r'(<meta property="og:image" content="[^"]*"\s*/?>)',
+                      lambda m: m.group(1) + '<meta property="og:image:width" content="1200"/>'
+                                             '<meta property="og:image:height" content="630"/>', text, count=1)
     return text
 
 def en_photo_meta(text, slug):

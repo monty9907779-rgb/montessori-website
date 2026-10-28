@@ -15,7 +15,7 @@ for (const entry of fs.readdirSync(path.join(root, 'public'), { withFileTypes: t
     }
   }
 }
-for (const name of ['app.js', 'app-admin.css', 'bot.css', 'bot.js', 'dashboard.css', 'fees-2026-2027.jpeg', 'install.js', 'logo-nav.webp', 'whatsapp-admin.css', 'whatsapp-admin.js', 'enrollment-transfer.css', 'enrollment-transfer.js', 'students-transfer.js', 'sw-update.js']) {
+for (const name of ['app.js', 'app-admin.css', 'bot.css', 'bot.js', 'dashboard.css', 'fees-2026-2027.jpeg', 'og-home-2026-10.jpg', 'install.js', 'logo-nav.webp', 'whatsapp-admin.css', 'whatsapp-admin.js', 'enrollment-transfer.css', 'enrollment-transfer.js', 'students-transfer.js', 'sw-update.js']) {
   files[`assets/${name}`] = '';
 }
 // 15/9: the allowlist above silently dropped assets/ai.js for twelve days — the

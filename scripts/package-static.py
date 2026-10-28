@@ -24,7 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PUBLIC = ROOT / 'public'
 FIXED_ASSETS = ['app.js', 'app-admin.css', 'bot.css', 'bot.js', 'dashboard.css',
-                'fees-2026-2027.jpeg', 'install.js', 'logo-nav.webp', 'whatsapp-admin.css',
+                'fees-2026-2027.jpeg', 'og-home-2026-10.jpg', 'install.js', 'logo-nav.webp', 'whatsapp-admin.css',
                 'whatsapp-admin.js', 'enrollment-transfer.css', 'enrollment-transfer.js',
                 'students-transfer.js', 'sw-update.js']
 TOP_LEVEL = ['sw.js', 'offline.html', 'manifest-staff.webmanifest', 'manifest-me.webmanifest',
