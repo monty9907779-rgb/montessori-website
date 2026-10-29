@@ -86,7 +86,6 @@ SEO_DESCRIPTION_OVERRIDES = {
     'kindergarten-rawda-jeddah': 'دليل عملي لاختيار روضة أطفال في جدة: الفرق بين الروضة والتمهيدي والحضانة، ومعايير الاختيار والأسئلة التي يجب طرحها.',
     'kids-club-nadi-atfal-jeddah': 'ما الفرق بين نادي الأطفال والحضانة؟ دليل اختيار الأنشطة الآمنة التي تنمّي مهارات طفلك في جدة.',
     'nursery-near-me-jeddah': 'تبحثين عن حضانة قريبة في جدة؟ دليلك لموازنة القرب مع جودة المنهج والأمان والأسئلة المهمة قبل التسجيل.',
-    'infant-nursery-jeddah': 'دليل حضانات الرضع في جدة: متى يكون طفلك جاهزاً؟ وما تسألين عنه قبل التسجيل؟ ومتى يحين الانتقال إلى حضانة الأطفال من سنتين؟',
 }
 
 LEGACY_LINKS = {
@@ -430,6 +429,9 @@ CANONICAL_TO = {
     'separation-anxiety-in-nursery': '/blog/nursery-separation-anxiety-jeddah-plan/',
     'signs-child-ready-for-nursery': '/blog/nursery-readiness-signs-child-jeddah/',
     'montessori-vs-traditional-education': '/blog/montessori-vs-traditional-nursery-jeddah/',
+    # 2026-10-29: two infant-care guides answered «حضانة رضع جدة»; the
+    # hand-rewritten infant-nursery-jeddah is kept.
+    'jeddah-nurseries-infant-care-guide': '/blog/infant-nursery-jeddah/',
 }
 
 # Slugs nginx 301-redirects to another article (ops/nginx/montessori-ksa.conf).
@@ -437,6 +439,10 @@ CANONICAL_TO = {
 # redirect"), be linked from the blog index or related cards, or be published.
 REDIRECTED = {
     'questions-before-nursery-registration-jeddah': 'nursery-registration-documents-jeddah',
+    # Queued as a new guide in #87 and folded into infant-nursery-jeddah
+    # before it went live: listed here so a server queue that already
+    # holds it as pending prunes it instead of publishing a duplicate.
+    'infant-nursery-jeddah-what-to-check': 'infant-nursery-jeddah',
 }
 
 REWRITES = OPT/"rewrites.json"
@@ -1027,8 +1033,8 @@ INLINE_LINKS = [
     ('العاب اطفال عمر سنتين', 'educational-games-for-2-3-year-olds'),
     ('ألعاب طفل عمر سنتين', 'educational-games-for-2-3-year-olds'),
     ('ألعاب تعليمية', 'educational-games-for-2-3-year-olds'),
-    ('حضانة رضع', 'infant-nursery-jeddah-what-to-check'),
-    ('حديثي الولادة', 'infant-nursery-jeddah-what-to-check'),
+    ('حضانة رضع', 'infant-nursery-jeddah'),
+    ('حديثي الولادة', 'infant-nursery-jeddah'),
     ('مدرسة تمهيدي', 'tamhidi-school-or-kindergarten-registration-jeddah'),
     ('تسجيل التمهيدي', 'tamhidi-school-or-kindergarten-registration-jeddah'),
     ('تمهيدي حكومي', 'tamhidi-school-or-kindergarten-registration-jeddah'),
