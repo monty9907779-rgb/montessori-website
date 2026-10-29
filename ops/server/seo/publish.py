@@ -1038,6 +1038,11 @@ INLINE_LINKS = [
     ('مدرسة تمهيدي', 'tamhidi-school-or-kindergarten-registration-jeddah'),
     ('تسجيل التمهيدي', 'tamhidi-school-or-kindergarten-registration-jeddah'),
     ('تمهيدي حكومي', 'tamhidi-school-or-kindergarten-registration-jeddah'),
+    # Guides queued 2026-10-29 (second batch); inert until published.
+    ('الحروف الإنجليزية', 'teaching-english-letters-to-kids-easy-way'),
+    ('الحروف الانجليزية', 'teaching-english-letters-to-kids-easy-way'),
+    ('تعليم الحروف', 'teaching-arabic-letters-to-kids-easy-way'),
+    ('الحروف العربية', 'teaching-arabic-letters-to-kids-easy-way'),
     ('المجموعات الصغيرة', 'nursery-small-groups-jeddah'),
     ('روتين اليوم', 'montessori-classroom-routine-jeddah'),
     ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
