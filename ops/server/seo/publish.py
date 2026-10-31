@@ -432,6 +432,19 @@ CANONICAL_TO = {
     # 2026-10-29: two infant-care guides answered «حضانة رضع جدة»; the
     # hand-rewritten infant-nursery-jeddah is kept.
     'jeddah-nurseries-infant-care-guide': '/blog/infant-nursery-jeddah/',
+    # 2026-10-31 SEO audit: live articles sharing a targetKeyword, same rule as
+    # appendix B. Ubersuggest showed the ranking URL for these searches
+    # switching between the pair week to week.
+    # «حضانة نصف يوم في جدة»: the homepage links nursery-half-full-day-jeddah.
+    'jeddah-half-day-nurseries-options-guide': '/blog/nursery-half-full-day-jeddah/',
+    # «تجهيز الطفل للحضانة»: nursery-transition-from-home-jeddah is the rewritten one.
+    'preparing-child-first-day-nursery': '/blog/nursery-transition-from-home-jeddah/',
+    # «أفضل حضانة مونتيسوري في جدة»: best-montessori-nursery-jeddah is the
+    # pillar the INLINE_LINKS «أفضل حضانة» anchor and 32 articles point at.
+    'ai-search-answer-nursery-jeddah': '/blog/best-montessori-nursery-jeddah/',
+    # Brand fact page: the brand search belongs to the homepage, as with
+    # montessori-nursery-faisaliyah-jeddah-details above.
+    'geo-montessori-nursery-jeddah-brand-answers': '/',
 }
 
 # Slugs nginx 301-redirects to another article (ops/nginx/montessori-ksa.conf).
