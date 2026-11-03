@@ -4042,6 +4042,71 @@ def stamp_home_dates(text, english, day):
         text = text.replace('</head>', f'<script type="application/ld+json">{node}</script>\n</head>', 1)
     return text
 
+# ── GEO extras on the homepages (2026-11-03 audit: geo-optimizer 73/100) ──
+# The verified Google Business Profile (cid = place id 0xaee1671b468377fb of
+# the Maps listing "روضة كوكب الطفل الحر"), already linked from the articles.
+GBP_URL = 'https://maps.google.com/?cid=12601466599204157435'
+_MAP_SEARCH = 'https://www.google.com/maps/search/?api=1&query=21.5795281,39.194829'
+HOME_SUMMARY = {
+    False: ('<section id="summary" class="k-sec" aria-labelledby="summary-title">\n'
+            '  <div class="k-wrap">\n    <div class="k-head">\n      <span class="k-kicker">باختصار</span>\n'
+            '      <h2 id="summary-title">ما هي روضة كوكب الطفل الحر؟</h2>\n'
+            '      <p>روضة كوكب الطفل الحر حضانة وروضة بمنهج مونتيسوري في حي الفيصلية بجدة، على شارع محمد عبدالكريم، '
+            'تستقبل الأطفال من ٣ إلى ٥ سنوات في مستويين: المستوى الأول (٣–٤ سنوات) والمستوى الثاني (٤–٥ سنوات)، '
+            'إضافةً إلى برنامج صيفي. الدوام من الأحد إلى الخميس من 08:00 حتى 13:00. يتعلّم الطفل العربية الفصحى '
+            'والإنجليزية والقرآن في بيئة مُعدّة بأدوات حسّية بمقاس يديه، مع فريق خبرته أكثر من ١٠ سنوات في الطفولة المبكرة. '
+            'تُحدَّد الرسوم حسب عمر الطفل وعدد الأيام وساعات الدوام وتُشارَك عند الطلب، ويمكن حجز زيارة لمشاهدة الفصول '
+            'قبل التسجيل عبر واتساب <bdi dir="ltr">+966541558173</bdi>.</p>\n'
+            '    </div>\n  </div>\n</section>\n\n'),
+    True: ('<section id="summary" class="k-sec" aria-labelledby="summary-title">\n'
+           '  <div class="k-wrap">\n    <div class="k-head">\n      <span class="k-kicker">In short</span>\n'
+           '      <h2 id="summary-title">What is Kawkab Al-Tifl Al-Hurr Kindergarten?</h2>\n'
+           '      <p>Kawkab Al-Tifl Al-Hurr is a Montessori nursery and kindergarten in the Al-Faisaliyah district of Jeddah, '
+           'on Mohammed Abdulkarim Street. It welcomes children aged 3 to 5 in two levels, KG1 (ages 3–4) and KG2 (ages 4–5), '
+           'plus a summer program. It is open Sunday to Thursday, 08:00 to 13:00. Children learn Modern Standard Arabic, '
+           'English and Quran in a prepared environment with hands-on, child-sized materials, guided by a team with more than '
+           '10 years in early childhood education. Fees depend on the child\'s age, the number of days and the hours chosen, '
+           'and are shared on request; families can book a visit to see the classrooms before registering via WhatsApp '
+           'at +966541558173.</p>\n'
+           '    </div>\n  </div>\n</section>\n\n'),
+}
+ABOUT_LINK = {False: ('<nav aria-label="روابط الموقع">', '<a href="/about/">من نحن</a>', 'about/index.html'),
+              True: ('<nav aria-label="Site links">', '<a href="/en/about/">About us</a>', 'en/about/index.html')}
+
+def home_geo_extras(text, english, root=None):
+    """Homepage GEO fixes, each a no-op once present: the Google Business
+    Profile in the business node's sameAs and as hasMap, the contact map link
+    pointing to that profile, a self-contained 'in short' answer block before
+    the first section (AI engines quote one complete passage), and an About
+    link in the footer once the about page is installed."""
+    head, sep, body = text.partition('</head>')
+    if GBP_URL not in head:
+        head = re.sub(r'("sameAs":\s*\[)', lambda m: m.group(1) + '"%s", ' % GBP_URL, head, count=1)
+        head = head.replace('"hasMap": "%s"' % _MAP_SEARCH, '"hasMap": "%s"' % GBP_URL, 1)
+    body = body.replace('href="%s" target="_blank"' % H.escape(_MAP_SEARCH), 'href="%s" target="_blank"' % GBP_URL, 1)
+    if 'id="summary"' not in body and '<section id="pillars"' in body:
+        body = body.replace('<section id="pillars"', HOME_SUMMARY[english] + '<section id="pillars"', 1)
+    nav, link, page = ABOUT_LINK[english]
+    if link not in body and nav in body and ((root or ROOT) / page).is_file():
+        body = body.replace(nav, nav + '\n        ' + link, 1)
+    return head + sep + body if sep else text
+
+def ensure_about_in_sitemap(today):
+    """List the about pages (installed by self-update.sh) in the sitemap."""
+    smp = ROOT/'sitemap.xml'
+    try:
+        sm = smp.read_text(encoding='utf-8')
+    except Exception:
+        return
+    new = sm
+    for rel, loc in (('about/index.html', f'{SITE}/about/'), ('en/about/index.html', f'{SITE}/en/about/')):
+        if (ROOT/rel).is_file() and f'<loc>{loc}</loc>' not in new and '</urlset>' in new:
+            new = new.replace('</urlset>', f'  <url>\n    <loc>{loc}</loc>\n    <lastmod>{today.isoformat()}</lastmod>\n  </url>\n</urlset>', 1)
+            indexnow(loc)
+    if new != sm:
+        smp.write_text(new, encoding='utf-8')
+        log('about pages added to sitemap')
+
 def _bump_home_lastmod(before, today):
     """When repair_static_site changed a homepage, say so in the sitemap and
     to IndexNow: the homepages' <lastmod> was stuck at the day they were
@@ -4418,6 +4483,9 @@ def main():
         QUEUE.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     _home_before = [(ROOT/f).read_text(encoding='utf-8') if (ROOT/f).exists() else '' for f in ('index.html', 'en/index.html')]
     repair_static_site()
+    for _f, _en in (('index.html', False), ('en/index.html', True)):
+        _patch_file(ROOT/_f, lambda t, e=_en: home_geo_extras(t, e))
+    ensure_about_in_sitemap(today)
     _bump_home_lastmod(_home_before, today)
     refresh_index_cards(q)
     ensure_index_cards(q)

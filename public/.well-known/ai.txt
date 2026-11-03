@@ -1,0 +1,22 @@
+# ai.txt — AI usage preferences for montessori-ksa.com
+# Kawkab Al-Tifl Al-Hurr (روضة كوكب الطفل الحر), Montessori kindergarten, Al-Faisaliyah, Jeddah.
+# Public pages may be read, indexed, summarised and cited by AI search and
+# answer engines. Please cite https://montessori-ksa.com/ when quoting.
+# Private areas (parents, staff, dashboards, /api/) are not for AI use;
+# robots.txt is the authoritative crawl policy.
+
+User-Agent: *
+Allow: /
+Disallow: /login/
+Disallow: /me/
+Disallow: /manage/
+Disallow: /staff/
+Disallow: /dashboard/
+Disallow: /api/
+
+# Machine-readable summaries
+LLMs: https://montessori-ksa.com/llms.txt
+LLMs-Full: https://montessori-ksa.com/llms-full.txt
+About: https://montessori-ksa.com/about/
+Sitemap: https://montessori-ksa.com/sitemap.xml
+Contact: info@montessori-ksa.com
