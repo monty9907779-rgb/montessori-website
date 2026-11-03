@@ -176,17 +176,34 @@
     '1VMJOmDnqr3niyLeye2SAtyQExXYTj4ns', '1gM7V8dojY3a_3qXf9_UlSi4H1nX7FFKo', '1cNkIXcn45SF2iG0P09muLu0d4zmEEaVq',
     '14_F8xmy-Q5FD3NULeGho8hFBOlP1BTD-', '1zELC2MRvcmIJ3F2uubH8dFCVSRYeUo_5', '1aer3_z4PBR-LiL1bv6yzxCeRgRgXh6Et', '1zqh4XFDEzMEPLyf1PGg-wzcaF9W8vFeD'];
   function thumb(id, w) { return 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w' + w; }
+  /* feed photos already self-hosted in /assets/img/ (value = file-name prefix); others load from Drive */
+  var LOCAL = {
+    '1tOy85z8eimnAXtmOaa061NYhIdv_NemA': '', '18AmxJGSzkXFACqG4pA2qasufXmQMXXHK': '', '1X4ke_GBVBaE5dqFJ8ACfAKeoNNzssFNQ': '',
+    '1VMJOmDnqr3niyLeye2SAtyQExXYTj4ns': '', '1_lh7XoF9FqgyROroAHGmOb7HRh1MuEaQ': '', '1cNkIXcn45SF2iG0P09muLu0d4zmEEaVq': '',
+    '1aer3_z4PBR-LiL1bv6yzxCeRgRgXh6Et': 'home-', '1zqh4XFDEzMEPLyf1PGg-wzcaF9W8vFeD': 'home-',
+    '1DVZt47s2WO7SraNoyjcmrD60Nu9fdUID': 'home-', '14_F8xmy-Q5FD3NULeGho8hFBOlP1BTD-': 'home-'
+  };
+  function isLocal(id) { return Object.prototype.hasOwnProperty.call(LOCAL, id); }
+  function local(id, w, ext) { return '/assets/img/' + LOCAL[id] + id + '-' + w + '.' + ext; }
+  function set(id, ext) { return local(id, 480, ext) + ' 480w, ' + local(id, 800, ext) + ' 800w'; }
   var gal = $('gal');
   function renderGallery(ids) {
     var skip = (gal.getAttribute('data-hero') || '').split(',');
-    ids = ids.filter(function (id) { return skip.indexOf(id) < 0; }).slice(0, 7);
+    ids = ids.filter(function (id) { return skip.indexOf(id) < 0; }).slice(0, 6);
     if (!ids.length) { gal.outerHTML = '<p class="k-gal-note">' + esc(T.galEmpty) + '</p>'; return; }
-    var full = ids.map(function (id) { return thumb(id, 1400); });
+    var full = ids.map(function (id) { return isLocal(id) ? local(id, 1200, 'webp') : thumb(id, 1400); });
     gal.innerHTML = ids.map(function (id, n) {
-      var alt = T.galAlt[n % T.galAlt.length];
-      return '<button type="button" class="cell" data-i="' + n + '"><img loading="lazy" decoding="async" width="400" height="400" alt="' +
-        esc(alt) + '" src="' + thumb(id, n === 0 ? 900 : 500) + '"/><span class="sr-only">' + esc(T.galOpen) + '</span></button>';
+      var alt = esc(T.galAlt[n % T.galAlt.length]), sizes = n === 0 ? '(min-width: 760px) 560px, 100vw' : '(min-width: 760px) 280px, 50vw';
+      var img = isLocal(id)
+        ? '<picture><source type="image/avif" srcset="' + set(id, 'avif') + '" sizes="' + sizes + '"/><img loading="lazy" decoding="async" width="480" height="480" alt="' +
+          alt + '" src="' + local(id, 800, 'webp') + '" srcset="' + set(id, 'webp') + '" sizes="' + sizes + '"/></picture>'
+        : '<img loading="lazy" decoding="async" width="480" height="480" alt="' + alt + '" src="' + thumb(id, n === 0 ? 900 : 500) + '"/>';
+      return '<button type="button" class="cell" data-i="' + n + '">' + img + '<span class="sr-only">' + esc(T.galOpen) + '</span></button>';
     }).join('');
+    /* a Drive photo that fails to load leaves the bento rather than showing a broken image */
+    [].forEach.call(gal.querySelectorAll('img'), function (im) {
+      im.addEventListener('error', function () { var c = im.closest('.cell'); if (c) c.hidden = true; });
+    });
     gal.addEventListener('click', function (e) {
       var c = e.target.closest('.cell'); if (c) lightbox(full, +c.getAttribute('data-i'));
     });
@@ -208,9 +225,8 @@
       if (!list.length) return;
       var star = '<svg aria-hidden="true"><use href="#i-star"/></svg>';
       function stars(n) { var h = ''; n = Math.round(+n || 0); for (var k = 0; k < n; k++) h += star; return h; }
-      $('g-rating').innerHTML = '<b>' + esc(d.rating) + '</b><span class="k-stars" role="img" aria-label="' + esc(d.rating + T.stars) + '">' + star +
-        '</span><span>' + esc(d.count) + esc(T.reviews) + '</span>' +
-        (d.url && /^https:\/\//.test(d.url) ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + esc(T.readAll) + '</a>' : '');
+      /* no aggregate rating or count in our own copy: link to the reviews on Google instead */
+      $('g-rating').innerHTML = d.url && /^https:\/\//.test(d.url) ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + esc(T.readAll) + '</a>' : '';
       $('reviews-grid').innerHTML = list.map(function (r) {
         return '<figure class="k-quote"><span class="k-stars" role="img" aria-label="' + esc((r.rating || '') + T.stars) + '">' + stars(r.rating) + '</span>' +
           '<blockquote><p>' + esc(r.text) + '</p></blockquote><footer><b>' + esc(r.name) + '</b> · ' + esc(r.when || '') + '</footer></figure>';
