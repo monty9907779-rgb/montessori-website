@@ -29,7 +29,7 @@ for rel in about/index.html en/about/index.html .well-known/ai.txt; do
   f="$T/$(echo "$rel" | tr '/' '_')"
   fetch "public/$rel" "$f" || { echo "skip $rel: download"; continue; }
   if python3 "$SCAN" --scan "$f" --as "$W/$rel"; then
-    mkdir -p "$(dirname "$W/$rel")"
+    install -d -m 755 -o www-data -g www-data "$(dirname "$W/$rel")"
     install -m 644 -o www-data -g www-data "$f" "$W/$rel" && echo "installed $rel"
   else
     echo "skip $rel: scan flagged it"
