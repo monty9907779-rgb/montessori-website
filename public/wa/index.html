@@ -301,9 +301,32 @@ details p{
   .brand-top img{width:64px;height:64px}
   .info li{grid-template-columns:1fr}
 }
+.sitebar{position:sticky;top:0;z-index:50;background:rgba(252,250,245,.92);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
+.sitebar__in{max-width:1160px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:16px}
+.sitebar__brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--green);font-weight:800;font-size:1.05rem;flex:none}
+.sitebar__brand img{width:40px;height:40px;border-radius:12px;flex:none}
+.sitebar__links{display:flex;gap:4px;margin-inline-start:auto}
+.sitebar__links a{padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600;color:var(--text)}
+.sitebar__links a:hover{background:var(--panel-soft);color:var(--green)}
+.sitebar__cta{display:flex;gap:8px;align-items:center}
+.sitebar__btn{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;font-weight:700;text-decoration:none;font-size:.95rem;white-space:nowrap}
+.sitebar__btn.solid{background:var(--green);color:#fff}
+.sitebar__btn.line{border:1px solid var(--line);background:var(--panel);color:var(--green)}
+.sitebar__home{display:none}
+@media(max-width:820px){.sitebar__links{display:none}.sitebar__cta{margin-inline-start:auto}.sitebar__home{display:inline-flex}}
+@media(max-width:480px){.sitebar__in{gap:8px;padding:8px 12px}.sitebar__brand span{display:none}.sitebar__btn{padding:0 12px;font-size:.88rem;min-height:38px}}
 </style>
 <!--ps:js--><script>(function(){var w=window,d=document;w.dataLayer=w.dataLayer||[];function gtag(){dataLayer.push(arguments);}w.gtag=gtag;gtag('js',new Date());gtag('config','G-H0856C2N0T');addEventListener('load',function(){setTimeout(function(){var s=d.createElement('script');s.async=1;s.src='https://www.googletagmanager.com/gtag/js?id=G-H0856C2N0T';d.head.appendChild(s);},1500);});addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(!a)return;var h=a.getAttribute('href')||'';if(h.indexOf('wa.me')>-1||h.indexOf('whatsapp')>-1||h.indexOf('/wa/')===0){gtag('event','whatsapp_click',{transport_type:'beacon'});}else if(h.indexOf('#register')>-1){gtag('event','book_visit_click');}},true);addEventListener('submit',function(e){if(e.target&&e.target.id==='regform'){gtag('event','lead_form_submit');}},true);d.addEventListener('DOMContentLoaded',function(){var t=d.getElementById('totop');if(!t)return;addEventListener('scroll',function(){t.classList.toggle('show',scrollY>500);},{passive:true});t.addEventListener('click',function(){scrollTo({top:0,behavior:'smooth'});});});})();</script><!--/ps:js--></head>
 <body>
+<header class="sitebar"><div class="sitebar__in">
+  <a class="sitebar__brand" href="/" aria-label="الصفحة الرئيسية"><img src="/assets/logo-mark-92.webp" srcset="/assets/logo-mark-46.webp 46w, /assets/logo-mark-92.webp 92w" sizes="40px" width="40" height="40" alt="" decoding="async"/><span>روضة كوكب الطفل الحر</span></a>
+  <nav class="sitebar__links" aria-label="روابط الموقع"><a href="/">الرئيسية</a><a href="/#philosophy">منهجنا</a><a href="/#programs">برامجنا</a><a href="/blog/">المدوّنة</a></nav>
+  <div class="sitebar__cta">
+    <a class="sitebar__btn line sitebar__home" href="/">الرئيسية</a>
+    <a class="sitebar__btn line" href="/login/" rel="nofollow">دخول</a>
+    <a class="sitebar__btn solid" href="/#register">احجزي زيارة</a>
+  </div>
+</div></header>
 <main class="wrap">
   <section class="hero" aria-label="صفحة التواصل">
     <div class="brand">
