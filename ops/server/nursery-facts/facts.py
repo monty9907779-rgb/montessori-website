@@ -4,9 +4,10 @@
 يستورده الناشر اليومي /opt/seo/publish.py ومولّد GEO
 /opt/geo-watch/geo_autopilot.py. المكتبة القياسية فقط.
 
-سلّم المراحل هو التسمية السعودية الرسمية (قرار المالك 2026-09-13):
-    ما قبل الروضة سنتان-3 · المستوى الأول 3-4 · المستوى الثاني 4-5 · التمهيدي 5-6
-مطابق لمستويات أودو prekg/kg1/kg2/kg3.
+الأعمار من ٣ إلى ٥ سنوات فقط (أكّدها المالك 2026-11-03، وتلغي سلّم 2026-09-13):
+    المستوى الأول 3-4 · المستوى الثاني 4-5 · البرنامج الصيفي
+لا توجد لدينا مرحلة ما قبل الروضة (2-3) ولا التمهيدي (5-6). يبقى الاسمان في
+STAGE_AGES حتى يُرفض أي عمر خاطئ لهما في شرح عام، ونسبتهما إلينا مرفوضة.
 """
 import os
 import re
@@ -16,15 +17,15 @@ DIGITS = str.maketrans('٠١٢٣٤٥٦٧٨٩', '0123456789')
 FACTS = """حقائق المنشأة المسموح ذكرها (ولا تذكر أي حقيقة غيرها عنها):
 - الاسم: روضة كوكب الطفل الحر، جدة.
 - الموقع: حي الفيصلية، شارع محمد عبدالكريم، جدة.
-- الأعمار: من سنتين إلى ٥ سنوات فقط.
-- المراحل: ما قبل الروضة (سنتان–٣) · المستوى الأول (٣–٤) · المستوى الثاني (٤–٥)
-  · التمهيدي (٥–٦) · برنامج صيفي · ضيافة بالساعة.
+- الأعمار: من ٣ إلى ٥ سنوات فقط.
+- المراحل: المستوى الأول (٣–٤) · المستوى الثاني (٤–٥) · البرنامج الصيفي.
+  لا يوجد لدينا ما قبل الروضة ولا التمهيدي.
 - الدوام: الأحد إلى الخميس، من الثامنة صباحاً حتى الواحدة ظهراً.
 - المنهج: مونتيسوري الأصيل + اللغة العربية الفصحى + الإنجليزية + تعليم القرآن.
 - المزايا: بيئة مُعدّة، معلمات مؤهلات، كاميرات مراقبة، تطبيق تواصل مع الأسرة.
 - الخبرة: أكثر من ١٠ سنوات في تعليم الطفولة المبكرة (أكّدها المالك 2026-10-02).
 - التواصل: واتساب 0541558173.
-- التقييم: 4.7 من 5 على خرائط جوجل (لا تذكر عدد المراجعات إطلاقاً — الرقم يتغيّر).
+- التقييمات: آراء الأهالي على خرائط جوجل (لا تذكر رقم تقييم ولا عدد مراجعات).
 """
 
 RULES = """قواعد ملزمة:
@@ -32,12 +33,13 @@ RULES = """قواعد ملزمة:
    القاعدة الصحيحة: الرسوم تُحدَّد حسب عمر الطفل وعدد الأيام وساعات الدوام،
    ويُحدَّد الرقم الدقيق عبر مكالمة أو زيارة. اشرح هذه القاعدة بوضوح.
    يجوز الحديث عن أسعار سوق الحضانات في جدة بصيغة عامة دون نسبتها إلينا.
-2. ممنوع ذكر أعمار غير ٢–٥ للمنشأة، وممنوع ذكر مرحلة "رضّع" أو "أقل من سنتين".
-   لو السؤال عن عمر خارج نطاقنا، قل بصراحة إننا نستقبل من سنتين إلى ٥ ووجّه لغيره بلطف.
-   لازم تذكر نطاق «من سنتين إلى ٥ سنوات» صراحةً بهذه الصيغة مرة على الأقل.
-3. أسماء المراحل هي التسمية السعودية الرسمية حصراً: ما قبل الروضة (سنتان–٣)،
-   المستوى الأول (٣–٤)، المستوى الثاني (٤–٥)، التمهيدي (٥–٦).
+2. ممنوع ذكر أعمار غير ٣–٥ للمنشأة، وممنوع ذكر مرحلة "رضّع" أو "أقل من ٣ سنوات".
+   لو السؤال عن عمر خارج نطاقنا، قل بصراحة إننا نستقبل من ٣ إلى ٥ ووجّه لغيره بلطف.
+   لازم تذكر نطاق «من ٣ إلى ٥ سنوات» صراحةً بهذه الصيغة مرة على الأقل.
+3. مراحلنا بالتسمية السعودية الرسمية: المستوى الأول (٣–٤) والمستوى الثاني (٤–٥)،
+   مع البرنامج الصيفي. ممنوع نسبة «ما قبل الروضة» أو «التمهيدي» إلينا.
    ممنوع تسمية أي مرحلة "الحضانة (١–٢)" أو "التمهيدي (٢–٤)" أو "الروضة (٤–٦)".
+   ممنوع ذكر رقم تقييم (مثل 4.7★)؛ الإحالة لآراء الأهالي على جوجل فقط.
 4. ممنوع اختراع تراخيص أو اعتمادات أو جوائز أو عدد أطفال.
    الخبرة تُذكر بصيغة «أكثر من ١٠ سنوات» فقط، بلا رقم آخر.
 5. ممنوع ذكر أسماء حضانات منافسة.
@@ -57,6 +59,9 @@ STAGE_AGES = [
     ('المستوى الثاني', r'(?:ال)?مستوى الثاني|KG\s*2', (4, 5)),
     ('التمهيدي', r'(?:ال)?تمهيدي|KG\s*3', (5, 6)),
 ]
+
+# مدى الاستقبال الكلي (المالك 2026-11-03): مسموح ملتصقاً بـ«الروضة/الحضانة».
+INTAKE = (3, 5)
 
 # مدى يلي اسم المرحلة مباشرة: '(2-4 سنوات)' أو ' من 2 إلى 4'
 # الحدود تُكتب أحياناً بالكلمات لا بالأرقام (مثال حقيقي في FACTS نفسه:
@@ -138,9 +143,10 @@ BANS = [
 
 # ضمان إيجابي: لازم يذكر نطاقنا صراحةً.
 # سابقة موثّقة (autopilot.log 8/8): الحاجز كان يطلب ٣–٥ بعد توحيد الأعمار على
-# ٢–٥ فصار يرفض المحتوى الصحيح. أي تغيير هنا يتبعه تشغيل الاختبارات.
+# ٢–٥ فصار يرفض المحتوى الصحيح. المالك أعاد النطاق إلى ٣–٥ في 2026-11-03.
+# أي تغيير هنا يتبعه تشغيل الاختبارات.
 MUST = re.compile(
-    r'(?:سنتين|سنتان|عامين|٢|2)\s*(?:إلى|الى|حتى|[–-])\s*(?:٥|5|خمس|الخامسة)')
+    r'(?:ثلاث|الثالثة|٣|3)(?:\s*(?:سنوات|سنة|أعوام))?\s*(?:إلى|الى|حتى|[–-])\s*(?:٥|5|خمس|الخامسة)')
 
 _TAG = re.compile(r'<[^>]+>')
 _SCRIPT = re.compile(r'<(script|style)[^>]*>.*?</\1>', re.S | re.I)
@@ -200,7 +206,7 @@ def _check_orphan_stage_ages(t):
         if _NON_AGE_UNIT.match(tail[r.end():]):
             continue
         got = (_num(r.group(1)), _num(r.group(2)))
-        if got != (2, 5):  # مدى الاستقبال الكلي مسموح
+        if got != INTAKE:  # مدى الاستقبال الكلي مسموح
             out.append('«%s» مقترنة بعمر مرحلة (%s-%s) — التسمية الصحيحة '
                        'المستوى الأول/الثاني/التمهيدي'
                        % (m.group(0).strip(), got[0], got[1]))
@@ -210,7 +216,7 @@ def _check_orphan_stage_ages(t):
 # المدى قبل الاسم: «من 3 إلى 4 سنوات (التمهيدي)». الفحصان أعلاه يقرآن المدى
 # بعد اسم المرحلة فقط، فمرّت صفحة montessori-for-kids-guide الحيّة بثلاثة
 # عناوين بهذا الشكل (اكتُشفت 2026-10-10). «الروضة/الحضانة» بين القوسين
-# تسمية مخترعة كما في _check_orphan_stage_ages، ويُسمح بمدى الاستقبال 2-5.
+# تسمية مخترعة كما في _check_orphan_stage_ages، ويُسمح بمدى الاستقبال 3-5.
 _RANGE_BEFORE = re.compile(
     '(' + _NUM + r')\s*(?:إلى|الى|حتى|[-–—])\s*(' + _NUM + r')'
     r'\s*(?:سنوات|سنة|أعوام|عام)?\s*\(\s*'
@@ -231,7 +237,7 @@ def _check_stage_ages_before(t):
             if got != (lo, hi):
                 out.append('عمر مرحلة خاطئ — %s: وجد %s-%s والصحيح %d-%d'
                            % (label, got[0], got[1], lo, hi))
-        elif got != (2, 5):
+        elif got != INTAKE:
             out.append('«%s» مقترنة بعمر مرحلة (%s-%s) — التسمية الصحيحة '
                        'المستوى الأول/الثاني/التمهيدي' % (name, got[0], got[1]))
     return out
@@ -300,12 +306,49 @@ def _check_hours(sent):
     return ['دوام غلط: «%s»' % m.group(0)] if m else []
 
 
+# نسبة مرحلة لا نقدّمها إلينا، أو مدى الاستقبال القديم (٢–٥)، أو رقم تقييم.
+# الجملة تُعدّ «منسوبة إلينا» بكلمة صريحة فقط: الأدلة العامة عن طفل السنتين
+# أو عن «التمهيدي» في التسمية السعودية تبقى مسموحة.
+OURS_CUES = ATTRIBUTION_CUES + ('نستقبل', 'نقبل', 'نقدّم', 'نقدم', 'نوفّر', 'نوفر',
+                                'مراحلنا', 'برامجنا', 'برنامجنا', 'أطفالنا', 'فصولنا')
+_NOT_OFFERED_NEG = re.compile(r'لا يوجد|لا توجد|لا نقدّم|لا نقدم|لا تقدّم|لا تقدم|لا يقدّم|لا يقدم|لا نستقبل|ليس لدينا|ليست لدينا|لا تشمل|تسبق (?:سنة )?التمهيدي|قبل (?:سنة )?التمهيدي')
+# اسم المرحلة منسوب إلينا حين يلي فعل استقبال/تقديم، أو حين تقول الجملة «عندنا/لدينا».
+# «الفرق بين الحضانة والروضة والتمهيدي، وكيف نطبّق ذلك في حضانتنا» شرح لا عرض.
+OFFER_CUES = ('نستقبل', 'نقبل', 'نقدّم', 'نقدم', 'نوفّر', 'نوفر', 'تستقبل', 'تقدّم', 'تقدم',
+              'يقدّم', 'يقدم', 'يجمع بين', 'تجمع بين', 'مرحلتين', 'مراحلنا', 'برامجنا', 'برنامجنا')
+_HAVE = re.compile(r'عندنا|لدينا|مراحلنا|برامجنا|برنامجنا')
+_NOT_OFFERED = re.compile(r'PREKG|(?<![\w])و?(?:ال)?تمهيدي')
+_OLD_INTAKE = re.compile(
+    r'(?:سنتين|سنتان|عامين|السنتين|(?<![\d.])2)(?:\s*(?:سنوات|سنة|أعوام|عام))?'
+    r'\s*(?:إلى|الى|حتى|[–-])\s*(?:5|خمس|الخامسة)')
+_RATING = re.compile(r'(?:تقييم\w*|★)[^.؟!]{0,20}4[.٫]\d|(?<![\d.])4[.٫]\d\s*(?:★|من\s*5|/\s*5|نجوم)')
+
+
+def _check_ours_claims(sent):
+    """مرحلة لا نقدّمها أو مدى ٢–٥ منسوبان إلينا صراحةً."""
+    if not any(c in sent for c in OURS_CUES) or _NOT_OFFERED_NEG.search(sent):
+        return []
+    out = []
+    cue = min((i for i in (sent.find(c) for c in OFFER_CUES) if i >= 0), default=-1)
+    stage = _NOT_OFFERED.search(sent, cue if cue >= 0 else len(sent))
+    if stage or (_HAVE.search(sent) and _NOT_OFFERED.search(sent)):
+        out.append('مرحلة لا نقدّمها منسوبة إلينا: «%s»' % sent.strip()[:45])
+    m = _OLD_INTAKE.search(sent)
+    if m:
+        out.append('مدى أعمار قديم (٢–٥) منسوب إلينا: «%s»' % m.group(0))
+    return out
+
+
+_AGE_RANGE = re.compile(r'\d\s*(?:إلى|الى|حتى|[–-])\s*\d(?:\s*(?:سنوات|سنة|أعوام))?')
+
+
 def check_text(text):
     """يرجّع قائمة أسباب الرفض — فاضية يعني سليم."""
     t = normalize(text)
     bad = []
     for name, rx in BANS:
-        m = rx.search(t)
+        # «رسوم حضانتنا … من ٣ إلى ٥ سنوات»: رقما مدى العمر ليسا سعراً
+        m = rx.search(_AGE_RANGE.sub(' ', t) if name == 'سعر مخترع' else t)
         if m:
             bad.append('%s: «%s»' % (name, m.group(0)[:45]))
     bad = [b for b in bad if not (b.startswith('ادعاء عمر غلط') and _NEGATED.search(t))]
@@ -315,8 +358,12 @@ def check_text(text):
     bad.extend(_ours_only(t, _check_stage_ages_before))
     bad.extend(_ours_only(t, _check_hours))
     bad.extend(_check_program_count(t))
+    bad.extend(_ours_only(t, _check_ours_claims))
+    m = _RATING.search(t)
+    if m:
+        bad.append('رقم تقييم: «%s»' % m.group(0)[:45])
     if not MUST.search(t):
-        bad.append('ما ذكرش نطاق أعمارنا (٢–٥) صراحةً')
+        bad.append('ما ذكرش نطاق أعمارنا (٣–٥) صراحةً')
     return bad
 
 
@@ -339,7 +386,7 @@ def check_article(a):
 
 # ------------------------------------------------------------------
 # حاجز الحقائق للصفحات الإنجليزية (/en/blog/*). نفس الحقائق، بصيغة إنجليزية:
-# لا أسعار ولا عدد مراجعات ولا أعمار خارج ٢–٥ ولا دوام غير 8:00–1:00،
+# لا أسعار ولا عدد مراجعات ولا رقم تقييم ولا أعمار خارج ٣–٥ ولا دوام غير 8:00–1:00،
 # ولا اعتمادات مخترعة. الأعمار العامة للسوق ("kindergarten covers 4 to 6")
 # مسموحة، لكن نسبتها إلينا (we/our/Kawkab) هي المخالفة.
 # ------------------------------------------------------------------
@@ -351,17 +398,23 @@ EN_BANS = [
     # "4.7/5 rating" is a score, not a count: the digit after a slash is exempt
     ('review count', re.compile(r'(?<![/\d.])\d[\d,]*\s+(?:google\s+)?(?:reviews?|ratings?)\b|\bfrom\s+\d+\s+(?:parents|families)\b', re.I)),
     ('infants', re.compile(_EN_US + r'[^.?!]{0,60}\b(?:infants?|babies|baby|newborns?|toddlers? under|under (?:2|two)|from (?:1|one) year|1[-–]year)', re.I)),
+    # 2026-11-03: ages 3 to 5 only; no Pre-KG or KG3/Tamhidi of ours, no star rating
+    # "our guide to nursery for a 2-year-old ... what Pre-KG offers" explains; "we offer Pre-KG" claims
+    ('stage we do not offer', re.compile(r'(?:\bwe\s+(?:offer|run|have|provide|welcome|admit|take|teach)|\bour\s+(?:programmes?|programs?|stages?|classes|levels)|\bour\s+(?=Pre-?K|KG\s?3|Tamhidi)|Kawkab\S*\s+(?:offers|runs|has|provides|welcomes|admits))[^.?!]{0,80}\b(?:Pre-?KG|Pre-?K\b|KG\s?3|Tamhidi)', re.I)),
+    ('old age range', re.compile(_EN_US + r'[^.?!]{0,80}\b(?:aged?|ages|from|for children)\s+(?:2|two)\s*(?:to|-|–|and)\s*(?:5|five)\b', re.I)),
+    ('rating', re.compile(r'\b4\.\d\s*(?:★|&#9733;|/\s*5|out of 5|stars?)|\brated\s+4\.\d', re.I)),
     ('wrong hours', re.compile(r'\b(?:until|till|to|-|–)\s*(?:2|14)(?::00)?\s*(?:pm|p\.m\.)|\b14:00\b|\b2:00\s*pm\b', re.I)),
     # generic advice ("check that a nursery is licensed") is fine; claiming it for us is not
     ('invented credential', re.compile(r'(?:\bwe(?:\'re| are| have been)|\bour\b[^.]{0,40}\b(?:is|are)|Kawkab[^.]{0,40}\b(?:is|are))[^.]{0,30}\b(?:licen[sc]ed|accredited|certified by|ministry[- ]approved|award[- ]winning)\b|\bISO\s?\d{4,}|\baward[- ]winning\b', re.I)),
     ('competitor', re.compile(r'\b(?:Little Gate|Kids Academy|Bright Horizons|Kindercare)\b', re.I)),
     ('markup', re.compile(r'<(html|head|body|script|style)\b', re.I)),
 ]
-# Pre-KG 2-3, KG1 3-4, KG2 4-5 (also "Pre-KG (ages 2 to 3)"). Any other range
-# written right after one of our stage names is wrong.
+# KG1 3-4, KG2 4-5 (also "KG1 (ages 3 to 4)"). Pre-KG keeps its official 2-3 so
+# a general explanation of the Saudi ladder is still checked. Any other range
+# written right after one of these stage names is wrong.
 _EN_STAGES = [('pre-?kg', ('2', '3')), ('kg\\s?1', ('3', '4')), ('kg\\s?2', ('4', '5'))]
 _EN_NUM = {'two': '2', 'three': '3', 'four': '4', 'five': '5', 'six': '6', 'one': '1'}
-EN_MUST = re.compile(r'\b(?:ages?\s+)?(?:2|two)\s*(?:to|-|–|—|and)\s*(?:5|five)\b', re.I)
+EN_MUST = re.compile(r'\b(?:ages?\s+)?(?:3|three)\s*(?:to|-|–|—|and)\s*(?:5|five)\b', re.I)
 _EN_TAG = re.compile(r'<[^>]+>')
 
 
@@ -387,7 +440,7 @@ def check_en_text(text):
             if (a, b) != (lo, hi):
                 bad.append('stage age: "%s"' % m.group(0)[:45])
     if not EN_MUST.search(t):
-        bad.append('missing our age range (2 to 5)')
+        bad.append('missing our age range (3 to 5)')
     return bad
 
 
@@ -399,10 +452,16 @@ def check_en_article(a):
     return check_en_text(' . '.join(parts))
 
 
+# حدود الكتل جملٌ منفصلة: بدونها تلتصق قائمة التنقّل («برامجنا») والعنوان
+# وبطاقات المقالات ذات الصلة في «جملة» واحدة، فيُنسب عنوان مقال عن التمهيدي إلينا.
+_BLOCK_TAG = re.compile(r'</?(?:p|li|ul|ol|h[1-6]|div|nav|header|footer|section|aside|summary|details'
+                        r'|title|td|th|tr|table|figure|figcaption|main|article|span|small|br|button)\b[^>]*>', re.I)
+
+
 def check_html(html):
     """يفحص صفحة منشورة."""
     body = _SCRIPT.sub(' ', str(html or ''))
-    return check_text(_TAG.sub(' ', body))
+    return check_text(_TAG.sub(' ', _BLOCK_TAG.sub(' . ', body)))
 
 
 def audit_dir(root):

@@ -17,8 +17,15 @@ NS.SITE  = '';
 NS.WA_MANAGER = '966541558173';                       /* nursery admin whatsapp */
 
 /* ---- escaping ---- */
-NS.esc = function(s){ var d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; };
-NS.attr = function(s){ return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); };
+NS.esc = function(s){ var d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
+/* attribute-safe string; values that are script/data URLs are neutralised to '#'
+   (only http(s), mailto, tel and relative URLs survive when a URL is passed) */
+NS.attr = function(s){
+  var v = String(s==null?'':s), t = document.createElement('textarea');
+  t.innerHTML = v;  // decode entities first: javascript&#58; is javascript: once it is in an attribute
+  if(/^\s*(javascript|data|vbscript|file|blob)\s*:/i.test(t.value.replace(/[\u0000-\u0020\u007F]/g,''))) v = '#';
+  return v.replace(/&(?!(amp|quot|lt|gt|#\d+);)/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+};
 
 /* ---- token: hash(kind) -> localStorage(store) -> strip url ---- */
 var STORES = { t:'nursery_token', mt:'nursery_mt', st:'nursery_staff' };
@@ -508,42 +515,30 @@ NS.wireLogout = function(kind){
   });
 };
 
-/* ---- 🔔 جرس التنبيهات الموحّد: عدّاد لكل ما يهم المدير/الأونر (يظهر فقط مع توكن mt صالح) ---- */
+/* ---- 🔔 جرس التنبيهات الموحّد ----
+   وضعان: المديرة/الأونر (توكن mt على صفحات الإدارة → /api/manager/notifications)
+   والموظفة (توكن st على /staff/ → /api/staff/alerts).
+   كان معطّلاً لأن الستايل كان بيتحقن كـ<style> وCSP بتحجبه — الستايل دلوقتي في
+   /assets/bell.css، والجرس ما يظهرش إلا في صفحة بتحمّل الملف ده. */
 NS.notifBell = function(){
-  return;
-
-  var mt=null; try{ mt=localStorage.getItem('nursery_mt'); }catch(e){}
-  if(!mt || document.getElementById('ns-bell')) return;
-  // يظهر فقط في صفحات الإدارة — لا يظهر إطلاقاً على الصفحات العامة أو المدوّنة
-  // (حتى لو كانت المديرة مسجّلة دخول ومارّة على الموقع العام)
-  /* كل تابات الإدارة — لازم تفضل متطابقة مع NS.adminNav.
-     كانت 11 مسار بس، فالجرس كان بيختفي في السيرفر والحماية وجوجل وميتا
-     والسوشيال والزيارات والقمع والبريد. */
-  if(!/^\/(dashboard|students|enrollments|classes|books|salaries|accounts|albums|cameras|roles|permissions|manage|visits|funnel|social|mail|google|meta|security|server)(\/|$)/.test(location.pathname)) return;
-  var css=document.createElement('style');
-  css.textContent='#ns-bell{position:fixed;bottom:18px;left:18px;z-index:9000;width:52px;height:52px;border-radius:50%;'+
-    'border:0;background:var(--forest,#184e3e);color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;'+
-    'display:flex;align-items:center;justify-content:center}'+
-    '#ns-bell svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'+
-    '#ns-bell .cnt{position:absolute;top:-4px;right:-4px;min-width:21px;height:21px;border-radius:999px;background:#dc2626;'+
-    'color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;font-family:inherit}'+
-    '#ns-bell.zero .cnt{display:none}'+
-    '#ns-notif-panel{position:fixed;bottom:80px;left:18px;z-index:9001;width:min(340px,calc(100vw - 36px));max-height:60vh;overflow:auto;'+
-    'background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.28);padding:10px;direction:rtl}'+
-    '#ns-notif-panel .nrow{display:flex;align-items:flex-start;gap:10px;padding:11px 10px;border-radius:12px;cursor:pointer;text-decoration:none;color:inherit}'+
-    '#ns-notif-panel .nrow:hover{background:rgba(0,0,0,.05)}'+
-    '#ns-notif-panel .ncnt{flex:none;min-width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff}'+
-    '#ns-notif-panel .t-danger{background:#dc2626}#ns-notif-panel .t-warn{background:#b45309}#ns-notif-panel .t-info{background:#184e3e}'+
-    '#ns-notif-panel .nlbl{font-weight:700;font-size:.9rem}#ns-notif-panel .nnames{font-size:.76rem;color:#777;margin-top:2px;line-height:1.5}'+
-    '#ns-notif-panel .nempty{padding:18px;text-align:center;color:#777;font-size:.9rem}';
-  document.head.appendChild(css);
+  if(document.getElementById('ns-bell')) return;
+  if(!document.querySelector('link[href*="/assets/bell.css"]')) return;
+  var mode=null, tok=null;
+  if(/^\/staff(\/|$)/.test(location.pathname)){
+    mode='staff'; try{ tok=localStorage.getItem('nursery_staff'); }catch(e){}
+  } else if(/^\/(dashboard|students|enrollments|classes|books|salaries|accounts|albums|cameras|roles|permissions|manage|visits|funnel|social|mail|google|meta|security|server)(\/|$)/.test(location.pathname)){
+    mode='manager'; try{ tok=localStorage.getItem('nursery_mt'); }catch(e){}
+  }
+  if(!mode || !tok) return;
+  var api = mode==='staff' ? '/api/staff/alerts' : '/api/manager/notifications';
+  var params = mode==='staff' ? {st:tok} : {mt:tok};
   var b=document.createElement('button');
-  b.id='ns-bell'; b.className='zero'; b.title='التنبيهات';
+  b.id='ns-bell'; b.className='zero'; b.title='التنبيهات'; b.setAttribute('aria-label','التنبيهات');
   b.innerHTML=NS.icon('bell')+'<span class="cnt">0</span>';
   document.body.appendChild(b);
   var items=[], total=0;
   function refresh(){
-    NS.api('/api/manager/notifications',{mt:mt}).then(function(d){
+    NS.api(api, params).then(function(d){
       if(!d||!d.ok) return;
       items=d.items||[]; total=d.total||0;
       b.querySelector('.cnt').textContent=total>99?'99+':total;
@@ -559,8 +554,9 @@ NS.notifBell = function(){
     else{
       p.innerHTML=items.map(function(it){
         var names=(it.names&&it.names.length)?('<div class="nnames">'+it.names.map(NS.esc).join('، ')+(it.count>it.names.length?' …':'')+'</div>'):'';
-        return '<a class="nrow" href="'+NS.attr(it.url)+'"><span class="ncnt t-'+NS.attr(it.tone||'info')+'">'+it.count+'</span>'+
-          '<span><div class="nlbl">'+NS.esc(it.label)+'</div>'+names+'</span></a>';
+        var inner='<span class="ncnt t-'+NS.attr(it.tone||'info')+'">'+it.count+'</span>'+
+          '<span><div class="nlbl">'+NS.esc(it.label)+'</div>'+names+'</span>';
+        return it.url ? '<a class="nrow" href="'+NS.attr(it.url)+'">'+inner+'</a>' : '<div class="nrow">'+inner+'</div>';
       }).join('');
     }
     p.addEventListener('click',function(ev){ ev.stopPropagation(); });

@@ -15,7 +15,24 @@ for (const entry of fs.readdirSync(path.join(root, 'public'), { withFileTypes: t
     }
   }
 }
-for (const name of ['app.js', 'app-admin.css', 'bot.css', 'bot.js', 'dashboard.css', 'fees-2026-2027.jpeg', 'og-home-2026-10.jpg', 'install.js', 'logo-nav.webp', 'whatsapp-admin.css', 'whatsapp-admin.js', 'enrollment-transfer.css', 'enrollment-transfer.js', 'students-transfer.js', 'sw-update.js']) {
+// 2026-11 public-site redesign: the home pages and the English pages live
+// below the top level (public/index.html, public/en/**/index.html). The
+// Arabic articles are not here: /opt/seo/publish.py renders them on the server.
+const redesigned = (html) => html.includes('<!--ps:js-->') || html.includes('/assets/home.css');
+if (fs.existsSync(path.join(root, 'public', 'index.html'))) files['index.html'] = '';
+const walk = (dir) => fs.readdirSync(path.join(root, 'public', dir), { withFileTypes: true }).flatMap((e) =>
+  e.isDirectory() ? walk(`${dir}/${e.name}`) : (e.name === 'index.html' ? [`${dir}/${e.name}`] : []));
+if (fs.existsSync(path.join(root, 'public', 'en'))) for (const name of walk('en')) files[name] = '';
+// Self-hosted photos and fonts: srcset, inline @font-face and the articles
+// publish.py renders refer to them, so the whole folders ship.
+for (const dir of ['assets/img', 'assets/fonts']) {
+  if (!fs.existsSync(path.join(root, 'public', dir))) continue;
+  for (const name of fs.readdirSync(path.join(root, 'public', dir))) {
+    if (fs.statSync(path.join(root, 'public', dir, name)).isFile()) files[`${dir}/${name}`] = '';
+  }
+}
+// blog.css: publish.py inlines it into every article it renders (redesign)
+for (const name of ['app.js', 'app-admin.css', 'blog.css', 'bot.css', 'bot.js', 'dashboard.css', 'fees-2026-2027.jpeg', 'og-home-2026-10.jpg', 'install.js', 'logo-nav.webp', 'whatsapp-admin.css', 'whatsapp-admin.js', 'enrollment-transfer.css', 'enrollment-transfer.js', 'students-transfer.js', 'sw-update.js']) {
   files[`assets/${name}`] = '';
 }
 // 15/9: the allowlist above silently dropped assets/ai.js for twelve days — the
@@ -29,6 +46,10 @@ for (const name of Object.keys(files)) {
   if (!name.endsWith('.html')) continue;
   const html = fs.readFileSync(path.join(root, 'public', name), 'utf8');
   for (const match of html.matchAll(/(?:src|href)=["']\/assets\/([^"'?#]+)/g)) referenced.add(match[1]);
+  // redesigned pages also name assets in srcset, inline CSS url() and JSON-LD
+  if (redesigned(html)) {
+    for (const match of html.matchAll(/\/assets\/([\w./-]+\.(?:css|js|woff2|webp|avif|jpe?g|png|svg|ico))(?=[\s"'?#),])/g)) referenced.add(match[1]);
+  }
 }
 const addedByReference = [];
 for (const rel of [...referenced].sort()) {
