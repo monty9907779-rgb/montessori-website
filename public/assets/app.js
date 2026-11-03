@@ -401,8 +401,7 @@ NS.adminNav = function(active){
     {href:'/google/',     label:'منتجات جوجل', icon:'chart', on:active==='google', owner:true},
     {href:'/meta/',       label:'منتجات ميتا', icon:'chat', on:active==='meta', owner:true},
     {href:'/security/',   label:'الحماية', icon:'shield', on:active==='security', owner:true},
-    {href:'/server/',     label:'حالة السيرفر', icon:'wifi', on:active==='server', owner:true},
-    {href:'https://crm.montessori-ksa.com/', label:'الرسائل', icon:'chat', ext:true, sso:true}
+    {href:'/server/',     label:'حالة السيرفر', icon:'wifi', on:active==='server', owner:true}
   ].filter(function(n){ if(n.owner && !NS._isOwner) return false; return NS._navHidden.indexOf(n.href.replace(/\//g,''))<0; });
 };
 /* المديرة: نخفي بنود القائمة اللي الأونر قفلها. الأونر = لا شيء مخفي. */
