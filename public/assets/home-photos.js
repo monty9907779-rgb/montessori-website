@@ -185,8 +185,8 @@
     'wa1103-05': 'home-', 'wa1103-08': 'home-'
   };
   /* the owner's newest photos (WhatsApp, 2026-11-03), self-hosted at 3:4 and shown before the feed.
-     The other six from that set are on the hero and the day timeline, so they are not repeated here. */
-  var NEW = ['wa1103-05', 'wa1103-08'];
+     wa1103-08 is the hero and the rest are on the day timeline, so they are not repeated here. */
+  var NEW = ['wa1103-05'];
   var ALT = {
     'wa1103-05': ['طفلة بتاج وقفازين زرقاوين تحمل كوبًا على طاولة مزيّنة بالأميرات',
       'A girl in a tiara and blue gloves holding a cup at a princess-themed table'],
