@@ -7,7 +7,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import facts
 
-INTAKE = ' نستقبل الأطفال من عمر سنتين إلى 5 سنوات. '
+INTAKE = ' نستقبل الأطفال من عمر ٣ إلى 5 سنوات. '
 
 BAD = [
     ('السلّم المغلوط كاملاً',
@@ -36,24 +36,45 @@ BAD = [
      'الأسعار عموماً مرتفعة، والقيمة عندنا 1300 ريال.'),
     ('سعر منسوب بـ"تكلفتنا" رغم "في المتوسط"',
      'تكلفتنا 900 ريال في المتوسط.'),
+    # 2026-11-03: الأعمار ٣–٥ فقط، بلا ما قبل الروضة ولا التمهيدي، وبلا رقم تقييم
+    ('مدى الاستقبال القديم منسوب إلينا',
+     'نستقبل الأطفال من سنتين إلى ٥ سنوات في حي الفيصلية.'),
+    ('ما قبل الروضة منسوبة إلينا',
+     'ما قبل الروضة (سنتان–3) هي أول مرحلة عندنا.'),
+    ('التمهيدي منسوب إلينا',
+     'مراحلنا: المستوى الأول (3–4) والمستوى الثاني (4–5) والتمهيدي (5–6).'),
+    ('رقم تقييم',
+     'بتقييم 4.7★ على خرائط جوجل.'),
 ]
 
 GOOD = [
-    ('مدى الاستقبال الكلي على الرئيسية',
-     'تمهيدي وروضة للأطفال 2–5 سنوات في بيئة آمنة ومُعدّة بعناية.'),
-    ('السلّم السعودي الصحيح',
-     'ما قبل الروضة (سنتان–3)، المستوى الأول (3–4)، المستوى الثاني (4–5)، '
-     'والتمهيدي (5–6).'),
+    ('مدى الاستقبال الكلي ملتصقاً بالروضة',
+     'الروضة (3–5 سنوات) بيئة آمنة ومُعدّة بعناية.'),
+    ('السلّم السعودي الصحيح في شرح عام',
+     'في التسمية السعودية: ما قبل الروضة (سنتان–3)، المستوى الأول (3–4)، '
+     'المستوى الثاني (4–5)، والتمهيدي (5–6).'),
+    ('مراحلنا الصحيحة',
+     'مراحلنا: المستوى الأول (٣–٤) والمستوى الثاني (٤–٥) والبرنامج الصيفي.'),
+    ('نفي صريح لمرحلة لا نقدّمها',
+     'لا يوجد لدينا برنامج لما قبل الروضة ولا التمهيدي.'),
+    ('دليل تربوي عام عن طفل السنتين',
+     'الطفل من سنتين إلى ٥ سنوات يتعلّم باللعب واللمس.'),
+    ('إحالة لآراء الأهالي بلا رقم',
+     'اقرئي آراء الأهالي على Google.'),
+    ('شرح الفروق بين المراحل ليس عرضاً لها',
+     'نشرح الفروق بين الحضانة والروضة والتمهيدي، وكيف نطبّق ذلك في حضانتنا.'),
+    ('السنة التي تسبق التمهيدي',
+     'نستقبل الأطفال من ٣ إلى ٥ سنوات، فيُنهي الطفل عندنا السنة التي تسبق التمهيدي.'),
     ('التمهيدي كسنة أخيرة',
      'التمهيدي: السنة الأخيرة قبل الابتدائي (5–6 سنوات) — تهيئة أكاديمية مباشرة.'),
     ('صيغة الاستقبال الرسمية',
-     'نستقبل الأطفال من عمر سنتين إلى 5 سنوات في حي الفيصلية بجدة.'),
+     'نستقبل الأطفال من ٣ إلى ٥ سنوات في حي الفيصلية بجدة.'),
     ('سعر سوق عام بلا نسبة إلينا',
      'تتراوح أسعار الحضانات في جدة عموماً بين 800 و1500 ريال شهرياً حسب المنطقة.'),
     ('متوسط أسعار الروضات كسوق لا كذاتنا',
      'متوسط أسعار الروضات في جدة قارب 1200 ريال هذا العام.'),
-    ('مدى بالكلمة لما قبل الروضة',
-     'ما قبل الروضة (سنتان–3) هي أول مرحلة عندنا.'),
+    ('مدى بالكلمة لما قبل الروضة في شرح التسمية',
+     'في التسمية الرسمية تأتي ما قبل الروضة (سنتان–3) أولاً.'),
     ('مدى بالكلمتين للمستوى الأول',
      'المستوى الأول (ثلاث–أربع سنوات).'),
 ]
@@ -111,7 +132,10 @@ class TestRangeBeforeStageName(unittest.TestCase):
         self.assertEqual([], facts.check_text('من ٥ إلى ٦ سنوات (التمهيدي) هي سنة التهيئة.' + INTAKE))
 
     def test_intake_range_before_nursery_word_passes(self):
-        self.assertEqual([], facts.check_text('نستقبل من سنتين إلى 5 سنوات (الحضانة).' + INTAKE))
+        self.assertEqual([], facts.check_text('نستقبل من ٣ إلى 5 سنوات (الحضانة).' + INTAKE))
+
+    def test_old_intake_range_before_nursery_word_is_rejected(self):
+        self.assertTrue(facts.check_text('من سنتين إلى 5 سنوات (الحضانة) في جدة.' + INTAKE))
 
 
 class TestRangeWithMin(unittest.TestCase):
@@ -139,8 +163,8 @@ class TestExistingBansStillWork(unittest.TestCase):
 
     def test_nursery_word_without_an_age_still_passes(self):
         """اسم النشاط نفسه مسموح — الاقتران بعمر هو المخالفة."""
-        good = ('حضانتنا في حي الفيصلية بجدة نستقبل الأطفال من سنتين إلى ٥ سنوات '
-                'عبر المستوى الأول (3-4 سنوات) والتمهيدي (5-6 سنوات).')
+        good = ('حضانتنا في حي الفيصلية بجدة نستقبل الأطفال من ٣ إلى ٥ سنوات '
+                'عبر المستوى الأول (3-4 سنوات) والمستوى الثاني (4-5 سنوات).')
         self.assertEqual(facts._ours_only(facts.normalize(good),
                                           facts._check_orphan_stage_ages), [])
 
@@ -162,8 +186,13 @@ class TestExistingBansStillWork(unittest.TestCase):
         # «واحدٍ وسبعين مراجعة» أفلت لأن القاعدة كانت تطلب رقماً، والتنوين ليس \\w
         self.assertTrue(facts.check_text('من واحدٍ وسبعين مراجعة على جوجل.' + INTAKE))
 
-    def test_rating_without_a_count_is_accepted(self):
-        self.assertEqual([], facts.check_text('بتقييم 4.7★ على خرائط جوجل.' + INTAKE))
+    def test_numeric_rating_is_rejected(self):
+        # المالك 2026-11-03: لا رقم تقييم؛ الإحالة لآراء الأهالي على جوجل فقط
+        self.assertTrue(facts.check_text('بتقييم 4.7★ على خرائط جوجل.' + INTAKE))
+        self.assertTrue(facts.check_text('تقييم ٤٫٧ من ٥ على جوجل.' + INTAKE))
+
+    def test_reviews_link_without_a_number_is_accepted(self):
+        self.assertEqual([], facts.check_text('اقرئي آراء الأهالي على خرائط جوجل.' + INTAKE))
 
     def test_review_count_rejected(self):
         reasons = facts.check_text('لدينا 70 مراجعة على خرائط جوجل.' + INTAKE)
@@ -179,9 +208,9 @@ class TestHtmlAndArticleWrappers(unittest.TestCase):
         """أرقام أسماء الوسوم ليست أرقام محتوى: «رسوم حضانتنا …</h2>»
         كانت تُقرأ سعراً مخترعاً لأن «2» في اسم الوسم أشبعت القاعدة."""
         art = {'title': 'رسوم الحضانة', 'seoTitle': 'رسوم الحضانة',
-               'metaDescription': 'نستقبل من سنتين إلى ٥ سنوات.',
+               'metaDescription': 'نستقبل من ٣ إلى ٥ سنوات.',
                'bodyHtml': '<h2>رسوم حضانتنا في حي الفيصلية</h2>'
-                           '<p>نستقبل الأطفال من سنتين إلى ٥ سنوات، '
+                           '<p>نستقبل الأطفال من ٣ إلى ٥ سنوات، '
                            'والرسوم تُحدَّد بمكالمة أو زيارة.</p>',
                'faq': []}
         self.assertEqual([x for x in facts.check_article(art) if 'سعر' in x], [])
@@ -191,12 +220,19 @@ class TestHtmlAndArticleWrappers(unittest.TestCase):
         و«2:00 ظهر» فقط. الدوام ينتهي الواحدة ظهراً."""
         self.assertTrue([x for x in facts.check_text(
             'دوامنا من الأحد إلى الخميس، 8 صباحاً - 2 ظهراً، '
-            'ونستقبل من سنتين إلى ٥ سنوات.') if 'دوام' in x])
+            'ونستقبل من ٣ إلى ٥ سنوات.') if 'دوام' in x])
 
     def test_correct_closing_hour_passes(self):
         self.assertEqual([x for x in facts.check_text(
             'دوامنا من الثامنة صباحاً حتى الواحدة ظهراً، '
-            'ونستقبل من سنتين إلى ٥ سنوات.') if 'دوام' in x], [])
+            'ونستقبل من ٣ إلى ٥ سنوات.') if 'دوام' in x], [])
+
+    def test_check_html_keeps_blocks_apart(self):
+        """قائمة التنقّل («برامجنا») لا تُنسب إلينا عنوان مقال عن التمهيدي."""
+        html = ('<html><head><title>تمهيدي عمر 4 سنوات جدة</title></head><body>'
+                '<nav><a href="/#programs">برامجنا</a></nav><h1>ماذا يحتاج طفل الرابعة؟</h1>'
+                '<p>نستقبل الأطفال من ٣ إلى ٥ سنوات.</p></body></html>')
+        self.assertEqual([], facts.check_html(html))
 
     def test_check_html_strips_tags(self):
         html = ('<html><body><p>برنامج الروضة (4-6 سنوات)</p>'
@@ -217,7 +253,7 @@ class TestLiveLeaks10Oct(unittest.TestCase):
     """ثلاث جمل كانت حيّة في 10/10 وأفلتت من الفحص."""
 
     def test_review_count_as_families(self):
-        self.assertTrue(facts.check_text('تقييم 4.7 من 71 أسرة على خرائط جوجل. ' + INTAKE))
+        self.assertTrue(facts.check_text('من 71 أسرة على خرائط جوجل. ' + INTAKE))
 
     def test_our_children_one_to_six(self):
         self.assertTrue(facts.check_text('نطبّق هذه المبادئ مع أطفالنا من عمر سنة إلى ٦ سنوات. ' + INTAKE))
@@ -233,10 +269,22 @@ class TestLiveLeaks10Oct(unittest.TestCase):
 
 
 class EnglishGate(unittest.TestCase):
-    OK = 'We welcome children aged 2 to 5. '
+    OK = 'We welcome children aged 3 to 5. '
 
     def test_clean(self):
-        self.assertEqual(facts.check_en_text(self.OK + 'Pre-KG (ages 2 to 3), KG1 (3-4), KG2 (4-5). Open 8:00 AM to 1:00 PM.'), [])
+        self.assertEqual(facts.check_en_text(self.OK + 'KG1 (3-4), KG2 (4-5). Open 8:00 AM to 1:00 PM.'), [])
+
+    def test_general_pre_kg_explanation_ok(self):
+        self.assertEqual(facts.check_en_text(self.OK + 'In Saudi naming, Pre-KG covers ages 2 to 3.'), [])
+
+    def test_pre_kg_of_ours_rejected(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'Our Pre-KG class (ages 2 to 3) starts in September.'))
+
+    def test_old_range_of_ours_rejected(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'Kawkab welcomes children aged 2 to 5.'))
+
+    def test_rating_rejected(self):
+        self.assertTrue(facts.check_en_text(self.OK + 'Rated 4.7&#9733; on Google Maps.'))
 
     def test_missing_range(self):
         self.assertTrue(facts.check_en_text('A nursery in Jeddah.'))
