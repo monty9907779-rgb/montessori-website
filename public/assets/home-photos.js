@@ -250,6 +250,8 @@
     'wa1103-08': ['طفلة بفستان بنفسجي لامع ونظارة «2026» ترفع عصا لعبة أمام لوحة «Back to School»',
       'A girl in a sparkly lilac dress and “2026” glasses raising a toy wand at the Back to School board']
   };
+  /* where each photo's subject is (x%, y%), so cropped tiles keep the child in the middle */
+  var FOCUS = {'wa1103-02': '62% 28%', 'wa1103-03': '60% 38%', 'wa1103-04': '55% 33%', 'wa1103-05': '60% 35%', 'wa1103-06': '50% 45%', 'wa1103-07': '48% 45%', 'wa1103-08': '55% 45%', 'wa1103-r01': '45% 45%', 'wa1103-r02': '55% 25%', 'wa1103-r03': '45% 25%', 'wa1103-r04': '35% 30%', 'wa1103-r05': '45% 40%', 'wa1103-r06': '48% 30%', 'wa1103-r07': '60% 40%', 'wa1103-r08': '65% 30%', 'wa1103-r09': '80% 35%', 'wa1103-r10': '60% 35%', 'wa1103-r11': '60% 40%', 'wa1103-r12': '65% 45%', 'wa1103-r13': '50% 55%', 'wa1103-r14': '45% 60%', 'wa1103-r15': '40% 40%', 'wa1103-r16': '35% 35%', 'wa1103-r17': '72% 40%', 'wa1103-r18': '72% 40%', 'wa1103-r19': '68% 40%', 'wa1103-r20': '70% 38%', 'wa1103-r21': '30% 55%'};
   function altOf(id, n) { return ALT[id] ? ALT[id][EN ? 1 : 0] : T.galAlt[n % T.galAlt.length]; }
   function isLocal(id) { return Object.prototype.hasOwnProperty.call(LOCAL, id); }
   function local(id, w, ext) { return '/assets/img/' + LOCAL[id] + id + '-' + w + '.' + ext; }
@@ -270,6 +272,10 @@
         : '<img loading="lazy" decoding="async" width="480" height="480" alt="' + alt + '" src="' + thumb(id, n === 0 ? 900 : 500) + '"/>';
       return '<button type="button" class="cell" data-i="' + n + '">' + img + '<span class="sr-only">' + esc(T.galOpen) + '</span></button>';
     }).join('');
+    /* centre each tile on its subject (CSSOM, so the page's CSP still applies) */
+    [].forEach.call(gal.querySelectorAll('.cell'), function (c, n) {
+      var im = c.querySelector('img'); if (im && FOCUS[ids[n]]) im.style.objectPosition = FOCUS[ids[n]];
+    });
     /* a Drive photo that fails to load leaves the bento rather than showing a broken image */
     [].forEach.call(gal.querySelectorAll('img'), function (im) {
       im.addEventListener('error', function () { var c = im.closest('.cell'); if (c) c.hidden = true; });
