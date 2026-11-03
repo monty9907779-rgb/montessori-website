@@ -182,14 +182,25 @@
     '1VMJOmDnqr3niyLeye2SAtyQExXYTj4ns': '', '1_lh7XoF9FqgyROroAHGmOb7HRh1MuEaQ': '', '1cNkIXcn45SF2iG0P09muLu0d4zmEEaVq': '',
     '1aer3_z4PBR-LiL1bv6yzxCeRgRgXh6Et': 'home-', '1zqh4XFDEzMEPLyf1PGg-wzcaF9W8vFeD': 'home-',
     '1DVZt47s2WO7SraNoyjcmrD60Nu9fdUID': 'home-', '14_F8xmy-Q5FD3NULeGho8hFBOlP1BTD-': 'home-',
-    'wa1103-05': 'home-', 'wa1103-08': 'home-'
+    'wa1103-05': 'home-', 'wa1103-08': 'home-', 'wa1103-02': 'home-', 'wa1103-03': 'home-',
+    'wa1103-04': 'home-', 'wa1103-06': 'home-', 'wa1103-07': 'home-'
   };
-  /* the owner's newest photos (WhatsApp, 2026-11-03), self-hosted at 3:4 and shown before the feed.
-     wa1103-08 is the hero and the rest are on the day timeline, so they are not repeated here. */
-  var NEW = ['wa1103-05'];
+  /* the owner's newest photos (WhatsApp, 2026-11-03), self-hosted at 3:4 (480/800/1200) and shown
+     before the feed. wa1103-08 is the hero, so it is not repeated here. */
+  var NEW = ['wa1103-05', 'wa1103-02', 'wa1103-06', 'wa1103-04', 'wa1103-03', 'wa1103-07'];
   var ALT = {
     'wa1103-05': ['طفلة بتاج وقفازين زرقاوين تحمل كوبًا على طاولة مزيّنة بالأميرات',
       'A girl in a tiara and blue gloves holding a cup at a princess-themed table'],
+    'wa1103-02': ['طفلة بمعطف مختبر ونظارة عند طاولة صفراء أمام لوحة «مختبر العلوم»',
+      'A girl in a lab coat and glasses at a yellow table in front of a “Science Lab” sign'],
+    'wa1103-03': ['طفلة بفستان أزرق تمسك فنجانًا صغيرًا على طاولة مزيّنة بالأميرات',
+      'A girl in a blue dress holding a small teacup at a princess-themed table'],
+    'wa1103-04': ['طفلة بزيّ سنو وايت وتاج تجلس على العشب بجانب سلة تفاح',
+      'A girl dressed as Snow White, wearing a crown, sitting on the grass beside a basket of apples'],
+    'wa1103-06': ['طفلتان بزيّ أخضر وأبيض ترفعان أعلامًا خضراء صغيرة في احتفال اليوم الوطني السعودي',
+      'Two girls in green and white holding small green flags at a Saudi National Day celebration'],
+    'wa1103-07': ['طفل بقميص أحمر ونظارة «2026» يرفع علامة النصر أمام لوحة «Back to School»',
+      'A boy in a red shirt and “2026” glasses making a peace sign at the Back to School board'],
     'wa1103-08': ['طفلة بفستان بنفسجي لامع ونظارة «2026» ترفع عصا لعبة أمام لوحة «Back to School»',
       'A girl in a sparkly lilac dress and “2026” glasses raising a toy wand at the Back to School board']
   };
