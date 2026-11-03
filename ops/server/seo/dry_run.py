@@ -18,6 +18,14 @@ more in the scratch copy; that is an artefact of the snapshot, not a bug.
 Nothing is written outside the scratch directory. Needs network access to
 https://montessori-ksa.com (UA below; Cloudflare blocks the default
 python-urllib one).
+
+    python3 ops/server/seo/dry_run.py [days] [keep-dir] --release
+
+--release first lays the static release (scripts/package-static.mjs, what
+deploy.sh installs) over the scratch copy, as on the server after a deploy:
+the publisher then renders the 2026-11 redesign template, and the run also
+checks that every article came out redesigned, that the shipped home pages
+are left exactly as shipped, and that facts.audit_dir finds nothing.
 """
 import importlib.util, json, pathlib, re, shutil, subprocess, sys, tempfile, traceback
 
@@ -48,6 +56,18 @@ def build(tmp):
     for x in q:                      # the repo queue is a stale snapshot
         if x['slug'] in live and not x.get('published'):
             x['published'] = '2026-08-01'
+    # Articles shipped as "new" rewrites.json entries are live on the server
+    # but absent from the repo queue: seed them as published with their live
+    # date, or the run would queue them again and never re-render their pages.
+    have = {x['slug'] for x in q}
+    for slug, e in json.load(open(REPO / 'ops/server/seo/rewrites.json', encoding='utf-8')).items():
+        if not isinstance(e, dict) or e.get('lang') == 'en' or not e.get('new') or slug not in live or slug in have:
+            continue
+        page = (web / 'blog' / slug / 'index.html').read_text(encoding='utf-8', errors='ignore')
+        d = re.search(r'article:published_time" content="(\d{4}-\d{2}-\d{2})', page)
+        q.append({'slug': slug, 'cat': e.get('cat'), 'targetKeyword': e.get('targetKeyword'),
+                  'secondaryKeywords': e.get('secondaryKeywords') or [], 'related': e.get('related') or [],
+                  'published': d.group(1) if d else '2026-08-01'})
     (opt / 'queue.json').write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding='utf-8')
     shutil.copy(REPO / 'ops/server/seo/rewrites.json', opt / 'rewrites.json')
     (opt / 'state.json').write_text('{}'); (opt / 'indexnow.key').write_text('dry-run'); (opt / 'publish.log').write_text('')
@@ -60,6 +80,11 @@ def main(days=3):
     m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
     with tempfile.TemporaryDirectory() as t:
         tmp = pathlib.Path(t); web, opt, n = build(tmp)
+        shipped = {}
+        if RELEASE:
+            subprocess.run(['node', str(REPO / 'scripts/package-static.mjs'), str(tmp / 'release')], check=True)
+            shutil.copytree(tmp / 'release' / 'public', web, dirs_exist_ok=True)
+            shipped = {f: (web / f).read_text(encoding='utf-8') for f in ('index.html', 'en/index.html')}
         m.ROOT, m.OPT = web, opt
         m.QUEUE, m.STATE, m.KEYF, m.LOG, m.REWRITES = opt/'queue.json', opt/'state.json', opt/'indexnow.key', opt/'publish.log', opt/'rewrites.json'
         sent = []
@@ -134,6 +159,17 @@ def main(days=3):
                 problems.append(f'{k}: homeCard but no link on /en/')
         if ehome.count('<section id="guides"') != 1 or 'application/ld+json' not in ehome:
             problems.append('/en/ guides section or schema damaged')
+        if RELEASE:
+            legacy = [p.parent.name for p in (web / 'blog').glob('*/index.html')
+                      if not m.is_redesigned(p.read_text(encoding='utf-8'))]
+            if legacy:
+                problems.append(f'{len(legacy)} articles not in the redesign template: {legacy[:5]}')
+            for f, before in shipped.items():
+                if (web / f).read_text(encoding='utf-8') != before:
+                    problems.append(f'{f}: changed by the publisher after the release')
+            for path, why in m.facts.audit_dir(str(web / 'blog')):
+                problems.append(f'facts: {pathlib.Path(path).parent.name}: {"; ".join(why)}')
+            print(f'redesign: {sum(1 for _ in (web / "blog").glob("*/index.html")) - len(legacy)} articles in the new template')
         keep = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
         if keep:
             shutil.rmtree(keep, ignore_errors=True); shutil.copytree(web, keep)
@@ -144,6 +180,10 @@ def main(days=3):
             print('  -', p)
         return 1 if problems else 0
 
+
+RELEASE = '--release' in sys.argv
+if RELEASE:
+    sys.argv.remove('--release')
 
 if __name__ == '__main__':
     sys.exit(main(int(sys.argv[1]) if len(sys.argv) > 1 else 3))

@@ -1,69 +1,183 @@
 /* ============================================================================
-   Kawkab Al-Tifl Al-Hurr Kindergarten — Design System  ·  v1
-   One coherent language for marketing + parent + staff + owner.
-   RTL-first, Tajawal, calm boutique warmth.
+   Kawkab Al-Tifl Al-Hurr Kindergarten — Design System  ·  v2
+   One language for marketing + parent + staff + owner. RTL-first.
+   Palette is drawn from the Montessori classroom itself: birch-wood shelves,
+   the forest green of the brand, the golden bead material and the pink tower.
+   Tokens are layered:  primitive (raw values)  →  semantic (purpose)  →
+   component (one component). Components use semantic/component tokens only.
+   Legacy names (--forest, --cream, --muted …) are kept as aliases so every
+   existing page (blog, privacy, partners, app) keeps rendering.
    ========================================================================== */
 
-/* ---------- Design tokens ---------- */
+/*!crit*/
 :root{
-  /* brand */
-  --forest:#184e3e;        /* deep emerald — primary */
-  --forest-700:#1f6b52;
-  --forest-600:#2a7d61;
-  --forest-300:#8fbfa8;
-  --sage:#5b8a72;
-  --sage-200:#a9c5b4;
-  --clay:#c67c54;          /* warm terracotta — accent CTA */
-  --clay-600:#b0663f;
-  --amber:#e0a458;         /* gold highlight */
-  --amber-200:#f3ddb6;
+  /* ---- 1. primitives ---- */
+  --p-forest-950:#0c241a;
+  --p-forest-900:#0f2c21;
+  --p-forest-800:#123c2f;
+  --p-forest-700:#184e3e;   /* brand */
+  --p-forest-600:#1f6b52;
+  --p-forest-500:#2a7d61;
+  --p-forest-300:#8fbfa8;
+  --p-forest-200:#c8dccf;
+  --p-forest-100:#e3ede6;
+  --p-forest-50:#f0f5f1;
+  --p-sage-500:#5b8a72;
+  --p-sage-200:#a9c5b4;
 
-  /* neutrals */
-  --ink:#22302a;
+  --p-birch-50:#fcfaf6;     /* paper */
+  --p-birch-100:#f7f2e9;
+  --p-birch-200:#f0e7d7;
+  --p-birch-300:#e6d6ba;
+  --p-birch-400:#d8bf95;    /* shelf wood */
+  --p-birch-600:#a9864f;
+  --p-birch-800:#6e5530;
+
+  --p-bead-200:#f6e3b4;
+  --p-bead-400:#e2b04f;     /* golden bead */
+  --p-bead-500:#c9952f;
+  --p-bead-700:#8a5a14;     /* bead text on light */
+  --p-tower-200:#f6d9de;
+  --p-tower-400:#e5a2b0;    /* pink tower */
+  --p-tower-500:#cf8494;
+  --p-clay-400:#c67c54;
+  --p-clay-600:#9a5530;
+
+  --p-ink-900:#1d2a24;
+  --p-ink-700:#33423a;
+  --p-ink-500:#5a675f;
+  --p-ink-300:#b9c0b8;
+  --p-white:#ffffff;
+  --p-black-a60:rgba(12,36,26,.6);
+
+  --p-red-600:#b3402f; --p-red-50:#fbeae6;
+  --p-green-600:#2f8f5b; --p-green-50:#e7f4ec;
+  --p-amber-600:#c98a2b; --p-amber-50:#fbf1dd;
+  --p-blue-600:#3b7ea1; --p-blue-50:#e6f1f6;
+
+  /* ---- 2. semantic ---- */
+  --color-bg:var(--p-birch-50);
+  --color-bg-alt:var(--p-birch-100);
+  --color-bg-wood:var(--p-birch-200);
+  --color-bg-deep:var(--p-forest-800);
+  --color-bg-deepest:var(--p-forest-900);
+  --color-surface:var(--p-white);
+  --color-text:var(--p-ink-900);
+  --color-text-soft:var(--p-ink-700);
+  --color-text-muted:var(--p-ink-500);
+  --color-heading:var(--p-forest-700);
+  --color-primary:var(--p-forest-700);
+  --color-primary-hover:var(--p-forest-600);
+  --color-on-primary:var(--p-white);
+  --color-accent:var(--p-bead-400);
+  --color-on-accent:var(--p-ink-900);
+  --color-accent-text:var(--p-bead-700);
+  --color-highlight:var(--p-tower-400);
+  --color-border:var(--p-birch-300);
+  --color-border-soft:var(--p-birch-200);
+  --color-on-deep:var(--p-forest-100);
+  --color-on-deep-muted:var(--p-forest-200);
+  --color-focus:var(--p-forest-600);
+  --color-danger:var(--p-red-600);
+  --color-danger-bg:var(--p-red-50);
+  --color-ok:var(--p-green-600);
+  --color-ok-bg:var(--p-green-50);
+  --color-wa:#187a42;        /* WhatsApp green, darkened to 5.4:1 with white */
+
+  --font-body:"Tajawal","Segoe UI",Tahoma,system-ui,sans-serif;
+  --font-display:"Reem Kufi","Tajawal","Segoe UI",Tahoma,system-ui,sans-serif;
+  /* type scale ~1.25 (major third), fluid at the top */
+  --fs-xs:.8125rem; --fs-sm:.9375rem; --fs-md:1.0625rem; --fs-lg:1.25rem; --fs-xl:1.5rem;
+  --fs-2xl:clamp(1.65rem,1.2rem + 1.9vw,2.35rem);
+  --fs-3xl:clamp(2.05rem,1.35rem + 3.2vw,3.6rem);
+  --lh-tight:1.25; --lh-body:1.8;
+
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px;
+  --space-6:32px; --space-7:48px; --space-8:64px; --space-9:96px;
+  --space-section:clamp(64px,10vw,120px);
+  --gutter:clamp(16px,4vw,32px);
+  --measure:62ch;
+
+  --radius-sm:10px; --radius-md:16px; --radius-lg:24px; --radius-pill:999px;
+  --radius-arch:999px 999px var(--radius-md) var(--radius-md);
+
+  --shadow-sm:0 1px 2px rgba(24,78,62,.06),0 2px 6px rgba(24,78,62,.05);
+  --shadow-md:0 6px 18px rgba(24,78,62,.08),0 18px 40px rgba(24,78,62,.08);
+  --shadow-lg:0 18px 40px rgba(24,78,62,.14),0 40px 80px rgba(24,78,62,.12);
+
+  --ease-standard:cubic-bezier(.2,.72,.24,1);
+  --ease-emphasis:cubic-bezier(.16,1,.3,1);
+  --dur-fast:.18s; --dur-base:.28s; --dur-slow:.9s;
+
+  /* ---- 3. component ---- */
+  --btn-height:52px; --btn-height-sm:42px;
+  --btn-primary-bg:var(--color-primary);
+  --btn-primary-bg-hover:var(--color-primary-hover);
+  --btn-primary-fg:var(--color-on-primary);
+  --btn-quiet-fg:var(--color-primary);
+  --btn-quiet-border:var(--color-border);
+  --nav-bg:rgba(252,250,246,.92);
+  --nav-height:68px;
+  --arch-frame:var(--p-birch-400);
+  --arch-frame-width:10px;
+  --shelf-color:var(--p-birch-400);
+  --shelf-edge:var(--p-birch-600);
+  --chip-bg:var(--p-forest-50);
+  --chip-fg:var(--p-forest-700);
+  --card-bg:var(--color-surface);
+  --card-border:var(--color-border-soft);
+  --field-border:var(--p-birch-300);
+  --field-border-focus:var(--p-forest-600);
+
+}
+/*!/crit*/
+/*!crit*/
+:root{
+  /* ---- legacy aliases (do not use in new components) ---- */
+  --forest:var(--p-forest-700);
+  --forest-700:var(--p-forest-600);
+  --forest-600:var(--p-forest-500);
+  --forest-300:var(--p-forest-300);
+  --sage:var(--p-sage-500);
+  --sage-200:var(--p-sage-200);
+  --clay:var(--p-clay-400);
+  --clay-600:var(--p-clay-600);   /* was #b0663f (4.0:1) — darkened for AA text */
+  --amber:var(--p-bead-400);
+  --amber-200:var(--p-bead-200);
+  --ink:var(--p-ink-900);
   --ink-2:#3c4a42;
-  --muted:#59665d;
-  --line:#ddd4c3;
-  --line-2:#e7dece;
-  --cream:#fbf8f2;         /* page background */
-  --sand:#f1e7d6;          /* subtle panels */
-  --sand-2:#e6dac5;
-  --paper:#ffffff;         /* cards */
-
-  /* status */
-  --ok:#2f8f5b;   --ok-bg:#e7f4ec;
-  --warn:#c98a2b; --warn-bg:#fbf1dd;
-  --danger:#c2503f; --danger-bg:#fbeae6;
-  --info:#3b7ea1; --info-bg:#e6f1f6;
-
-  /* radii */
+  --muted:var(--p-ink-500);       /* was #79857c (3.6:1) — darkened for AA text */
+  --line:#e9e0cf;
+  --line-2:#f0e8d9;
+  --cream:#faf6ee;
+  --sand:#f4ecdd;
+  --sand-2:#efe6d4;
+  --paper:var(--p-white);
+  --ok:var(--p-green-600);   --ok-bg:var(--p-green-50);
+  --warn:var(--p-amber-600); --warn-bg:var(--p-amber-50);
+  --danger:var(--p-red-600); --danger-bg:var(--p-red-50);
+  --info:var(--p-blue-600);  --info-bg:var(--p-blue-50);
   --r-xs:8px; --r-sm:12px; --r:16px; --r-lg:22px; --r-xl:30px; --pill:999px;
-
-  /* shadows — warm, green-tinted, layered */
   --sh-1:0 1px 2px rgba(31,54,42,.05), 0 2px 8px rgba(31,54,42,.05);
   --sh-2:0 4px 12px rgba(31,54,42,.07), 0 12px 30px rgba(31,54,42,.07);
   --sh-3:0 10px 24px rgba(24,78,62,.12), 0 30px 70px rgba(24,78,62,.14);
   --sh-clay:0 8px 24px rgba(198,124,84,.30);
   --sh-forest:0 8px 22px rgba(24,78,62,.28);
-
-  /* type */
-  --font:"Tajawal","Segoe UI",Tahoma,system-ui,sans-serif;
+  --font:var(--font-body);
   --fs-display:clamp(2.3rem,6.2vw,4rem);
   --fs-h1:clamp(1.7rem,3.6vw,2.6rem);
   --fs-h2:clamp(1.35rem,2.6vw,1.9rem);
   --fs-h3:1.18rem;
   --lh:1.7;
-
-  /* spacing */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
-
-  /* motion */
-  --ease:cubic-bezier(.2,.72,.24,1);
-  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease:var(--ease-standard);
+  --ease-out:var(--ease-emphasis);
   --dur:.24s;
-
   --maxw:1160px;
 }
+/*!/crit*/
 
+/*!crit*/
 /* ---------- Reset ---------- */
 *,*::before,*::after{box-sizing:border-box}
 *{margin:0;padding:0}
@@ -87,6 +201,7 @@ button{cursor:pointer;background:none;border:0}
 :focus-visible{outline:2.5px solid var(--forest);outline-offset:3px;border-radius:6px}
 ::selection{background:var(--amber-200);color:var(--ink)}
 h1,h2,h3,h4{font-weight:800;line-height:1.22;letter-spacing:-.01em;color:var(--forest)}
+/*!/crit*/
 ::-webkit-scrollbar{width:11px;height:11px}
 ::-webkit-scrollbar-thumb{background:var(--sand-2);border-radius:9px;border:3px solid var(--cream)}
 ::-webkit-scrollbar-thumb:hover{background:var(--sage-200)}
@@ -341,7 +456,7 @@ body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:
      وهما مكوّنات مضغوطة — عدّاد الإشعارات رقم جوّه دايرة 20px، تكبير الخط يطفحه. */
 }
 .app-main{max-width:var(--maxw);margin-inline:auto;padding:clamp(18px,3vw,30px) clamp(14px,3vw,26px) 80px}
-.app-narrow{max-width:760px}
+.app-narrow{max-width:560px}
 .page-head{margin-bottom:var(--s5)}
 .page-head h1{font-size:var(--fs-h2)}
 .page-head .sub{color:var(--muted);margin-top:2px}
@@ -405,6 +520,7 @@ body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:
 .countdown .cd-units b{font-size:1.7rem;font-weight:800}
 .countdown .cd-units span{display:block;font-size:.7rem;opacity:.75;font-weight:600}
 
+/*!crit*/
 /* ---------- Skip link (a11y) ---------- */
 .skip{position:absolute;inset-inline-start:12px;top:-60px;z-index:200;background:var(--forest);color:#fff;
   padding:11px 18px;border-radius:var(--r-sm);font-weight:700;transition:top .2s var(--ease)}
@@ -414,6 +530,7 @@ body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:
 .is-busy{opacity:.5}
 .mb-14{margin-bottom:14px}
 
+/*!/crit*/
 /* ---------- Reveal on scroll ---------- */
 .rev{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
 .rev.in{opacity:1;transform:none}
@@ -551,7 +668,7 @@ html,body{max-width:100%;overflow-x:clip;}
 
 /* montessori-admin-side-nav-fix-v1 */
 html.ns-admin-shell body{padding-inline-start:0}
-html.ns-admin-shell .appbar{position:sticky;top:0;z-index:80;background:rgba(251,248,242,.96);border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(31,54,42,.06);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}
+html.ns-admin-shell .appbar{position:sticky;top:0;z-index:80;background:rgba(250,246,238,.82);border-bottom:1px solid var(--line-2);box-shadow:none;backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}
 html.ns-admin-shell .appbar__in{max-width:var(--maxw);margin-inline:auto;padding:11px clamp(14px,3vw,26px);display:flex;flex-direction:row;align-items:center;gap:14px}
 html.ns-admin-shell .brand{justify-content:flex-start;color:var(--forest);text-align:start;padding:0;border-bottom:0}
 html.ns-admin-shell .brand img{width:40px;height:40px;border-radius:11px;background:#fff;padding:3px;box-shadow:var(--sh-1)}
@@ -572,11 +689,41 @@ html.ns-admin-shell .appnav a.on{background:var(--sand);color:var(--forest);box-
 html.ns-admin-shell .appnav a.on:before{content:"";position:absolute;top:10px;bottom:10px;right:0;width:4px;border-radius:999px;background:var(--clay)}
 html.ns-admin-shell .appnav a.on svg{color:var(--clay)}
 html.ns-admin-shell .appnav a:not(.on):hover{background:var(--sand);color:var(--forest)}
-/* زرار «ذكاء الحضانة» في الرئيسية. كان مخفياً استعداداً لبديل في شريط
-   التطبيق (.ns-ai-assistant) لم يُبنَ أبداً — فبقيت الحضانة بلا أي مدخل
-   للمساعد الذكي. نرجّعه لحد ما البديل يتبني فعلاً. */
-html.ns-admin-shell .ns-ai-assistant{display:none;align-items:center;justify-content:center;gap:7px;flex:none;min-height:42px;padding:8px 12px;border-radius:10px;white-space:nowrap;font-size:.82rem;font-weight:800;color:var(--forest)}
+html.ns-admin-shell .head-actions a[href="/ai/"]{display:none}
+html.ns-admin-shell .ns-ai-assistant{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:42px;padding:8px 12px;border-radius:10px;white-space:nowrap;font-size:.82rem;font-weight:800;color:var(--forest)}
 html.ns-admin-shell .ns-ai-assistant svg{width:18px;height:18px;flex:none}
 html.ns-admin-shell #ns-logout{margin-top:0;align-self:auto;width:42px;height:42px;border-radius:14px}
 html.ns-admin-shell body.nav-open .appbar{backdrop-filter:none;-webkit-backdrop-filter:none}
 @media(max-width:640px){html.ns-admin-shell .appbar__in{padding:9px 12px;gap:10px}html.ns-admin-shell .brand span{font-size:.9rem}html.ns-admin-shell .brand .b-sub{display:none}html.ns-admin-shell .ns-ai-assistant{min-height:40px;padding:7px 9px;gap:5px;font-size:.72rem}html.ns-admin-shell .ns-ai-assistant svg{width:17px;height:17px}html.ns-admin-shell #ns-logout{width:40px;height:40px}html.ns-admin-shell .appnav{width:min(320px,88vw)}}
+
+/* montessori-home-seo-sections-v1 */
+a.seo-card{display:block;color:inherit;text-decoration:none}
+a.seo-card b{color:var(--forest);display:block;margin-bottom:6px;font-size:1.02rem;line-height:1.5}
+a.seo-card span{color:var(--muted);font-size:.92rem;display:block;line-height:1.7}
+a.seo-card:hover b{color:var(--clay-600)}
+.section.seo-areas{background:var(--sand);border-radius:var(--r-lg);padding:clamp(36px,6vw,64px) clamp(16px,4vw,32px);margin-block:0 clamp(40px,7vw,80px)}
+.seo-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:30px}
+.seo-links a{display:block;padding:14px 16px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line-2);color:var(--forest);font-weight:700;text-align:center;box-shadow:var(--sh-1);transition:transform var(--dur),box-shadow var(--dur),color var(--dur)}
+.seo-links a:hover{transform:translateY(-3px);color:var(--clay-600)}
+.seo-links a.seo-more{grid-column:1/-1;background:var(--forest);border-color:var(--forest);color:#fff}
+.seo-links a.seo-more:hover{color:#fff}
+.section.seo-guides{padding-top:0}
+
+/* 2026-10-31: on phones the hero text and the book-a-visit button come before the photo,
+   so the button is on the first screen (an inline <style> sets order:-1; this wins on specificity). */
+@media(max-width:860px){.hero .hero__in>.hero__art{order:1}}
+.visit-cta .cta{justify-content:center;margin-top:18px}
+.visit-cta__alt{margin-top:14px;color:var(--muted)}
+.visit-cta__alt a{color:var(--forest);font-weight:700;text-decoration:underline}
+/* the hero <img> tags carry height=620, which overrides the collage aspect-ratio and made
+   .hc-a/.hc-b 620px tall (on phones .hc-b covered the book-a-visit button) */
+.hero-collage img.hc-a,.hero-collage img.hc-b{height:auto}
+
+/* floating WhatsApp button (markup injected by /assets/wa-fab.js) */
+#mk-wa{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));inset-inline-end:16px;z-index:9500;font-family:inherit}
+#mk-wa-fab{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#187a42;color:#fff;box-shadow:0 6px 18px rgba(12,36,26,.28);text-decoration:none;transition:transform .2s cubic-bezier(.2,.72,.24,1),box-shadow .2s,opacity .2s;opacity:0;transform:translateY(12px)}
+#mk-wa-fab.in{opacity:1;transform:none}
+#mk-wa-fab:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(12,36,26,.32)}
+#mk-wa-fab:focus-visible{outline:3px solid #184e3e;outline-offset:3px}
+#mk-wa-fab svg{width:30px;height:30px;fill:#fff}
+@media (prefers-reduced-motion:reduce){#mk-wa-fab{transition:none}}

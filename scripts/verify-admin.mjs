@@ -12,6 +12,9 @@ for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
   const file = path.join(root, entry.name, 'index.html');
   if (!entry.isDirectory() || !fs.existsSync(file)) continue;
   const html = fs.readFileSync(file, 'utf8');
+  // The redesigned public pages (2026-11) use content-hash ?v= and no install
+  // prompt; scripts/verify-public-site.mjs checks them.
+  if (html.includes('<!--ps:js-->') || html.includes('/assets/home.css')) continue;
   assert.ok(html.includes('/assets/install.js?v=4'), `${entry.name}: missing install.js`);
   assert.ok(!/<script\b[^>]*\bsrc=["'][^"']+["'][^>]*><\/script>\s*<\/script>/i.test(html), `${entry.name}: stray script close after external script`);
   for (const [asset, version] of Object.entries(versions)) {
