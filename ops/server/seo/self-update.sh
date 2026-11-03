@@ -174,3 +174,25 @@ if [ -d /etc/nginx/conf.d ] && [ ! -f "$CHARSET_CONF" ] && command -v nginx >/de
     fi
   fi
 fi
+
+# ── public GEO pages (no inline scripts, so the nginx CSP is unaffected) ────
+# /about/ and /en/about/ (JSON-LD data blocks only) and /.well-known/ai.txt.
+# Until the next full deploy.sh release ships them, they are installed here;
+# publish.py then links them from the homepages and lists them in the sitemap.
+if [ -d "$WEBROOT" ]; then
+  while IFS= read -r rel; do
+    dst="$WEBROOT/$rel"; f="$TMP/geo-$(echo "$rel" | tr '/' '_')"
+    if ! curl -fsSL --max-time 60 -o "$f" "$PUBRAW/$rel?t=$(date +%s)"; then log "skip public/$rel: download failed"; continue; fi
+    case "$rel" in
+      *.html) { [ "$(wc -c < "$f")" -gt 5000 ] && grep -q '</html>' "$f" && grep -q '/assets/home.css' "$f"; } || { log "skip public/$rel: incomplete page"; continue; }
+              if grep -oE '<script[^>]*>' "$f" | grep -v 'src=' | grep -qv 'application/ld+json'; then log "skip public/$rel: has an inline script"; continue; fi ;;
+      *)      [ "$(wc -c < "$f")" -gt 100 ] || { log "skip public/$rel: too small"; continue; } ;;
+    esac
+    if [ -f "$dst" ] && cmp -s "$f" "$dst"; then continue; fi
+    mkdir -p "$(dirname "$dst")"
+    if [ -f "$dst" ]; then cp -p "$dst" "$dst.prev"; cat "$f" > "$dst"; else install -m 644 "$f" "$dst"; fi
+    log "updated $dst"
+  done <<< "about/index.html
+en/about/index.html
+.well-known/ai.txt"
+fi
