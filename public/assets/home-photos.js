@@ -131,7 +131,7 @@
   }
 
   /* ---- 4. lightbox ---- */
-  function lightbox(urls, start) {
+  function lightbox(urls, start, alts) {
     var i = start || 0, opener = doc.activeElement;
     var lb = doc.createElement('div');
     lb.className = 'lightbox'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true'); lb.setAttribute('aria-label', T.lbLabel);
@@ -142,7 +142,7 @@
       (urls.length > 1 ? btn('lb-nav lb-prev', T.lbPrev, 'i-up') + btn('lb-nav lb-next', T.lbNext, 'i-up') : '') + '<img alt=""/>';
     doc.body.appendChild(lb); doc.body.classList.add('no-scroll');
     var img = lb.querySelector('img'), btns = [].slice.call(lb.querySelectorAll('button'));
-    function show() { img.src = urls[i]; img.alt = T.galAlt[i % T.galAlt.length]; }
+    function show() { img.src = urls[i]; img.alt = (alts && alts[i]) || T.galAlt[i % T.galAlt.length]; }
     function step(d) { i = (i + d + urls.length) % urls.length; show(); }
     function close() {
       lb.classList.remove('show'); doc.removeEventListener('keydown', key); doc.body.classList.remove('no-scroll');
@@ -181,21 +181,33 @@
     '1tOy85z8eimnAXtmOaa061NYhIdv_NemA': '', '18AmxJGSzkXFACqG4pA2qasufXmQMXXHK': '', '1X4ke_GBVBaE5dqFJ8ACfAKeoNNzssFNQ': '',
     '1VMJOmDnqr3niyLeye2SAtyQExXYTj4ns': '', '1_lh7XoF9FqgyROroAHGmOb7HRh1MuEaQ': '', '1cNkIXcn45SF2iG0P09muLu0d4zmEEaVq': '',
     '1aer3_z4PBR-LiL1bv6yzxCeRgRgXh6Et': 'home-', '1zqh4XFDEzMEPLyf1PGg-wzcaF9W8vFeD': 'home-',
-    '1DVZt47s2WO7SraNoyjcmrD60Nu9fdUID': 'home-', '14_F8xmy-Q5FD3NULeGho8hFBOlP1BTD-': 'home-'
+    '1DVZt47s2WO7SraNoyjcmrD60Nu9fdUID': 'home-', '14_F8xmy-Q5FD3NULeGho8hFBOlP1BTD-': 'home-',
+    'wa1103-05': 'home-', 'wa1103-08': 'home-'
   };
+  /* the owner's newest photos (WhatsApp, 2026-11-03), self-hosted at 3:4 and shown before the feed.
+     The other six from that set are on the hero and the day timeline, so they are not repeated here. */
+  var NEW = ['wa1103-05', 'wa1103-08'];
+  var ALT = {
+    'wa1103-05': ['طفلة بتاج وقفازين زرقاوين تحمل كوبًا على طاولة مزيّنة بالأميرات',
+      'A girl in a tiara and blue gloves holding a cup at a princess-themed table'],
+    'wa1103-08': ['طفلة بفستان بنفسجي لامع ونظارة «2026» ترفع عصا لعبة أمام لوحة «Back to School»',
+      'A girl in a sparkly lilac dress and “2026” glasses raising a toy wand at the Back to School board']
+  };
+  function altOf(id, n) { return ALT[id] ? ALT[id][EN ? 1 : 0] : T.galAlt[n % T.galAlt.length]; }
   function isLocal(id) { return Object.prototype.hasOwnProperty.call(LOCAL, id); }
   function local(id, w, ext) { return '/assets/img/' + LOCAL[id] + id + '-' + w + '.' + ext; }
   function set(id, ext) { return local(id, 480, ext) + ' 480w, ' + local(id, 800, ext) + ' 800w'; }
   var gal = $('gal');
   function renderGallery(ids) {
     var skip = (gal.getAttribute('data-hero') || '').split(',');
-    ids = ids.filter(function (id) { return skip.indexOf(id) < 0; }).slice(0, 6);
+    ids = NEW.concat(ids).filter(function (id, k, all) { return id && skip.indexOf(id) < 0 && all.indexOf(id) === k; }).slice(0, 6);
     if (!ids.length) { gal.outerHTML = '<p class="k-gal-note">' + esc(T.galEmpty) + '</p>'; return; }
     var full = ids.map(function (id) { return isLocal(id) ? local(id, 1200, 'webp') : thumb(id, 1400); });
+    var alts = ids.map(altOf);
     gal.innerHTML = ids.map(function (id, n) {
-      var alt = esc(T.galAlt[n % T.galAlt.length]), sizes = n === 0 ? '(min-width: 760px) 560px, 100vw' : '(min-width: 760px) 280px, 50vw';
+      var alt = esc(alts[n]), sizes = n === 0 ? '(min-width: 760px) 560px, 100vw' : '(min-width: 760px) 280px, 50vw';
       var img = isLocal(id)
-        ? '<picture><source type="image/avif" srcset="' + set(id, 'avif') + '" sizes="' + sizes + '"/><img loading="lazy" decoding="async" width="480" height="480" alt="' +
+        ? '<picture><source type="image/avif" srcset="' + set(id, 'avif') + '" sizes="' + sizes + '"/><img loading="lazy" decoding="async" width="480" height="' + (ALT[id] ? 640 : 480) + '" alt="' +
           alt + '" src="' + local(id, 800, 'webp') + '" srcset="' + set(id, 'webp') + '" sizes="' + sizes + '"/></picture>'
         : '<img loading="lazy" decoding="async" width="480" height="480" alt="' + alt + '" src="' + thumb(id, n === 0 ? 900 : 500) + '"/>';
       return '<button type="button" class="cell" data-i="' + n + '">' + img + '<span class="sr-only">' + esc(T.galOpen) + '</span></button>';
@@ -205,7 +217,7 @@
       im.addEventListener('error', function () { var c = im.closest('.cell'); if (c) c.hidden = true; });
     });
     gal.addEventListener('click', function (e) {
-      var c = e.target.closest('.cell'); if (c) lightbox(full, +c.getAttribute('data-i'));
+      var c = e.target.closest('.cell'); if (c) lightbox(full, +c.getAttribute('data-i'), alts);
     });
   }
   near(gal, function () {
