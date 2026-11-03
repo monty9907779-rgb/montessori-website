@@ -3,6 +3,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 node scripts/verify-admin.mjs
+node scripts/verify-public-site.mjs
+node scripts/asset-versions.mjs --check
 STAGE="$(mktemp -d)"
 node scripts/package-static.mjs "$STAGE"
 COPYFILE_DISABLE=1 tar -czf "$STAGE/release.tgz" -C "$STAGE" public release.json deploy-static.py montessori-ksa.conf

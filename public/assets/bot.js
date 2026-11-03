@@ -17,7 +17,7 @@
     },
     '2': {
       question: 'الأعمار المستقبلة',
-      answer: 'نستقبل الأطفال من عمر سنتين إلى ٥ سنوات.'
+      answer: 'نستقبل الأطفال من عمر ٣ إلى ٥ سنوات: المستوى الأول (٣–٤) والمستوى الثاني (٤–٥)، إضافةً إلى برنامج صيفي.'
     },
     '3': {
       question: 'رسوم العام الدراسي ٢٠٢٦–٢٠٢٧',
@@ -137,7 +137,7 @@
     if (!document.querySelector('link[data-mk-faq-style]')) {
       var stylesheet = document.createElement('link');
       stylesheet.rel = 'stylesheet';
-      stylesheet.href = '/assets/bot.css?v=1';
+      stylesheet.href = '/assets/bot.css?v=04cab71543';
       stylesheet.setAttribute('data-mk-faq-style', '');
       document.head.appendChild(stylesheet);
     }
