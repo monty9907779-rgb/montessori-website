@@ -4005,10 +4005,56 @@ def write_feed(q):
     except Exception as ex:
         log(f'blog feed write failed: {ex}')
 
+_AR_DIGITS = str.maketrans('0123456789', '٠١٢٣٤٥٦٧٨٩')
+_EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+              'August', 'September', 'October', 'November', 'December']
+_HOME_TIME_RE = re.compile(r'<time class="k-foot__upd" datetime="[^"]*">[^<]*</time>')
+
+def stamp_home_dates(text, english, day):
+    """Update date of a homepage, the same day in two places so they agree
+    (Google's publication-dates rule, the G-DATES check of the GEO audits):
+    a WebPage JSON-LD node with dateModified, and a visible <time> in the
+    footer's copyright line. Adds both when missing, else rewrites the date.
+    Called only when the page changed, so the date is the real update day."""
+    iso = day.isoformat()
+    if english:
+        shown = f"{_EN_MONTHS[day.month-1]} {day.day}, {day.year}"
+        label, url, lang, name = 'Last updated', f'{SITE}/en/', 'en', 'Kawkab Al-Tifl Al-Hurr Kindergarten – Montessori nursery in Jeddah'
+    else:
+        shown = f"{day.day} {MONTHS[day.month-1]} {day.year}".translate(_AR_DIGITS)
+        label, url, lang, name = 'آخر تحديث', f'{SITE}/', 'ar', 'روضة كوكب الطفل الحر – حضانة مونتيسوري في جدة'
+    tag = f'<time class="k-foot__upd" datetime="{iso}">{shown}</time>'
+    if _HOME_TIME_RE.search(text):
+        text = _HOME_TIME_RE.sub(tag, text, count=1)
+    else:
+        text = re.sub(r'(<p class="k-foot__cr">[^<]*)(</p>)',
+                      lambda m: f'{m.group(1)} · {label} {tag}{m.group(2)}', text, count=1)
+    page_id = f'{url}#webpage'
+    if f'"@id":"{page_id}"' in text:
+        text = re.sub(r'("@id":"%s"[^<]*?"dateModified":")[^"]*(")' % re.escape(page_id),
+                      lambda m: m.group(1) + iso + m.group(2), text, count=1)
+    else:
+        node = json.dumps({"@context": "https://schema.org", "@type": "WebPage", "@id": page_id,
+                           "url": url, "name": name, "inLanguage": lang,
+                           "isPartOf": {"@id": f"{url}#website"},
+                           "about": {"@id": f"{SITE}/#business"},
+                           "dateModified": iso}, ensure_ascii=False, separators=(',', ':'))
+        text = text.replace('</head>', f'<script type="application/ld+json">{node}</script>\n</head>', 1)
+    return text
+
 def _bump_home_lastmod(before, today):
     """When repair_static_site changed a homepage, say so in the sitemap and
     to IndexNow: the homepages' <lastmod> was stuck at the day they were
-    first generated."""
+    first generated. The page's own update date (schema + footer) follows."""
+    for (f, english), old_txt in zip((('index.html', False), ('en/index.html', True)), before):
+        pth = ROOT/f
+        if not pth.exists():
+            continue
+        cur = pth.read_text(encoding='utf-8')
+        if 'class="k-foot__cr"' not in cur:
+            continue
+        if (old_txt and cur != old_txt) or 'class="k-foot__upd"' not in cur:
+            _patch_file(pth, lambda t, e=english: stamp_home_dates(t, e, today))
     smp = ROOT/'sitemap.xml'
     try:
         sm = smp.read_text(encoding='utf-8')

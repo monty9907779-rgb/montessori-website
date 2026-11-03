@@ -148,3 +148,29 @@ assets/wa-fix.js"
 else
   log "webroot $WEBROOT/dashboard not found — dashboard files not installed"
 fi
+
+# ── nginx: declare UTF-8 on text responses ──────────────────────────────────
+# The pages were served as "Content-Type: text/html" with no charset, so
+# fetchers that do not read <meta charset> (AI crawlers, SEO/GEO audit tools)
+# decoded the Arabic as Latin-1. deploy.sh ships "charset utf-8;" inside the
+# server block (ops/nginx/montessori-ksa.conf); until the next full release
+# this http-level snippet does the same. Installed once, kept only if
+# `nginx -t` passes (removed again otherwise), then nginx is reloaded.
+CHARSET_CONF=/etc/nginx/conf.d/mk-charset.conf
+if [ -d /etc/nginx/conf.d ] && [ ! -f "$CHARSET_CONF" ] && command -v nginx >/dev/null 2>&1; then
+  if grep -qsE '^\s*charset\s' /etc/nginx/nginx.conf; then
+    log "nginx.conf already sets charset — $CHARSET_CONF not needed"
+  else
+    printf '# installed by /opt/seo/self-update.sh\ncharset utf-8;\n' > "$CHARSET_CONF"
+    if nginx -t >>"$LOG" 2>&1; then
+      if systemctl reload nginx >>"$LOG" 2>&1 || nginx -s reload >>"$LOG" 2>&1; then
+        log "installed $CHARSET_CONF and reloaded nginx"
+      else
+        log "installed $CHARSET_CONF but nginx reload FAILED — reload by hand"
+      fi
+    else
+      rm -f "$CHARSET_CONF"
+      log "nginx -t failed with $CHARSET_CONF — removed it, nothing changed"
+    fi
+  fi
+fi
