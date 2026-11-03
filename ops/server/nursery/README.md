@@ -105,6 +105,19 @@ and the maintenance scripts (`resync-deductions.sh`, `show-deductions.sh`).
 To deploy right now: `bash /opt/seo/self-update.sh`. When the script itself
 changed it re-runs once automatically, so a single run is always enough.
 
+**The server runs a hardened copy, not this file (checked 2026-11-03).**
+`/opt/seo/self-update.sh` on the VPS no longer pulls itself from the repo. It
+downloads from a fixed commit (`$REF`) instead of `main`, scans every file with
+`/opt/security-weekly/pristine_sync.py --scan` (quarantining anything that
+fails), and test-imports the nursery addon inside the `odoo` container,
+reverting to `.prev` without a restart when the import fails. Its public file
+list is the dashboard and AI files only: it does **not** include
+`assets/wa-fix.js` or `assets/og-home-2026-10.jpg`. Keep that hardened copy.
+Don't overwrite it with this file, which has none of those checks. To ship a
+file outside its list, install it by hand on the server (download from `main`,
+keep a `.prev`, `install -m 644 -o www-data -g www-data`), as was done for
+`wa-fix.js` on 2026-11-03.
+
 The accounts page (`public/accounts/index.html`) is **not** on that list: it
 has inline `<script>` blocks, and the CSP hash for each is regenerated only by
 the static release (`bash deploy.sh` from a workstation). When a single page
