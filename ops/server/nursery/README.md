@@ -99,7 +99,8 @@ per-employee table) without logging in:
 pulls from `main`: the SEO publisher files, the nursery addon files
 (`excel_import.py`, `roles.py`, `models_nursery.py` → `models/nursery.py`,
 `import_month.py`, `import_unlock.json` — Odoo is restarted when any changed),
-the AI page files (`public/ai/index.html`, `public/assets/ai.js`, `ai.css`)
+the AI page files (`public/ai/index.html`, `public/assets/ai.js`, `ai.css`),
+the site-wide WhatsApp link router (`public/assets/wa-fix.js`)
 and the maintenance scripts (`resync-deductions.sh`, `show-deductions.sh`).
 To deploy right now: `bash /opt/seo/self-update.sh`. When the script itself
 changed it re-runs once automatically, so a single run is always enough.
