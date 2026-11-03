@@ -216,7 +216,7 @@ function boot(){
   if(!mounted) firstSkeleton();
   fetchData().then(function(d){
     if(!d||!d.ok){ NS.clearToken('mt'); gate(); return; }
-    D=d; render(); startTimer();
+    D=d; render(); startTimer(); startWa();
   }).catch(function(err){
     if(err.type==='auth'){ NS.clearToken('mt'); gate(); }
     else { netError(); }   /* net / app / 5xx -> retry, keep session */
@@ -306,6 +306,9 @@ function render(){
         stat(sf.late_today?'is-amber':'is-forest','clock','تأخّر الموظفين',NS.fmtMoney(sf.late_today),sf.late_today?'اليوم':'الجميع في الموعد','/salaries/')+
         stat('is-forest','calendar','تسجيل السنة الجديدة',NS.fmtMoney(st.new_year_count||0),'طلب/طالب','/enrollments/')+
       '</div>'+
+
+      /* ---- صندوق الرسائل (Chatwoot / واتساب): أرقام حية + دخول مباشر ---- */
+      waCard()+
 
       (EX.ym?excelLedgerCard(EX):'')+
 
@@ -493,6 +496,40 @@ function adsCard(a){
   return h;
 }
 
+
+/* ================= صندوق الرسائل (Chatwoot) =================
+   الأرقام من /api/manager/ai/context (نفس إحصاءات Chatwoot اللي السيرفر بيكاشها 3 دقائق)،
+   فبنحدّثها كل 3 دقائق بشكل مستقل عن تحديث الداشبورد كل دقيقة. أعداد فقط — لا أسماء ولا أرقام هواتف.
+   زرار «افتح صندوق الرسائل» بيستخدم data-crm-sso → دخول تلقائي عبر /api/manager/crm_sso. */
+var WA=null, waTimer=null, WA_CRM='https://crm.montessori-ksa.com/';
+function fetchWa(){
+  NS.api('/api/manager/ai/context',{mt:TOKEN}).then(function(r){
+    WA=(r&&r.ok&&r.context&&r.context.whatsapp)||{available:false};
+    paintWa();
+  }).catch(function(){ if(!WA||!WA.available){ WA={available:false}; paintWa(); } });
+}
+function startWa(){ if(waTimer) return; fetchWa(); waTimer=setInterval(fetchWa,180000); }
+function paintWa(){ var el=document.getElementById('wa-inbox'); if(el) el.innerHTML=waBody(); }
+function waCard(){ return '<section class="card card--pad u-mb20" id="wa-inbox">'+waBody()+'</section>'; }
+function waNum(v){ return NS.fmtMoney(Number(v)||0); }
+function waBody(){
+  var w=WA||{};
+  var when=(w.available&&w.updated_at)?('تحديث '+String(w.updated_at).slice(11,16)):'';
+  var head='<div class="card__head"><span class="card__title">'+I('chat')+' صندوق الرسائل · واتساب</span>'+
+    (when?'<span class="tag tag--soft">'+NS.esc(when)+'</span>':'')+'</div>';
+  var actions='<div class="head-actions u-mt12">'+
+    '<a class="btn btn--primary" href="'+WA_CRM+'" target="_blank" rel="noopener" data-crm-sso="1">'+I('chat')+' افتح صندوق الرسائل</a>'+
+    '<a class="btn btn--soft" href="/whatsapp/">'+I('whatsapp')+' الرد الآلي</a></div>';
+  if(WA===null) return head+'<div class="muted">جاري تحميل أرقام الرسائل…</div>'+actions;
+  if(!w.available) return head+'<div class="muted">أرقام الرسائل غير متاحة الآن — تقدري تفتحي صندوق الرسائل مباشرة.</div>'+actions;
+  var waiting=Number(w.waiting_reply)||0, unread=Number(w.unread_conversations)||0;
+  return head+'<div class="kpis">'+
+    stat(waiting?'is-amber':'is-forest','clock','تنتظر الرد',waNum(waiting),waiting?'آخر رسالة من ولي الأمر':'لا أحد ينتظر')+
+    stat(unread?'is-clay':'is-forest','bell','غير مقروءة',waNum(unread),'محادثة')+
+    stat('is-forest','chat','محادثات مفتوحة',waNum(w.open_conversations),'جديدة اليوم '+waNum(w.new_conversations_today))+
+    stat('is-clay','sparkle','رسائل اليوم',waNum(w.received_today)+' <small>/ '+waNum(w.sent_today)+'</small>','وارد / صادر')+
+  '</div>'+actions;
+}
 
 function card(extra,icon,title,pill,body){
   return '<section class="card card--pad '+(extra||'')+'">'+
