@@ -183,12 +183,58 @@
     '1aer3_z4PBR-LiL1bv6yzxCeRgRgXh6Et': 'home-', '1zqh4XFDEzMEPLyf1PGg-wzcaF9W8vFeD': 'home-',
     '1DVZt47s2WO7SraNoyjcmrD60Nu9fdUID': 'home-', '14_F8xmy-Q5FD3NULeGho8hFBOlP1BTD-': 'home-',
     'wa1103-05': 'home-', 'wa1103-08': 'home-', 'wa1103-02': 'home-', 'wa1103-03': 'home-',
-    'wa1103-04': 'home-', 'wa1103-06': 'home-', 'wa1103-07': 'home-'
+    'wa1103-04': 'home-', 'wa1103-06': 'home-', 'wa1103-07': 'home-',
+    'wa1103-r01': 'home-', 'wa1103-r02': 'home-', 'wa1103-r03': 'home-', 'wa1103-r04': 'home-', 'wa1103-r05': 'home-', 'wa1103-r06': 'home-', 'wa1103-r07': 'home-', 'wa1103-r08': 'home-', 'wa1103-r09': 'home-', 'wa1103-r10': 'home-', 'wa1103-r11': 'home-', 'wa1103-r12': 'home-', 'wa1103-r13': 'home-', 'wa1103-r14': 'home-', 'wa1103-r15': 'home-', 'wa1103-r16': 'home-', 'wa1103-r17': 'home-', 'wa1103-r18': 'home-', 'wa1103-r19': 'home-', 'wa1103-r20': 'home-', 'wa1103-r21': 'home-'
   };
-  /* the owner's newest photos (WhatsApp, 2026-11-03), self-hosted at 3:4 (480/800/1200) and shown
-     before the feed. wa1103-08 is the hero, so it is not repeated here. */
-  var NEW = ['wa1103-05', 'wa1103-02', 'wa1103-06', 'wa1103-04', 'wa1103-03', 'wa1103-07'];
+  /* the owner's newest photos (WhatsApp, 2026-11-03), self-hosted at 3:4 (480/800/1200).
+     NEW fills the six bento tiles; MORE are reachable in the lightbox ("see all"), loaded only when opened. */
+  var NEW = ['wa1103-r04', 'wa1103-r17', 'wa1103-r06', 'wa1103-r11', 'wa1103-r01', 'wa1103-05'];
+  var MORE = ['wa1103-r02', 'wa1103-r03', 'wa1103-r05', 'wa1103-r07', 'wa1103-r08', 'wa1103-r09', 'wa1103-r10',
+    'wa1103-r12', 'wa1103-r13', 'wa1103-r14', 'wa1103-r15', 'wa1103-r16', 'wa1103-r18', 'wa1103-r19', 'wa1103-r20',
+    'wa1103-r21', 'wa1103-02', 'wa1103-06', 'wa1103-04', 'wa1103-03', 'wa1103-07', 'wa1103-08'];
   var ALT = {
+    'wa1103-r01': ['أطفال بقبعات طهاة حول طاولة بمفرش أحمر مربّع',
+      'Children in chef hats around a red-checked table'],
+    'wa1103-r02': ['طفلة تتتبّع حروفًا رملية على صينية خشبية',
+      'A girl tracing sandpaper letters on a wooden tray'],
+    'wa1103-r03': ['طفل يتتبّع حرف B على صينية رمل',
+      'A boy tracing the letter B in a sand tray'],
+    'wa1103-r04': ['طفلة تبتسم بجانب بطاقات Owl وOlive وOil في نشاط حرف O',
+      'A smiling girl beside Owl, Olive and Oil cards at a letter-O activity'],
+    'wa1103-r05': ['طفل يحمل بطاقة «He» ودمية صغيرة',
+      'A boy holding a “He” card and a small doll'],
+    'wa1103-r06': ['طفلة تحمل دمية وبطاقة «She»',
+      'A girl holding a doll and a “She” card'],
+    'wa1103-r07': ['طفلة بزيّ تراثي عند ركن البيتزا',
+      'A girl in traditional dress at the pizza corner'],
+    'wa1103-r08': ['طفلة تحضّر البيتزا عند فرن ركن الطهي',
+      'A girl preparing pizza at the play oven'],
+    'wa1103-r09': ['طفلة تبتسم بجانب لوحة رسمتها بالفرشاة',
+      'A smiling girl next to a painting she made'],
+    'wa1103-r10': ['طفلة في ركن الفنون بين الألوان والفُرَش',
+      'A girl at the art corner among paints and brushes'],
+    'wa1103-r11': ['طفل يرفع يديه أمام لوحة «حالات المادة»',
+      'A boy raising his arms at the “states of matter” board'],
+    'wa1103-r12': ['طفلة أمام لوحة «حالات المادة»',
+      'A girl in front of the “states of matter” board'],
+    'wa1103-r13': ['طفلة تبتسم داخل إطار من الزهور الملوّنة في الساحة',
+      'A smiling girl inside a frame of colourful flowers in the yard'],
+    'wa1103-r14': ['أطفال في الساحة يظهرون من خلال إطار الزهور',
+      'Children in the yard, seen through a frame of flowers'],
+    'wa1103-r15': ['طفلتان أمام لوحة الربيع والزهور',
+      'Two girls in front of a spring flowers board'],
+    'wa1103-r16': ['طفلة تحمل وردة في ركن الربيع',
+      'A girl holding a rose at the spring corner'],
+    'wa1103-r17': ['طفل يجلس بجانب نشاط «الجمع البسيط» بالكرات الملوّنة',
+      'A boy sitting beside a “simple addition” activity with coloured balls'],
+    'wa1103-r18': ['طفلة تجلس بجانب نشاط «الجمع البسيط» بالكرات الملوّنة',
+      'A girl sitting beside a “simple addition” activity with coloured balls'],
+    'wa1103-r19': ['طفلة تبتسم بجانب نشاط «الجمع البسيط»',
+      'A smiling girl beside a “simple addition” activity'],
+    'wa1103-r20': ['طفلة تجلس على العشب بجانب صندوق «الجمع البسيط»',
+      'A girl sitting on the grass beside the “simple addition” box'],
+    'wa1103-r21': ['طفل يجلس على العشب بجانب نشاط حرف T والطماطم',
+      'A boy sitting on the grass beside a letter-T tomato activity'],
     'wa1103-05': ['طفلة بتاج وقفازين زرقاوين تحمل كوبًا على طاولة مزيّنة بالأميرات',
       'A girl in a tiara and blue gloves holding a cup at a princess-themed table'],
     'wa1103-02': ['طفلة بمعطف مختبر ونظارة عند طاولة صفراء أمام لوحة «مختبر العلوم»',
@@ -213,8 +259,9 @@
     var skip = (gal.getAttribute('data-hero') || '').split(',');
     ids = NEW.concat(ids).filter(function (id, k, all) { return id && skip.indexOf(id) < 0 && all.indexOf(id) === k; }).slice(0, 6);
     if (!ids.length) { gal.outerHTML = '<p class="k-gal-note">' + esc(T.galEmpty) + '</p>'; return; }
-    var full = ids.map(function (id) { return isLocal(id) ? local(id, 1200, 'webp') : thumb(id, 1400); });
-    var alts = ids.map(altOf);
+    var all = ids.concat(MORE.filter(function (id) { return ids.indexOf(id) < 0; }));
+    var full = all.map(function (id) { return isLocal(id) ? local(id, 1200, 'webp') : thumb(id, 1400); });
+    var alts = all.map(altOf);
     gal.innerHTML = ids.map(function (id, n) {
       var alt = esc(alts[n]), sizes = n === 0 ? '(min-width: 760px) 560px, 100vw' : '(min-width: 760px) 280px, 50vw';
       var img = isLocal(id)
@@ -230,6 +277,13 @@
     gal.addEventListener('click', function (e) {
       var c = e.target.closest('.cell'); if (c) lightbox(full, +c.getAttribute('data-i'), alts);
     });
+    if (full.length > ids.length && !$('gal-all')) {
+      var more = doc.createElement('button');
+      more.type = 'button'; more.id = 'gal-all'; more.className = 'k-btn k-btn--quiet k-gal-all';
+      more.textContent = (EN ? 'See all ' : 'شاهد كل الصور (') + full.length + (EN ? ' photos' : ')');
+      more.addEventListener('click', function () { lightbox(full, 0, alts); });
+      gal.parentNode.insertBefore(more, gal.nextSibling);
+    }
   }
   near(gal, function () {
     if (location.hostname !== 'montessori-ksa.com' && location.hostname !== 'www.montessori-ksa.com') { renderGallery(KNOWN); return; }
