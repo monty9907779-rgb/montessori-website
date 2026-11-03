@@ -143,7 +143,8 @@ dashboard/index.html
 ai/index.html
 assets/ai.js
 assets/ai.css
-assets/og-home-2026-10.jpg"
+assets/og-home-2026-10.jpg
+assets/wa-fix.js"
 else
   log "webroot $WEBROOT/dashboard not found — dashboard files not installed"
 fi
