@@ -4073,6 +4073,24 @@ HOME_SUMMARY = {
 ABOUT_LINK = {False: ('<nav aria-label="روابط الموقع">', '<a href="/about/">من نحن</a>', 'about/index.html'),
               True: ('<nav aria-label="Site links">', '<a href="/en/about/">About us</a>', 'en/about/index.html')}
 
+# Arabic homepage title and descriptions (2026-11-04). The title said
+# «حضانة أطفال … منتسوري» and never the exact phrase «حضانة مونتيسوري», so for
+# that query (140/month) Google swapped the Arabic homepage for /en/ («Montessori
+# Nursery») and the ranking fell from 4 to 34. public/index.html carries the same
+# text for the next full release; on the live page this patch is a no-op once
+# the phrase is in the <title>.
+HOME_TITLE_AR = 'حضانة مونتيسوري وحضانة أطفال في جدة | كوكب الطفل الحر'
+
+def home_title_ar(head):
+    m = re.search(r'<title>([^<]*)</title>', head)
+    if not m or 'حضانة مونتيسوري' in m.group(1):
+        return head
+    head = head.replace(m.group(0), '<title>%s</title>' % HOME_TITLE_AR, 1)
+    for attr in ('property="og:title"', 'name="twitter:title"'):
+        head = re.sub(r'(<meta %s content=")[^"]*' % re.escape(attr),
+                      lambda mm: mm.group(1) + HOME_TITLE_AR, head, count=1)
+    return head.replace('content="حضانة أطفال وروضة مونتيسوري', 'content="حضانة مونتيسوري وروضة أطفال')
+
 def home_geo_extras(text, english, root=None):
     """Homepage GEO fixes, each a no-op once present: the Google Business
     Profile in the business node's sameAs and as hasMap, the contact map link
@@ -4080,6 +4098,8 @@ def home_geo_extras(text, english, root=None):
     the first section (AI engines quote one complete passage), and an About
     link in the footer once the about page is installed."""
     head, sep, body = text.partition('</head>')
+    if not english and sep:
+        head = home_title_ar(head)
     if GBP_URL not in head:
         head = re.sub(r'("sameAs":\s*\[)', lambda m: m.group(1) + '"%s", ' % GBP_URL, head, count=1)
         head = head.replace('"hasMap": "%s"' % _MAP_SEARCH, '"hasMap": "%s"' % GBP_URL, 1)
