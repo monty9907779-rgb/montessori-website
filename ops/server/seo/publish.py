@@ -418,8 +418,6 @@ CANONICAL_TO = {
     # readers but points its canonical at the kept article and leaves the
     # sitemap, so the two stop competing. Kept: the article the homepage
     # links (districts) or the hand-rewritten, Jeddah-specific version.
-    'safe-educational-nursery-jeddah-options': '/blog/safe-educational-nursery-options-jeddah/',
-    'reliable-nursery-recommendation-jeddah': '/blog/trusted-nursery-recommendation-jeddah/',
     'montessori-nursery-al-marwah-jeddah-guide': '/blog/nursery-al-marwah-jeddah/',
     'montessori-nursery-al-safa-jeddah-guide': '/blog/nursery-al-safa-jeddah/',
     'montessori-nursery-al-naeem-jeddah-guide': '/blog/nursery-an-naim-jeddah/',
@@ -456,7 +454,22 @@ REDIRECTED = {
     # before it went live: listed here so a server queue that already
     # holds it as pending prunes it instead of publishing a duplicate.
     'infant-nursery-jeddah-what-to-check': 'infant-nursery-jeddah',
+    # 2026-11-04 SEO audit: seven live articles answered the same search
+    # («حضانة اطفال جدة» / «أفضل حضانة في جدة») and split its ranking. Kept:
+    # best-montessori-nursery-jeddah, the pillar 32 articles already link.
+    # The rest are 301-redirected there (the price guide to the price page);
+    # the nginx rules are in ops/nginx/montessori-ksa.conf.
+    'best-nurseries-jeddah-2026': 'best-montessori-nursery-jeddah',
+    'best-nursery-guide-jeddah': 'best-montessori-nursery-jeddah',
+    'trusted-nursery-recommendation-jeddah': 'best-montessori-nursery-jeddah',
+    'reliable-nursery-recommendation-jeddah': 'best-montessori-nursery-jeddah',
+    'safe-educational-nursery-options-jeddah': 'best-montessori-nursery-jeddah',
+    'safe-educational-nursery-jeddah-options': 'best-montessori-nursery-jeddah',
+    'best-quality-price-nursery-jeddah': 'nursery-prices-jeddah',
 }
+
+# Public utility pages that are not content: kept out of the sitemap.
+SITEMAP_EXCLUDE = ('/wa/',)
 
 REWRITES = OPT/"rewrites.json"
 _REWRITE_APPLIED = []
@@ -2010,6 +2023,8 @@ def prune_noindex_from_sitemap(q):
     except Exception:
         return
     new = sm
+    for path in SITEMAP_EXCLUDE:
+        new = re.sub(r'\s*<url>\s*<loc>%s</loc>.*?</url>' % re.escape(SITE + path), '', new, flags=re.S)
     for a in q:
         slug = a.get('slug')
         if slug in REDIRECTED or (a.get('published') and slug in CANONICAL_TO):
@@ -2262,7 +2277,6 @@ INLINE_LINKS = [
     ('سنة التمهيدي', 'kindergarten-for-5-year-old-jeddah-montessori'),
     ('مجموعات صغيرة', 'nursery-small-groups-jeddah'),
     ('الحضانة التقليدية', 'montessori-vs-traditional-nursery-jeddah'),
-    ('ترشيحات الأهالي', 'trusted-nursery-recommendation-jeddah'),
     ('علامات ذكاء الطفل', 'child-intelligence-signs-2-3-years'),
     ('الأسئلة الشائعة عن الحضانة', 'nursery-faq-jeddah-parents'),
     # 2026-10-21: low-difficulty terms we do not rank for yet («حضانة قريبة
@@ -3543,7 +3557,7 @@ def repair_static_site():
             'من المدوّنة: إجابات عملية عن أكثر ما تسأل عنه الأمهات في جدة.',
             _seo_cards([
                 ('/blog/how-to-choose-nursery-jeddah/', 'كيف تختارين حضانة أطفال في جدة؟', 'معايير عملية وأسئلة تطرحينها في الزيارة الأولى'),
-                ('/blog/best-nursery-guide-jeddah/', 'أفضل حضانة أطفال في جدة', 'دليل المقارنة بين الحضانات بالمعايير لا بالإعلانات'),
+                ('/blog/best-montessori-nursery-jeddah/', 'أفضل حضانة أطفال في جدة', 'دليل المقارنة بين الحضانات بالمعايير لا بالإعلانات'),
                 ('/blog/what-is-montessori-method/', 'ما هو منهج مونتيسوري؟', 'ولماذا يناسب الطفل من سنتين إلى ٥ سنوات'),
                 ('/blog/nursery-readiness-signs-child-jeddah/', 'هل طفلك جاهز للحضانة؟', 'علامات تساعدك على القرار'),
                 ('/blog/nursery-separation-anxiety-jeddah-plan/', 'قلق الأيام الأولى', 'خطة لطيفة للطفل والأم في أسبوع التكيّف'),
@@ -4231,12 +4245,37 @@ def repair_published_articles(q, today):
     for a in q:
         if not a.get('published') or not a.get('slug'):
             continue
+        if a['slug'] in REDIRECTED:
+            retire_redirected_page(a['slug'])
+            continue
         d=article_date(a, today)
         art_dir=ROOT/'blog'/a['slug']
         art_dir.mkdir(parents=True, exist_ok=True)
         (art_dir/'index.html').write_text(
             render_article(a, d.isoformat(), d, allslugs | set(a.get('related') or []), titles),
             encoding='utf-8')
+
+def retire_redirected_page(slug):
+    """Remove a merged article's page from disk once nginx 301s its URL.
+
+    The page is only taken down after the live URL is confirmed to redirect,
+    so a missing or failed nginx rule leaves the old page serving instead of
+    a 404. The file is kept in /opt/seo/retired/ in case it is needed again."""
+    page = ROOT/'blog'/slug/'index.html'
+    if not page.exists() or not shadowing_redirect(slug):
+        return
+    try:
+        keep = OPT/'retired'/slug
+        keep.mkdir(parents=True, exist_ok=True)
+        (keep/'index.html').write_bytes(page.read_bytes())
+        page.unlink()
+        try:
+            page.parent.rmdir()
+        except OSError:
+            pass
+        log(f"retired {slug}: page removed, URL 301s to {REDIRECTED[slug]}")
+    except Exception as ex:
+        log(f"retire {slug} failed: {ex}")
 
 def shadowing_redirect(slug):
     """Return the redirect target when the site sends this slug elsewhere.
