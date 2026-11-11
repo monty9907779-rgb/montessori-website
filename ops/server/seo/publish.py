@@ -2002,6 +2002,98 @@ def apply_text_fixes(raw_q):
         log(f"text fix applied {a['slug']} ({hit} replacement(s))")
     return raw_q
 
+# 2026-11-08 (owner): three claims the owner could not confirm are removed from
+# every article: the hourly-care service («ضيافة بالساعة»), «معلمات مؤهلات»
+# and «أكثر من ١٠ سنوات». Rule-based so it also covers text added later.
+# Articles that are about one of the claims (CLAIMS_SKIP_SLUGS) are left for
+# the owner to decide; the job-ad article is a hiring text, not a claim.
+CLAIMS_SKIP_SLUGS = {'nursery-jobs-jeddah', 'qualified-teachers-nursery-jeddah',
+                     'children-hospitality-diyafa-jeddah'}
+# claims-scrub:begin
+_CL_H=r'(?:ال)?ضيافة بالساعة'
+_CL_HC=r'(?:ال)?ضيافة بالساعة(?: جدة)?'
+_CL_EH=r'[Hh]ourly (?:care|hospitality)'
+def _claims_sub(p,r,s): return re.sub(p,r,s,flags=re.S)
+def _claims_body(s):
+    s=_claims_sub(r'<strong>(\s*(?:خدمة |خدمات )?'+_CL_HC+r'\s*)</strong>',r'\1',s)
+    s=_claims_sub(r'<strong>(\s*(?:برنامج |خدمة )?'+_CL_H+r':?\s*)</strong>',r'\1',s) if False else s
+    # list items and question/answer blocks about the hourly service
+    s=_claims_sub(r'<li>(?:(?!</li>).)*?(?:'+_CL_HC+'|'+_CL_EH+r')(?:(?!</li>).)*?</li>\s*','',s)
+    s=_claims_sub(r'<h([23])>[^<]*(?:'+_CL_HC+'|'+_CL_EH+r')[^<]*</h\1>\s*(?:<p>(?:(?!</p>).)*</p>\s*)+?(?=<h[23]>|<ul>|<ol>|$)','',s) if False else s
+    s=_claims_sub(r'<h([23])>[^<]*(?:'+_CL_HC+'|'+_CL_EH+r')[^<]*</h\1>\s*<p>(?:(?!</p>).)*</p>\s*','',s)
+    s=_claims_sub(r'،? ?(?:ولدينا كذلك|لدينا كذلك) '+_CL_H+r'[^.؟<]*',' ',s)
+    s=_claims_sub(r'(نوفّر|نوفر) (?:خدمة )?'+_CL_H+r' إلى جانب ',r'\1 ',s)
+    s=_claims_sub(r'،? (?:تتوفّر|تتوفر) '+_CL_H+r'، (?:إضافة|إضافةً|بالإضافة) إلى ','، ويتوفر ',s)
+    s=_claims_sub(r'،? (?:و|أو )(?:خدمة |خدمات |برنامج |خيار )?'+_CL_H,'',s)
+    s=_claims_sub(r'،? (?:إضافة|إضافةً|بالإضافة) إلى (?:خدمة |خدمات )?'+_CL_H+r'(?= )','',s)
+    s=_claims_sub(r'،? (?:مع توفّر|مع توفر|ونوفّر|ونوفر|نوفّر|نوفر|ونقدّم|ونقدم|وتتوفر|وتتوفّر|تتوفّر|تتوفر|مع إمكانية|مع توافر خيارات إضافية مثل) (?:خدمة |خدمات |خيار )?'+_CL_H+r'(?: عند الحاجة| للحاجات المتقطّعة| لمن تحتاج مرونة إضافية| خلال هذه الفترة)?','',s)
+    s=_claims_sub(r'،? (?:سواء كان )?(?:دواماً كاملاً|دوام منتظم) أو '+_CL_H,'',s)
+    s=_claims_sub(r'\(([^()]*?)،? أو '+_CL_H+r'\)',r'(\1)',s)
+    s=_claims_sub(r'،? (?:واسألي|اسألي) الإدارة عن (?:خدمة )?'+_CL_H+r' وأوقاتها[^.؟<]*','',s)
+    s=_claims_sub(r'،? ?(?:and )?with '+_CL_EH+r' (?:available )?(?:for families who need (?:extra time|flexibility)|if you need (?:extra|more) time|when families need (?:extra time|it))','',s)
+    s=_claims_sub(r',? (?:and )?'+_CL_EH+r' (?:is )?available(?: (?:for families who need (?:extra time|flexibility)|if you need (?:extra|more) time|when families need (?:extra time|it)))?','',s)
+    s=_claims_sub(r', with '+_CL_EH+r' for families who need extra time','',s)
+    s=_claims_sub(r'(?<!ال)معلمات مؤهلات','معلمات',s)
+    s=_claims_sub(r'،\s*و?المعلمات مؤهلات(?: في منهج مونتيسوري)?','',s)
+    s=_claims_sub(r'[Qq]ualified teachers','teachers',s)
+    s=_claims_sub(r'\s*(?:،\s*)?(?:و)?(?:بخبرة|خبرة) (?:تزيد على|تتجاوز|أكثر من) (?:١٠|عشر) سنوات(?: في (?:تعليم )?الطفولة المبكرة)?(?: وتقييم ٤٫٧)?','',s)
+    s=_claims_sub(r'،? ولنا أكثر من ١٠ سنوات في تعليم الطفولة المبكرة','',s)
+    s=_claims_sub(r', with more than 10 years of experience(?: in early childhood education)?','',s)
+    # leftover: drop whole plain sentences still naming the hourly service
+    s=_claims_sub(r'(?<=[>.؟?] )[^.؟?<>]*(?:'+_CL_HC+'|'+_CL_EH+r')[^.؟?<>]*[.؟?]\s*','',s)
+    s=_claims_sub(r'(?<=<p>)[^.؟?<>]*(?:'+_CL_HC+'|'+_CL_EH+r')[^.؟?<>]*[.؟?]\s*','',s)
+    s=_claims_sub(r'،\s*([.؟،])',r'\1',s)
+    s=_claims_sub(r',\s*\.','.',s)
+    s=_claims_sub(r'  +',' ',s)
+    s=_claims_sub(r'<p>\s*</p>\s*','',s)
+    return s
+def _claims_short(s):
+    s=_claims_sub(r'(?:،\s*)?'+_CL_H+r'(?:،\s*)?(?=[^\s،])','',s) if False else s
+    s=_claims_sub(r'\s*[،,]?\s*(?:و)?'+_CL_H+r'(?=[،.]|$)','',s)
+    s=_claims_sub(r'(?:ال)?ضيافة بالساعة،\s*','',s)
+    return s
+def scrub_unverified_article(a):
+    a=json.loads(json.dumps(a,ensure_ascii=False))
+    for k in('bodyHtml',):
+        if isinstance(a.get(k),str): a[k]=_claims_body(a[k])
+    for k in('title','seoTitle','metaDescription'):
+        if isinstance(a.get(k),str): a[k]=_claims_body(_claims_short(a[k]))
+    faq=[]
+    for it in a.get('faq') or []:
+        if isinstance(it,dict):
+            q,ans=it.get('q',''),it.get('a','')
+            if re.search(_CL_HC+'|'+_CL_EH,q): continue
+            ans=_claims_body(_claims_short(ans))
+            if not ans.strip(): continue
+            it=dict(it,a=ans)
+        faq.append(it)
+    if 'faq' in a: a['faq']=faq
+    return a
+# claims-scrub:end
+
+def scrub_unverified_claims(raw_q):
+    """Remove the unconfirmed claims from published articles, keeping the
+    result only if the facts gate still passes. Idempotent."""
+    if facts is None or not isinstance(raw_q, list):
+        return raw_q
+    for a in raw_q:
+        if a.get('slug') in CLAIMS_SKIP_SLUGS or not a.get('published'):
+            continue
+        cand = scrub_unverified_article(a)
+        if cand == a:
+            continue
+        # compare by failure kind: the quoted snippet changes with the edit
+        before = {w.split(':')[0] for w in facts.check_article(a)}
+        why = [w for w in facts.check_article(cand) if w.split(':')[0] not in before]
+        if why:
+            log(f"claims scrub rejected {a['slug']}: {'; '.join(why)}")
+            continue
+        a.update(cand)
+        a['modified'] = datetime.date.today().isoformat()
+        _REWRITE_APPLIED.append(a['slug'])
+        log(f"claims scrub applied {a['slug']}")
+    return raw_q
+
 def prune_templated_pending(raw_q):
     """Drop unpublished entries made by the old dated auto-refill
     (slug ends in -YYYYMMDD). They are one template with the district name
@@ -3002,13 +3094,13 @@ LLMS_QUICK_ANSWERS = [
     ('أين تقع الروضة وهل هي قريبة من حي الفيصلية؟',
      'الروضة في حي الفيصلية نفسه، شارع محمد عبدالكريم، جدة، وتخدم الأسر في الفيصلية والأحياء المجاورة. الدوام من الأحد إلى الخميس 08:00–13:00.'),
     ('كيف أقارن بين حضانة مونتيسوري وحضانة أخرى في المنطقة؟',
-     'انظري إلى البيئة المُعدّة، وتأهيل المعلمات، وكاميرات المراقبة، وطريقة التواصل اليومي مع الأسرة، واطلبي زيارة تعريفية قبل التسجيل. روضة كوكب الطفل الحر تقدّم كل ذلك بخبرة أكثر من ١٠ سنوات.'),
+     'انظري إلى البيئة المُعدّة، وتأهيل المعلمات، وكاميرات المراقبة، وطريقة التواصل اليومي مع الأسرة، واطلبي زيارة تعريفية قبل التسجيل. روضة كوكب الطفل الحر تقدّم كل ذلك.'),
     ('Can a 2-year-old join your nursery in Jeddah?',
      'No. Kawkab Al-Tifl Al-Hurr admits children aged 3 to 5 only, in KG1 (3 to 4) and KG2 (4 to 5); there is no Pre-KG. Hours are Sunday to Thursday, 08:00 to 13:00.'),
     ('Do you teach in both Arabic and English?',
      'Yes. Every day combines authentic Montessori with Modern Standard Arabic, English and Quran, for children aged 3 to 5.'),
     ('What makes Kawkab Al-Tifl Al-Hurr a Montessori nursery?',
-     'A prepared environment, qualified teachers, practical-life, sensorial, language and maths work, CCTV cameras, a daily parent app and more than 10 years of experience. Parents\' reviews are on Google Maps.'),
+     'A prepared environment, teachers, practical-life, sensorial, language and maths work, CCTV cameras and a daily parent app. Parents\' reviews are on Google Maps.'),
     # Prompts the AI-visibility tracker showed us absent from (2026-10-20)
     ('ما أفضل روضة لطفل عمره ٤ سنوات في جدة؟',
      'طفل الأربع سنوات مكانه المستوى الثاني (٤–٥). في روضة كوكب الطفل الحر بحي الفيصلية يتعلم بمنهج مونتيسوري القراءة والكتابة والرياضيات المحسوسة مع العربية الفصحى والإنجليزية والقرآن، في مجموعات صغيرة وبيئة مُعدّة.'),
@@ -3017,7 +3109,7 @@ LLMS_QUICK_ANSWERS = [
     ('Can you recommend a daycare in Jeddah for a 2-year-old?',
      'Kawkab Al-Tifl Al-Hurr in Al Faisaliyyah, Jeddah, admits children from age 3 (KG1, 3 to 4, and KG2, 4 to 5), so a 2-year-old needs another daycare until age 3. Hours are Sunday to Thursday 08:00 to 13:00; Montessori, Arabic, English and Quran, CCTV and a parent app.'),
     ('What is the best Montessori nursery in Jeddah?',
-     'Judge by the prepared environment, trained guides, a long uninterrupted work period, Arabic and English balance, safety and parent communication. Kawkab Al-Tifl Al-Hurr Kindergarten (Al Faisaliyyah, ages 3 to 5, more than 10 years of experience, parents\' reviews on Google Maps) meets all of these; book a visit Sunday to Thursday 10:00 to 12:00.'),
+     'Judge by the prepared environment, trained guides, a long uninterrupted work period, Arabic and English balance, safety and parent communication. Kawkab Al-Tifl Al-Hurr Kindergarten (Al Faisaliyyah, ages 3 to 5, parents\' reviews on Google Maps) meets all of these; book a visit Sunday to Thursday 10:00 to 12:00.'),
 ]
 
 def write_llms_txt(q=None):
@@ -3032,7 +3124,7 @@ def write_llms_txt(q=None):
         'الدوام: الأحد إلى الخميس، من الثامنة صباحًا حتى الواحدة ظهرًا.',
         '> Kawkab Al-Tifl Al-Hurr is a Montessori nursery and kindergarten in Al Faisaliyah (Mohammed Abdulkarim St), Jeddah, Saudi Arabia, '
         'for children aged 3 to 5, with Modern Standard Arabic, English and Quran every day. '
-        'More than 10 years of experience. Open Sunday to Thursday, 08:00 to 13:00. Book a visit on WhatsApp: +966 54 155 8173.',
+        'Open Sunday to Thursday, 08:00 to 13:00. Book a visit on WhatsApp: +966 54 155 8173.',
         '',
         '## حقائق أساسية / Key facts',
         '- الاسم: روضة كوكب الطفل الحر (Kawkab Al-Tifl Al-Hurr Kindergarten). الاسم السابق: «حضانة مونتيسوري» — نفس الفريق ونفس المكان.',
@@ -3044,7 +3136,6 @@ def write_llms_txt(q=None):
         '- اليوم / Daily rhythm: 8:00 استقبال · 8:30 حلقة الصباح · 9:30 نشاط تعلّمي حر · 11:00 لعب في الهواء الطلق · 12:30 فنون · 1:00 انصراف',
         '- الأمان: كاميرات مراقبة تغطي المبنى كاملًا خلال اليوم، وإشراف مستمر',
         '- تطبيق الأسرة: الحضور والصور ورسائل المعلمات والرسوم',
-        '- الخبرة: أكثر من ١٠ سنوات في تعليم الطفولة المبكرة / More than 10 years of experience',
         '- الدوام: الأحد إلى الخميس 08:00–13:00 (الجمعة والسبت إجازة)',
         '- الرسوم: غير منشورة؛ تُحدَّد حسب عمر الطفل وعدد الأيام وساعات الدوام، وتُرسَل عند الطلب عبر واتساب أو في الزيارة',
         '- التقييمات / Reviews: آراء الأهالي على خرائط جوجل https://maps.google.com/?cid=12601466599204157435',
@@ -3572,7 +3663,7 @@ def repair_static_site():
             'Fees depend on your child&#8217;s age, the number of days and the hours you choose; we confirm the exact figure by phone or during a visit. These guides explain the details before you get in touch.',
             _seo_cards([
                 ('/en/blog/kindergarten-in-jeddah/', 'Which stage is right for my child?', 'Pre-KG (ages 2 to 3), KG1 (3 to 4) and KG2 (4 to 5), and what each year focuses on'),
-                ('/en/blog/daycare-in-jeddah/', 'Half day or full day?', 'Our morning runs Sunday to Thursday, 08:00 to 13:00, with hourly care when you need it'),
+                ('/en/blog/daycare-in-jeddah/', 'Half day or full day?', 'Our morning runs Sunday to Thursday, 08:00 to 13:00'),
                 ('/en/blog/nursery-in-jeddah/', 'How to compare nurseries', 'The questions to ask on a visit and the signs of a safe, well-run setting'),
                 ('/en/#register', 'Book a visit', 'Visits run Sunday to Thursday, 10:00 AM to 12:00 PM; message us on WhatsApp to pick a time'),
             ]))
@@ -3805,10 +3896,10 @@ a.seo-card:hover b{color:var(--clay-600)}
     # style values), inserted once before the article cards.
     EN_BLOG_GUIDE = '''<section id="en-blog-guide" class="article__body en-blog-guide">
 <h2>What you will find in these guides</h2>
-<p>Choosing childcare in a city the size of Jeddah raises the same questions for almost every family: which option suits a two-year-old, what a Montessori classroom actually looks like, how fees are calculated, and how to make the first weeks calm for a child who has never been away from home. The guides below answer those questions in plain English, drawing on more than 10 years of working with children aged 2 to 5 in our Al Faisaliyyah nursery.</p>
+<p>Choosing childcare in a city the size of Jeddah raises the same questions for almost every family: which option suits a two-year-old, what a Montessori classroom actually looks like, how fees are calculated, and how to make the first weeks calm for a child who has never been away from home. The guides below answer those questions in plain English, drawing on our work with children in our Al Faisaliyyah nursery.</p>
 <ul>
 <li><a href="/en/blog/nursery-in-jeddah/">Nursery in Jeddah</a>: how to compare nurseries, the questions worth asking on a visit, and the signs of a safe, well-run setting.</li>
-<li><a href="/en/blog/daycare-in-jeddah/">Daycare in Jeddah</a>: full-day and half-day options, hourly care, and what to check about supervision, hygiene and communication with parents.</li>
+<li><a href="/en/blog/daycare-in-jeddah/">Daycare in Jeddah</a>: full-day and half-day options, and what to check about supervision, hygiene and communication with parents.</li>
 <li><a href="/en/blog/kindergarten-in-jeddah/">Kindergarten in Jeddah</a>: the official stage names (Pre-KG for ages 2 to 3, KG1 for 3 to 4, KG2 for 4 to 5), what each year focuses on, and how school readiness is built.</li>
 <li><a href="/en/blog/montessori-nursery-jeddah-guide/">Montessori nursery guide</a>: the prepared environment, the role of the guide, practical life and sensorial work, and how Arabic, English and Quran fit into a Montessori morning.</li>
 </ul>
@@ -4324,7 +4415,8 @@ def english_entries():
         rw = json.loads(REWRITES.read_text(encoding='utf-8'))
     except Exception:
         return {}
-    return {k: v for k, v in (rw or {}).items() if isinstance(v, dict) and v.get('lang') == 'en'}
+    return {k: (v if k in CLAIMS_SKIP_SLUGS else scrub_unverified_article(v)) for k, v in (rw or {}).items()
+            if isinstance(v, dict) and v.get('lang') == 'en'}
 
 def _en_date(d):
     return f'{d.day} {EN_MONTHS[d.month-1]} {d.year}'
@@ -4540,6 +4632,7 @@ def main():
     raw_q=prune_templated_pending(raw_q)
     raw_q=apply_rewrites(raw_q)
     raw_q=apply_text_fixes(raw_q)
+    raw_q=scrub_unverified_claims(raw_q)
     q=[normalized_article(a) for a in raw_q]
     compute_underlinked(q)
     if q != raw_q or _REWRITE_APPLIED:
