@@ -1,0 +1,63 @@
+name: Deploy static site
+
+# Publishes the static release (deploy.sh + CSP refresh) whenever the public
+# site, its packaging scripts or the nginx config change on main. Needs the
+# repository secret DEPLOY_SSH_KEY (private key allowed to log in to the
+# server as root); DEPLOY_KNOWN_HOSTS (the server's host key line) is
+# optional but recommended.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - 'scripts/**'
+      - 'ops/nginx/**'
+      - 'deploy.sh'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-static
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          if [ -z "$DEPLOY_SSH_KEY" ]; then
+            echo "DEPLOY_SSH_KEY is not set; skipping deploy." >&2
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          if [ -n "$DEPLOY_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 15 187.127.79.242 > ~/.ssh/known_hosts
+          fi
+          printf 'Host 187.127.79.242\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n' > ~/.ssh/config
+      - name: Deploy static release
+        run: bash deploy.sh
+      - name: Refresh CSP hashes
+        run: ssh -o BatchMode=yes root@187.127.79.242 'python3 - --refresh-csp' < scripts/deploy-static.py
+      - name: Check live site
+        run: |
+          for u in https://montessori-ksa.com/ https://montessori-ksa.com/en/ https://montessori-ksa.com/about/; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$u")
+            echo "$u -> $code"
+            [ "$code" = 200 ]
+          done
