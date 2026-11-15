@@ -105,6 +105,14 @@ m.prune_noindex_from_sitemap(q)
 print('refresh ok')
 "
 
+echo "== 6. static pages sync from main (check mode unless /opt/seo/static-sync.enable exists)"
+if fetch ops/server/seo/static-sync.py "$T/static-sync.py" && python3 -m py_compile "$T/static-sync.py" \
+   && scan "$T/static-sync.py" /opt/seo/static-sync.py; then
+  python3 "$T/static-sync.py" || echo "static-sync exited non-zero (see above)"
+else
+  echo "static-sync skipped (download/compile/scan failed)"
+fi
+
 echo "== 5. verify"
 for s in best-nurseries-jeddah-2026 best-nursery-guide-jeddah trusted-nursery-recommendation-jeddah best-quality-price-nursery-jeddah; do
   echo "$s: $(curl -s -o /dev/null -w '%{http_code} -> %{redirect_url}' -H 'Host: montessori-ksa.com' https://127.0.0.1/blog/$s/ -k)"
