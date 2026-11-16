@@ -3756,6 +3756,15 @@ def repair_static_site():
     # patching them would re-inject the old markup, scripts and the 2–5 ages.
     _patch_file(ROOT/'index.html', _legacy_only(lambda t: patch_home(t, False)))
     _patch_file(ROOT/'en'/'index.html', _legacy_only(lambda t: patch_home(t, True)))
+    # Google Analytics on the home and About pages. The 2026-11-16 Google audit
+    # found only /blog/ pages carried the GA4 tag. The block is byte-identical to
+    # the one on every article, so the CSP hash already exists. Idempotent.
+    def ensure_ga(text):
+        if '<!--ps:js-->' in text or '</head>' not in text:
+            return text
+        return text.replace('</head>', head_script_redesign() + '\n</head>', 1)
+    for rel in ('index.html', 'en/index.html', 'about/index.html', 'en/about/index.html'):
+        _patch_file(ROOT/rel, ensure_ga)
     for install_page in (ROOT/'app'/'index.html', ROOT/'login'/'index.html'):
         _patch_file(install_page, lambda t: re.sub(
             r'assets/install\.js\?v=\d+', 'assets/install.js?v=3', t))
