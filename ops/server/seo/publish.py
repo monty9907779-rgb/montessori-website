@@ -3765,6 +3765,13 @@ def repair_static_site():
         return text.replace('</head>', head_script_redesign() + '\n</head>', 1)
     for rel in ('index.html', 'en/index.html', 'about/index.html', 'en/about/index.html'):
         _patch_file(ROOT/rel, ensure_ga)
+    # Blog index intro: the nursery takes ages 3-5 only (facts.py, owner
+    # 2026-11-03). The Arabic intro still said «من سنتين إلى خمس سنوات».
+    # blog/index.html is publisher-owned and excluded from static-sync, so the
+    # live copy is fixed here. Idempotent.
+    _patch_file(ROOT/'blog'/'index.html', lambda t: t.replace(
+        'نشارك فيها خبرتنا اليومية مع الأطفال من سنتين إلى خمس سنوات:',
+        'نشارك فيها خبرتنا اليومية مع الأطفال من ٣ إلى ٥ سنوات:'))
     for install_page in (ROOT/'app'/'index.html', ROOT/'login'/'index.html'):
         _patch_file(install_page, lambda t: re.sub(
             r'assets/install\.js\?v=\d+', 'assets/install.js?v=3', t))
